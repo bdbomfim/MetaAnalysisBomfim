@@ -101,20 +101,16 @@ str(tot_lit_amb_1to21_final)#218
 tot_lit_amb_1to21_final$Case_study= paste(tot_lit_amb_1to21_final$Site, tot_lit_amb_1to21_final$DisturbanceName, sep="|")
 unique(levels(as.factor(tot_lit_amb_1to21_final$Case_study)))
 
-#Transforming the numerical predictors
+#Transforming the numerical moderators
 z.trans<-function(x) {(x - mean(x, na.rm=T))/(2*sd(x, na.rm=T))}
 tot_lit_amb_1to21_final$soilP<-z.trans(tot_lit_amb_1to21_final$Other_soil_P)
 tot_lit_amb_1to21_final$hurrwind<-z.trans(tot_lit_amb_1to21_final$HURRECON_wind_ms)
 tot_lit_amb_1to21_final$windur<-z.trans(tot_lit_amb_1to21_final$Gale_wind_duration_minutes)
 tot_lit_amb_1to21_final$tsd<-z.trans(tot_lit_amb_1to21_final$TSD_months)
 
-##Weights####
-
-#checking case study levels
-unique(levels(as.factor(tot_lit_amb_1to21_final$Case_study)))
+##Calculating Weights####
 
 #Fitting Mltilevel meta-analysis models to obtain the weights included in the final GAMMs
-
 #cross random effects for Site and Cyclone
 tot_meta<- rma.mv(yi,vi,random = list(~1|Site,~1|DisturbanceName),
                           tdist = TRUE,
@@ -177,6 +173,7 @@ tot_lit_amb_1to21_final$weight_e
 tot_lit_amb_1to21_final$weight
 w<- (1/tot_lit_amb_1to21_final$vi)
 w
+
 #Site as random effect with site-based weights
 gamm_2y_mixed_1 <- gamm4(yi ~ s(soilP, tsd)                              ,weights=(1/tot_lit_amb_1to21_final$vi), random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F )
 gamm_2y_mixed_1.2 <- gamm4(yi ~ s(soilP, tsd)                              ,weights=tot_lit_amb_1to21_final$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F )
@@ -186,36 +183,26 @@ mods_1 <- list(mixed_1 = gamm_2y_mixed_1$mer, mixed_1.2 = gamm_2y_mixed_1.2$mer)
 atab_1 <- aictab(mods_1)
 atab_1#MUCH BETTER TO USE THE SECOND APPROACH TO WEIGHTS
 
-#Model selection
+#Fitting several models
 gamm_2y_mixed_2 <- gamm4(yi ~ s(soilP, by=tsd)                           ,weights=(1/tot_lit_amb_1to21_final$vi), random = ~(1|Region/DisturbanceName), data=tot_lit_amb_1to21_final, REML=F )
 gamm_2y_mixed_2.2 <- gamm4(yi ~ s(soilP, by=tsd)                           ,weights=tot_lit_amb_1to21_final$weight_b2, random = ~(1|Region/DisturbanceName), data=tot_lit_amb_1to21_final, REML=F )
 gamm_2y_mixed_2.1 <- gamm4(yi ~ s(soilP, by=tsd)                           ,weights=tot_lit_amb_1to21_final$weight_b, random = ~(1|Region/DisturbanceName), data=tot_lit_amb_1to21_final, REML=F )
-mods_2 <- list(mixed_2 = gamm_2y_mixed_2$mer, mixed_2.1 = gamm_2y_mixed_2.1$mer,mixed_2.2 = gamm_2y_mixed_2.2$mer)
-atab_2 <- aictab(mods_2)
-atab_2
-
 gamm_2y_mixed_3 <- gamm4(yi ~ s(soilP, by=tsd)                           ,weights=tot_lit_amb_1to21_final$weight_c, random = ~(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F )
 gamm_2y_mixed_4 <- gamm4(yi ~ s(soilP, by=tsd)                           ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_final, REML=F )
 gamm_2y_mixed_5 <- gamm4(yi ~ s(soilP, by=tsd)                           ,weights=tot_lit_amb_1to21_final$weight_e, random = ~(1|Site), data=tot_lit_amb_1to21_final, REML=F )
-
 gamm_2y_mixed_1a <- gamm4(yi ~ s(soilP) +s(tsd)                           ,weights=tot_lit_amb_1to21_final$weight, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F )
 gamm_2y_mixed_2a <- gamm4(yi ~ s(Other_soil_P,by=TSD_months)              ,weights=tot_lit_amb_1to21_final$weight_b, random = ~(1|Region/DisturbanceName), data=tot_lit_amb_1to21_final, REML=F )
 gamm_2y_mixed_3a <- gamm4(yi ~ s(Other_soil_P, TSD_months)                 ,weights=tot_lit_amb_1to21_final$weight_c, random = ~(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F )
 gamm_2y_mixed_4a <- gamm4(yi ~ s(Other_soil_P, TSD_months,k=20)            ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_final, REML=F )
 gamm_2y_mixed_5a <- gamm4(yi ~ s(Other_soil_P, TSD_months)                 ,weights=tot_lit_amb_1to21_final$weight_e, random = ~(1|Site), data=tot_lit_amb_1to21_final, REML=F )
 gamm_2y_mixed_4b <- gamm4(yi ~ s(Other_soil_P, TSD_months)                 ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_final, REML=F )
-
 gamm_2y_mixed_1c <- gamm4(yi ~ soilP + s(tsd)                                 ,weights=tot_lit_amb_1to21_final$weight, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F )
 gamm_2y_mixed_1d <- gamm4(yi ~ soilP + tsd                                 ,weights=tot_lit_amb_1to21_final$weight, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F )
-gamm_2y_mixed_1e <- gamm4(yi ~ s(soilP, tsd,by=windur)                 ,weights=tot_lit_amb_1to21_final$weight, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F )
+gamm_2y_mix_1e <- gamm4(yi ~ s(soilP, tsd,by=windur)                 ,weights=tot_lit_amb_1to21_final$weight, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F )
 
-#Comparing models
+#Comparing models using AICc
 mods_1to21 <- list(mixed_1 = gamm_2y_mixed_1$mer, mixed_1a = gamm_2y_mixed_1a$mer,mixed_1b = gamm_2y_mixed_1b$mer,
-                   mixed_1c = gamm_2y_mixed_1c$mer,mixed_1d = gamm_2y_mixed_1d$mer,mixed_1e = gamm_2y_mixed_1e$mer)
-                   
-                   #mixed_1a = gamm_2y_mixed_1a$mer,mixed_2 = gamm_2y_mixed_2$mer,mixed_2a = gamm_2y_mixed_2a$mer, 
-                   #mixed_3 = gamm_2y_mixed_3$mer,mixed_3a = gamm_2y_mixed_3a$mer,mixed_4 = gamm_2y_mixed_4$mer,
-                   #mixed_4a = gamm_2y_mixed_4a$mer,mixed_4b = gamm_2y_mixed_4b$mer,mixed_5 = gamm_2y_mixed_5$mer,mixed_5a = gamm_2y_mixed_5a$mer)
+                   mixed_1c = gamm_2y_mixed_1c$mer,mixed_1d = gamm_2y_mixed_1d$mer,mix_1e = gamm_2y_mix_1e$mer)
 atab_1to21 <- aictab(mods_1to21)
 atab_1to21
 
@@ -225,43 +212,13 @@ atab_1to21
 gamm_2y_mixed_1 <- gamm4(yi ~ s(soilP,by=tsd)                             ,weights=tot_lit_amb_1to21_final$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=TRUE)
 summary(gamm_2y_mixed_1$gam)
 gamm_2y_mixed_1.2 <- gamm4(yi ~ s(soilP, tsd,k=20)                              ,weights=tot_lit_amb_1to21_final$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=TRUE)
-summary(gamm_2y_mixed_1.2$gam)
+summary(gamm_2y_mixed_1.2$gam)#R2 = 0.3
 summary(gamm_2y_mixed_1.2$mer)
 
 #Model 2a
 gamm_2y_mixed_1e <- gamm4(yi ~ s(soilP, tsd,by=windur,k=20)                 ,weights=tot_lit_amb_1to21_final$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=TRUE)
 summary(gamm_2y_mixed_1e$gam)#R2 = 0.4
 summary(gamm_2y_mixed_1e$mer)
-vis.gam(gamm_2y_mixed_1e$gam,plot.type="contour",view=c("tsd","soilP"))
-
-
-#
-gamm_2y_mixed_1 <- gamm4(yi ~ s(soilP, tsd)                           ,weights=tot_lit_amb_1to21_final$weight, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=TRUE)
-summary(gamm_2y_mixed_1$gam)
-summary(gamm_2y_mixed_1$mer)
-
-#
-gamm_2y_mixed_1_A <- gamm4(yi ~ s(soilP, tsd,windur)                           ,weights=tot_lit_amb_1to21_final$weight, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=TRUE)
-summary(gamm_2y_mixed_1_A$gam)
-summary(gamm_2y_mixed_1_A$mer)
-
-#
-gamm_2y_mixed_3a <- gamm4(yi ~ s(Other_soil_P, TSD_months)                 ,weights=tot_lit_amb_1to21_final$weight_c, random = ~(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=TRUE)
-summary(gamm_2y_mixed_3a$gam)
-
-#
-gamm_2y_mixed_3b <- gamm4(yi ~ s(Other_soil_P, TSD_months,by=factor(Fujita_scale))                 ,weights=tot_lit_amb_1to21_final$weight_c, random = ~(1|Region), data=tot_lit_amb_1to21_final, REML=TRUE)
-summary(gamm_2y_mixed_3b$gam)
-
-gamm_2y_mixed_4.1a <- gamm4(yi ~ s(Other_soil_P, TSD_months,by=factor(Fujita_scale))            ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_final, REML=TRUE)
-summary(gamm_2y_mixed_4.1a$gam)
-gamm_2y_mixed_4a <- gamm4(yi ~ s(soilP, tsd,by=wind_cat)            ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_final, REML=TRUE )
-summary(gamm_2y_mixed_4a$gam)#R2 = 0.15
-summary(gamm_2y_mixed_4a$mer)
-
-gamm_2y_mixed_4a.1 <- gamm4(yi ~ s(soilP, tsd,by=factor(Fujita_scale))            ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_final, REML=TRUE )
-summary(gamm_2y_mixed_4a.1$gam)#R2 = 0.22
-summary(gamm_2y_mixed_4a.1$mer)
 
 #Adding wind speed variable does not improve the model
 gamm_2y_mixed_4b <- gamm4(yi ~ s(Other_soil_P, TSD_months,k=20)+HURRECON_wind_ms           ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_final, REML=TRUE )
@@ -271,7 +228,6 @@ summary(gamm_2y_mixed_4b$mer)
 gamm_2y_mixed_4b.1 <- gamm4(yi ~ s(Other_soil_P, TSD_months,HURRECON_wind_ms)           ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_final, REML=TRUE )
 summary(gamm_2y_mixed_4b.1$gam)
 summary(gamm_2y_mixed_4b$mer)
-
 
 #Adding Wind duration variable does not improve the model
 gamm_2y_mixed_4c <- gamm4(yi ~ s(soilP, tsd,k=20)+windur           ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_final, REML=TRUE )
@@ -291,7 +247,7 @@ summary(gamm_2y_mixed_4e$mer)
 
 names(tot_lit_amb_1to21_final)
 #data
-cor_1to21<-tot_lit_amb_1to21_final[,c(40,81,83,84,86)]
+cor_1to21<-tot_lit_amb_1to21_final[,c(83,84,85,86)]
 str(cor_1to21)## Final
 #updating column names
 names(cor_1to21)[names(cor_1to21) == "soilP"] <- "Soil P"
@@ -309,7 +265,7 @@ Fig_1to21<-ggcorrplot(corr_1to21, hc.order = TRUE, type = "lower",hc.method = "w
                   outline.col = "white", p.mat = p.mat_1to21,method="square",ggtheme=ggplot2::theme_bw(),show.legend=TRUE, legend.title="Pearson's r", 
                   lab=TRUE, lab_size=8, tl.cex=20,colors = c("#003f5c", "white", "#ffa600",pch.cex=22,nbreaks = 8,legend.text.cex=22))+font("legend.text",size=16)+font("legend.title", size=16)
 Fig_1to21
-
+#saving the figure
 ggsave(filename = "Fig_corr_1to21.png",
        plot = Fig_1to21, width = 12, height = 12, units = 'cm',
        scale = 2, dpi = 600)
@@ -323,15 +279,6 @@ mypreds_1to21_final_1e<-predict(gamm_2y_mixed_1e$gam,newdata=tot_lit_amb_1to21_f
 mypreds_1to21_final_1e
 tot_lit_amb_1to21_final$Pred_1e<-mypreds_1to21_final_1e$fit
 tot_lit_amb_1to21_final$Se_1e<-mypreds_1to21_final_1e$se.fit
-
-#Data wrangling for plotting
-Est_res1to21 <- cbind(data.frame(Estimate=tot_lit_amb_1to21_final$Pred,Se=tot_lit_amb_1to21_final$Se,Months=factor(tot_lit_amb_1to21_final$TSD_months),
-                                  SoilP=log(tot_lit_amb_1to21_final$Other_soil_P),fac_SoilP=factor(tot_lit_amb_1to21_final$Other_soil_P),Wind_speed=tot_lit_amb_1to21_final$HURRECON_wind_ms,
-                                  Region=tot_lit_amb_1to21_final$Country,Case_study=tot_lit_amb_1to21_final$Case_study,Cyclone=tot_lit_amb_1to21_final$DisturbanceName,Fujita=factor(tot_lit_amb_1to21_final$fujita)))
-str(Est_res1to21)
-Est_res1to21$Months<-factor(Est_res1to21$Months, levels = c("1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17",
-                                                  "18","19","20","21"))
-levels(Est_res1to21$Months)
 
 #Final Plot Resilience of Total Litterfall by Soil P and Cyclone Intensity####
 
@@ -361,28 +308,22 @@ Fig_res1to21<-Fig_res1to21+theme_pubr()+geom_segment(aes(x=1, y=0, xend=21, yend
   annotate("text", x = 1, y = 2.2, label = "a Total litterfall", size=8,hjust=0,colour="black",fontface="bold") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
 Fig_res1to21
 
+#Final figure Total litterfall and Leaf fall
 Fig9<-Fig_res1to21+Fig_res1to21_l+plot_layout(ncol=1,heights=c(1,1))
 Fig9
 
-#Fig_res1to21_facetb<-Fig_res1to21+ facet_wrap(~Fujita_scale)+theme(strip.text.x = element_text(size=20))
-#Fig_res1to21_facetb
 ##Figure9a####
 ggsave(filename = "Fig9_Resilience_Pred_Tot_Leaf.png",
        plot = Fig9, width = 12, height = 14, units = 'cm',
        scale = 2, dpi = 1200)
 
-##Soil P and TSD only
+##PREDICTIONS with Soil P and TSD only
 
 #Predictions from gamm_2y_mixed_1e####
 mypreds_1to21_final_1.2<-predict(gamm_2y_mixed_1.2$gam,newdata=tot_lit_amb_1to21_final,se.fit=T)
 mypreds_1to21_final_1.2
 tot_lit_amb_1to21_final$Pred_1.2<-mypreds_1to21_final_1.2$fit
 tot_lit_amb_1to21_final$Se_1.2<-mypreds_1to21_final_1.2$se.fit
-
-##Data wrangling - Time since disturbance as factor for plotting
-tot_lit_amb_1to21_final$Months<-factor(tot_lit_amb_1to21_final$TSD_months, levels = c("1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17",
-                                                                                      "18","19","20","21"))
-levels(tot_lit_amb_1to21_final$Months)
 
 #Figure 9 Total Litterfall Mass Resilience by Time, soil P and wind duration####
 Fig_res1to21a <- ggplot(tot_lit_amb_1to21_final, aes(y=Pred_1.2, x=Months,group=Case_study))
@@ -406,12 +347,12 @@ Fig_res1to21a<-Fig_res1to21a+theme_pubr()+geom_segment(aes(x=1, y=0, xend=21, ye
 Fig_res1to21a
 
 ##Figure9####
-Fig9a<-Fig_res1to21a+Fig_res1to21_l+plot_layout(ncol=1,heights=c(1,1))
-Fig9a
+Fig9<-Fig_res1to21a+Fig_res1to21_l+plot_layout(ncol=1,heights=c(1,1))
+Fig9
+
 #Saving in high res
 ggsave(filename = "Fig9_Resilience_Pred_Tot_Leaf_v2.png",
-       plot = Fig9a, width = 12, height = 14, units = 'cm',
+       plot = Fig9, width = 12, height = 14, units = 'cm',
        scale = 2, dpi = 1200)
-
 
 ##END##

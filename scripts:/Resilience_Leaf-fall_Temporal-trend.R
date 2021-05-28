@@ -11,14 +11,11 @@ leaf_amb$TSD_months=as.numeric(leaf_amb$TSD_months)
 leaf_amb$Case_study= paste(leaf_amb$Site, leaf_amb$DisturbanceName, sep="|")
 
 ##Visualizing the total litterfall data 1 to 36 months - Ambient only
-
 dres_amb_l <- leaf_amb %>%group_by(Case_study)  %>%
   dplyr::summarise(counts = dplyr::n())
 dres_amb_l
 dres_amb_l$counts=as.numeric(dres_amb_l$counts)
 dres_amb_l
-
-#Visualizing the data to check if deleting case studies make sense
 p_data_clus_l<- dres_amb_l %>% ggplot(aes(x = reorder(Case_study,-counts), y=counts)) +geom_point(stroke=2,color="blue",size=4,shape=21)+theme_bw()+
   theme(strip.background = element_rect(color="white", fill="white",linetype="solid"),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=52, hjust=1,vjust = 1,size=18),axis.title=element_text(size=20),
         legend.position="right",legend.text =  element_text(size=20,angle=0),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),legend.title = element_blank(),
@@ -26,7 +23,7 @@ p_data_clus_l<- dres_amb_l %>% ggplot(aes(x = reorder(Case_study,-counts), y=cou
   #scale_fill_brewer(palette="Paired")+
   labs(x="Case study",y="Number of observations")#+ annotate("text", x = 10, y = 25, label = "3-year resilience of total litterfall",size=6,colour="black")
 p_data_clus_l
-
+#saving impage
 ggsave(filename = "SupFig_TotAmbRes_Obs.png",
        plot = FigSupTotAmb, width = 22, height = 19, units = 'cm',
        scale = 2, dpi = 600)
@@ -35,7 +32,6 @@ ggsave(filename = "SupFig_TotAmbRes_Obs.png",
 dres_amb_l2 <- leaf_amb %>%group_by(Case_study,Treatment,TSD_months)  %>%
   dplyr::summarise(counts = dplyr::n())
 dres_amb_l2
-
 p_amb_l<- dres_amb_l2 %>% ggplot(aes(x = TSD_months, fill=Treatment)) +geom_histogram(binwidth = 0.5)+theme_bw()+guides(color = guide_legend(title = "Country"),legend.key.width=32)+
   theme(strip.background = element_rect(color="white", fill="white",linetype="solid"),axis.text= element_text(angle=0, hjust=0.5,vjust = 1,size=18),axis.title=element_text(size=22),
         legend.position="right",legend.text =  element_text(size=20,angle=0),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),legend.title = element_blank(),
@@ -49,18 +45,6 @@ FigSup_Amb_l
 leaf_amb_1to21<- leaf_amb  %>% filter (TSD_months<22) %>% filter(Study_ID!="4")%>% filter(DisturbanceName!="Keith")%>% filter(DisturbanceName!="Ivor")%>% filter(DisturbanceName!="Jova")%>% filter(DisturbanceName!="Patricia")%>% filter(DisturbanceName!="Gilbert")
 str(leaf_amb_1to21)#198
 unique(levels(as.factor(leaf_amb_1to21$Country)))
-
-dres_amb_l3 <- leaf_amb_1to21 %>%group_by(Case_study,Study_ID)  %>%
-  dplyr::summarise(counts = dplyr::n())
-dres_amb_l3
-
-p_data_clus_l3<- dres_amb_l3 %>% ggplot(aes(x = reorder(Case_study,-counts), y=counts)) +geom_point(stroke=2,color="black",size=4,shape=21)+theme_bw()+
-  theme(strip.background = element_rect(color="white", fill="white",linetype="solid"),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=52, hjust=1,vjust = 1,size=18),axis.title=element_text(size=20),
-        legend.position="right",legend.text =  element_text(size=20,angle=0),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),legend.title = element_blank(),
-        legend.box.background = element_rect(colour = "black"))+geom_hline(aes(yintercept=1), lty=2, color = "red", cex=0.9, alpha = .8)+
-  #scale_fill_brewer(palette="Paired")+
-  labs(x="Case study",y="Number of observations")#+ annotate("text", x = 10, y = 25, label = "3-year resilience of total litterfall",size=6,colour="black")
-p_data_clus_l3
 
 ##Fitting random-effects meta-analysis model to obtain weights
 
@@ -78,7 +62,7 @@ unique(levels(as.factor(leaf_amb_1to21$Case_study)))
 #wi <- 1 / (sum(model$sigma2) + data$vi)
 #wi
 
-#Various possible random effects
+#Fitting multilevel meta-analysis models with varying possible random effects
 leaf_meta<- rma.mv(yi,vi,random = list(~1|Site,~1|DisturbanceName),
                   tdist = TRUE,
                   data = leaf_amb_1to21,struct = "HAR",method = "REML")

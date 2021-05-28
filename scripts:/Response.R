@@ -67,7 +67,7 @@ install.packages("devtools")
 #litterfall mass data
 metadat<-read.csv(file.choose())#20210520_Litterfall_Mass
 attach(metadat)
-str(metadat)#2370 obs of 77 variables
+str(metadat)#2367 obs of 77 variables
 
 #transforming as numeric
 metadat$HURRECON_wind_ms=as.numeric(metadat$HURRECON_wind_ms)
