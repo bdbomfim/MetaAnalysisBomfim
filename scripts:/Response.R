@@ -61,158 +61,159 @@ library(RColorBrewer)
 library(scales)
 library(tibble)
 library(AICcmodavg)
-install.packages("devtools")
 
 ####STEP 0 uploading data####
-#litterfall mass data
+
+#Litterfall mass flux data
 metadat<-read.csv(file.choose())#20210520_Litterfall_Mass
 attach(metadat)
 str(metadat)#2367 obs of 77 variables
+summary(metadat)
 
-#transforming as numeric
+#transforming variables to numeric
 metadat$HURRECON_wind_ms=as.numeric(metadat$HURRECON_wind_ms)
 metadat$Gale_wind_duration_minutes=as.numeric(metadat$Gale_wind_duration_minutes)
 
-#create Case study column
+#Create Case study column
 metadat$Case_study= paste(metadat$Site, metadat$DisturbanceName,sep="| ")
-unique(levels(as.factor(metadat$Case_study)))
+unique(levels(as.factor(metadat$Treatment)))#check number of unique factor levels
 
 #Nutrient flux and concentration data
 nutmeta<-read.csv(file.choose())#20210520_Litterfall_Nutrients
 attach(nutmeta)
-str(nutmeta)
+str(nutmeta) #2551 obs. of  80 variables
 
 #create Case study column
 nutmeta$Case_study= paste(nutmeta$Site, nutmeta$Disturbance, sep="| ")
-levels(as.factor(nutmeta$Case_study))
+unique(levels(as.factor(nutmeta$Case_study)))
 
 ####STEP 1 Data Wrangling ####
 
 ###Litterfall Mass flux##
 
 ##Total Litterfall mass####
-#Annual
-data0a<-metadat %>% filter(Fraction=="TotLitfall")%>%filter(Cat_TSD_months=="0-0.5")
-str(data0a)#49 observations
+#Annual-based, excluding CTE
+data0a<-metadat %>% filter(Fraction=="TotLitfall")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
+str(data0a)#48 observations
 levels(as.factor(data0a$Case_study))
 #Sub-annual
 data0aS<- data0a%>% filter(Pre_Mean_MonthSpecific!="NA")#to exclude a factor level
 str(data0aS)#23observations
 data0aS$Effectsize_ID
 #Annual with same observations as in sub-annual
-data0aSS<-data0a %>% filter(Effectsize_ID == "34"|Effectsize_ID == "44"|Effectsize_ID == "47"|Effectsize_ID == "1015"|
-                              Effectsize_ID == "1738"|Effectsize_ID == "1848"|Effectsize_ID == "2102"|Effectsize_ID == "2106"|Effectsize_ID == "2110"|Effectsize_ID == "2114"|
-                              Effectsize_ID == "2118"|Effectsize_ID == "2122"|Effectsize_ID=="2126"|Effectsize_ID == "2130"|Effectsize_ID == "2134"|Effectsize_ID == "2143"|Effectsize_ID == "2346"|Effectsize_ID == "2347"|Effectsize_ID == "2348"|Effectsize_ID == "2349"|Effectsize_ID == "2350"|Effectsize_ID == "2351"|Effectsize_ID == "2352")
-str(data0aSS)#23 observations including the same effect sizes with and without subannual pre and post data
+data0aSS<-data0a %>% filter(Effectsize_ID == "34"|Effectsize_ID == "44"|Effectsize_ID == "47"|Effectsize_ID == "1735"|Effectsize_ID == "1845"|Effectsize_ID == "2099"|Effectsize_ID == "2103"|Effectsize_ID == "2107"|Effectsize_ID == "2111"|
+                              Effectsize_ID == "2115"|Effectsize_ID == "2119"|Effectsize_ID=="2123"|Effectsize_ID == "2127"|Effectsize_ID == "2131"|Effectsize_ID == "2140"|Effectsize_ID == "2343"|Effectsize_ID == "2344"|Effectsize_ID == "2345"|Effectsize_ID == "2346"|Effectsize_ID == "2347"|Effectsize_ID == "2348"|Effectsize_ID == "2349")
+str(data0aSS)#22 observations including the same effect sizes with and without sub-annual pre and post data
 
 ##Leaf fall####
-
-#Annual
-data0alf<-metadat %>% filter(Fraction=="Leaf fall")%>%filter(Cat_TSD_months=="0-0.5")
-str(data0alf)#31 observations
+#Annual-based, excluding CTE
+data0alf<-metadat %>% filter(Fraction=="Leaf fall")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
+str(data0alf)#30 observations
 #Sub-annual
 data0alfS<- data0alf %>% filter(Pre_Mean_MonthSpecific!="NA")
-str(data0alfS)#17 observations
+str(data0alfS)#16 observations
 data0alfS$Effectsize_ID
 #Annual with same observations as in sub-annual
-data0alfSS<-data0alf %>% filter(Effectsize_ID == "40"|Effectsize_ID == "45"|Effectsize_ID == "1076"|Effectsize_ID == "1711"|Effectsize_ID == "1760"|Effectsize_ID == "1870"|Effectsize_ID == "2103"|Effectsize_ID == "2107"|Effectsize_ID == "2111"|Effectsize_ID == "2115"|Effectsize_ID=="2119"|Effectsize_ID=="2123"|Effectsize_ID=="2127"|Effectsize_ID == "2131"|Effectsize_ID == "2152"|Effectsize_ID == "2154"|Effectsize_ID == "2170")
-str(data0alfSS)#17 obs
+data0alfSS<-data0alf %>% filter(Effectsize_ID == "40"|Effectsize_ID == "45"|Effectsize_ID == "1711"|Effectsize_ID == "1757"|Effectsize_ID == "1867"|Effectsize_ID == "2100"|Effectsize_ID == "2104"|Effectsize_ID == "2108"|Effectsize_ID == "2112"|Effectsize_ID=="2116"|Effectsize_ID=="2120"|Effectsize_ID=="2124"|Effectsize_ID == "2128"|Effectsize_ID == "2149"|Effectsize_ID == "2151"|Effectsize_ID == "2167")
+str(data0alfSS)#16 observations
 
 ##Wood fall####
-
-#Annual
-data0awf<-metadat %>% filter(Fraction=="Wood fall")%>%filter(Cat_TSD_months=="0-0.5")
-str(data0awf)#30 observations
+#Annual-based, excluding CTE
+data0awf<-metadat %>% filter(Fraction=="Wood fall")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
+str(data0awf)#29 observations
 #Sub-annual
 data0awfS<- data0awf %>% filter(Pre_Mean_MonthSpecific!="NA")
-str(data0awfS)#15 observations
+str(data0awfS)#14 observations
 data0awfS$Effectsize_ID
-#Annual with same observations as in sub-annua
-data0awfSS<-data0awf %>% filter(Effectsize_ID == "41"|Effectsize_ID == "42"|Effectsize_ID == "1197"|Effectsize_ID == "1782"|Effectsize_ID == "1892"|Effectsize_ID == "2104"|Effectsize_ID == "2108"|Effectsize_ID == "2112"|Effectsize_ID == "2116"|Effectsize_ID == "2120"|Effectsize_ID == "2124"|Effectsize_ID == "2128"|Effectsize_ID == "2132"|Effectsize_ID == "2156"|Effectsize_ID == "2158")
-str(data0awfSS)#15 obs
+#Annual with same observations as in sub-annual
+data0awfSS<-data0awf %>% filter(Effectsize_ID == "41"|Effectsize_ID == "42"|Effectsize_ID == "1779"|Effectsize_ID == "1889"|Effectsize_ID == "2101"|Effectsize_ID == "2105"|Effectsize_ID == "2109"|Effectsize_ID == "2113"|Effectsize_ID == "2117"|Effectsize_ID == "2121"|Effectsize_ID == "2125"|Effectsize_ID == "2129"|Effectsize_ID == "2153"|Effectsize_ID == "2155")
+str(data0awfSS)#14 observations
 
 ## FFS fall ####
-data0aff<-metadat %>% filter(Fraction=="FFS fall")%>%filter(Cat_TSD_months=="0-0.5")
+#Annual-based, excluding CTE
+data0aff<-metadat %>% filter(Fraction=="FFS fall")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")%>% filter(Pre_Mean!="NA")
 str(data0aff)#14 observations
-
+#Sub-annual
 data0affS<-data0aff %>% filter(Pre_Mean_MonthSpecific!="NA")
 str(data0affS)#10 observations
 data0affS$Effectsize_ID
-
-data0affSS<-data0aff %>% filter(Effectsize_ID == "1804"|Effectsize_ID == "1914"|Effectsize_ID == "2105"|Effectsize_ID == "2109"|Effectsize_ID == "2113"|Effectsize_ID == "2117"|Effectsize_ID == "2117"|Effectsize_ID == "2121"|Effectsize_ID == "2125"|Effectsize_ID == "2129"|Effectsize_ID == "2133")
-str(data0affSS)#10 obs
+#Annual with same observations as in sub-annual
+data0affSS<-data0aff %>% filter(Effectsize_ID == "1801"|Effectsize_ID == "1911"|Effectsize_ID == "2102"|Effectsize_ID == "2106"|Effectsize_ID == "2110"|Effectsize_ID == "2114"|Effectsize_ID == "2118"|Effectsize_ID == "2122"|Effectsize_ID == "2126"|Effectsize_ID == "2130")
+str(data0affSS)#10 observations
 
 ## Miscellaneous fall ####
-data0amf<-metadat %>% filter(Fraction=="Misc fall")%>%filter(Cat_TSD_months=="0-0.5")
+#Annual-based, excluding CTE
+data0amf<-metadat %>% filter(Fraction=="Misc fall")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
 str(data0amf)#9 observations
-
-data0amfSS<-data0amf %>% filter(Effectsize_ID == "43"|Effectsize_ID == "46"|Effectsize_ID == "1826"|Effectsize_ID == "1936")
-str(data0amfSS)#4 obs
-
+#Sub-annual
 data0amfS<-data0amf %>% filter(Pre_Mean_MonthSpecific!="NA")
 str(data0amfS)#4 obs
+data0amfS$Effectsize_ID
+data0amfSS<-data0amf %>% filter(Effectsize_ID == "43"|Effectsize_ID == "46"|Effectsize_ID == "1823"|Effectsize_ID == "1933")
+str(data0amfSS)#4 obs
 
 ####Nutrient fluxes####
 
 ####P flux####
 str(nutmeta)
+unique(levels(as.factor(nutmeta$Treatment)))
 
-#Total P flux
-data0tpf<-nutmeta %>%filter(Fraction=="TotLitfall")%>%filter(Variable=="P") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")
-str(data0tpf)#11
-#Leaf fall
-data0lpf<-nutmeta %>%filter(Fraction=="Leaf fall")%>%filter(Variable=="P") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")
-str(data0lpf)#7
-#Wood fall
-data0wpf<-nutmeta %>%filter(Fraction=="Wood fall")%>%filter(Variable=="P") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")
-str(data0wpf)#7
-#FFS fall
-data0ffspf<-nutmeta %>%filter(Fraction=="FFS fall")%>%filter(Variable=="P") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")
+#Total litterfall P flux
+data0tpf<-nutmeta %>%filter(Fraction=="TotLitfall")%>%filter(Variable=="P") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
+str(data0tpf)#10 observations
+#Leaf litterfall P flux
+data0lpf<-nutmeta %>%filter(Fraction=="Leaf fall")%>%filter(Variable=="P") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
+str(data0lpf)#9
+#Wood litterfall
+data0wpf<-nutmeta %>%filter(Fraction=="Wood fall")%>%filter(Variable=="P") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
+str(data0wpf)#8
+#FFS litterfall
+data0ffspf<-nutmeta %>%filter(Fraction=="FFS fall")%>%filter(Variable=="P") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
 str(data0ffspf)#1
-#Miscellaneous fall
-data0mpf<-nutmeta %>%filter(Fraction=="Misc fall")%>%filter(Variable=="P") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")
-str(data0mpf)#2
+#Miscellaneous litterfall
+data0mpf<-nutmeta %>%filter(Fraction=="Misc fall")%>%filter(Variable=="P") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
+str(data0mpf)#3
 
 #### N flux####
 
 #Total litterfall
-data0tnf<-nutmeta %>%filter(Fraction=="TotLitfall")%>%filter(Variable=="N") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")
-str(data0tnf)#10
-#Leaf fall
-data0lnf<-nutmeta %>%filter(Fraction=="Leaf fall")%>%filter(Variable=="N") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")
-str(data0lnf)#7
-#Wood fall
-data0wnf<-nutmeta %>%filter(Fraction=="Wood fall")%>%filter(Variable=="N") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")
-str(data0wnf)#6
-#FFS fall
-data0ffsnf<-nutmeta %>%filter(Fraction=="FFS fall")%>%filter(Variable=="N") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")
-str(data0ffsnf)#1
-#Miscellaneous fall
-data0mnf<-nutmeta %>%filter(Fraction=="Misc fall")%>%filter(Variable=="N") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")
-str(data0mnf)#2
+data0tnf<-nutmeta %>%filter(Fraction=="TotLitfall")%>%filter(Variable=="N") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
+str(data0tnf)#9 observations
+#Leaf litterfall
+data0lnf<-nutmeta %>%filter(Fraction=="Leaf fall")%>%filter(Variable=="N") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
+str(data0lnf)#9 observations
+#Wood litterfall
+data0wnf<-nutmeta %>%filter(Fraction=="Wood fall")%>%filter(Variable=="N") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
+str(data0wnf)#7 observations
+#FFS litterfall
+data0ffsnf<-nutmeta %>%filter(Fraction=="FFS fall")%>%filter(Variable=="N") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
+str(data0ffsnf)#1 observation
+#Miscellaneous litterfall
+data0mnf<-nutmeta %>%filter(Fraction=="Misc fall")%>%filter(Variable=="N") %>%filter(Raw_Unit=="mg/m2/day")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
+str(data0mnf)#3 observations
 
 ####P concentration####
 
-#Leaf fall
-data0lpc<-nutmeta %>%filter(Fraction=="Leaf fall")%>%filter(Variable=="P") %>%filter(Raw_Unit=="mg/g")%>%filter(Cat_TSD_months=="0-0.5")
+#Leaf litterfall
+data0lpc<-nutmeta %>%filter(Fraction=="Leaf fall")%>%filter(Variable=="P") %>%filter(Raw_Unit=="mg/g")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
 str(data0lpc)#10
-#Wood fall
-data0wpc<-nutmeta %>%filter(Fraction=="Wood fall")%>%filter(Variable=="P") %>%filter(Raw_Unit=="mg/g")%>%filter(Cat_TSD_months=="0-0.5")
+#Wood litterfall
+data0wpc<-nutmeta %>%filter(Fraction=="Wood fall")%>%filter(Variable=="P") %>%filter(Raw_Unit=="mg/g")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
 str(data0wpc)#3
 
 ##N concentration ####
 
-#Leaf fall
-data0lnc<-nutmeta %>%filter(Fraction=="Leaf fall")%>%filter(Variable=="N") %>%filter(Raw_Unit=="mg/g")%>%filter(Cat_TSD_months=="0-0.5")
+#Leaf litterfall
+data0lnc<-nutmeta %>%filter(Fraction=="Leaf fall")%>%filter(Variable=="N") %>%filter(Raw_Unit=="mg/g")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
 str(data0lnc)#10
-#Wood fall
-data0wnc<-nutmeta %>%filter(Fraction=="Wood fall")%>%filter(Variable=="N") %>%filter(Raw_Unit=="mg/g")%>%filter(Cat_TSD_months=="0-0.5")
+#Wood litterfall
+data0wnc<-nutmeta %>%filter(Fraction=="Wood fall")%>%filter(Variable=="N") %>%filter(Raw_Unit=="mg/g")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
 str(data0wnc)#3
 
 ####STEP 2 Individual Effect size calculation####
 
 ##Total Litterfall##
-str(data0a)#34 observations
+str(data0a)#48 observations
 
 #Annual
 data_es0ia <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
@@ -243,7 +244,6 @@ data_es0iwfSS <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_M
 #FFS fall
 data_es0iff <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
                       sd1i = Post_SD, sd2i = Pre_SD, data = data0aff, measure = "ROM")
-data_es0iff$yi
 data_es0iffS <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean_MonthSpecific, 
                        sd1i = Post_SD, sd2i = Pre_SD_MonthSpecific, data = data0affS, measure = "ROM")
 data_es0iffSS <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
@@ -298,20 +298,10 @@ data_es0ilnc <- escalc(n1i = Post_n, n2i = Pre_n, m1i = Post_Mean, m2i = Pre_Mea
 #Wood fall
 data_es0iwnc <- escalc(n1i = Post_n, n2i = Pre_n, m1i = Post_Mean, m2i = Pre_Mean, 
                        sd1i = Post_SD, sd2i = Pre_SD, data = data0wnc, measure = "ROM")
-data_es0imnc <- escalc(n1i = Post_n, n2i = Pre_n, m1i = Post_Mean, m2i = Pre_Mean, 
-                       sd1i = Post_SD, sd2i = Pre_SD, data = data0mnc, measure = "ROM")
-data_es0itcf <- escalc(n1i = Post_n, n2i = Pre_n, m1i = Post_Mean, m2i = Pre_Mean, 
-                       sd1i = Post_SD, sd2i = Pre_SD, data = data0tcf, measure = "ROM")
 
 #### STEP 3 Overall Effect Size calculations ####
 
 ## Total Litterfall ##
-#Data viz
-df_TSD_tot_resp %>% ggplot(aes(x = yi, fill=DisturbanceName)) +geom_histogram(binwidth = 0.5)+theme_pubr()+
-  theme(strip.background = element_rect(color="white", fill="white",linetype="solid"),axis.text.x = element_text(angle=0, hjust=0.5,vjust = 1,size=18),axis.text=element_text(size=16),axis.title=element_text(size=20),
-        legend.position="right",legend.text =  element_text(size=16,angle=0),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),legend.title = element_blank(),legend.box.background = element_rect(colour = "black"))+
-  #scale_fill_brewer(palette="Paired")+
-  labs(x="Response effect sizes",y="Number of observations")+ annotate("text", x = 4, y = 8, label = "Response of total litterfall",size=6,colour="black")
 
 ##Final model for Pantropical response of total litterfall mass####
 full.model3 <- rma.mv(yi, vi,random = list(~ 1 | Site,~1|DisturbanceName),
@@ -322,16 +312,14 @@ summary(full.model3)
 ((exp(full.model3$b)-1)*100)
 (exp(full.model3$se)-1)*100
 
-##Sensitivity analysis - remove CTE
-no_cte_totlitfall<-data_es0ia %>% filter(DisturbanceName!="CTE")
-
-full.model3_red <- rma.mv(yi, vi,random = list(~ 1 | Site,~1|DisturbanceName),
-                      tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                      data = no_cte_totlitfall,method = "REML")
-
-summary(full.model3_red)
-((exp(full.model3_red$b)-1)*100)
-(exp(full.model3_red$se)-1)*100
+#Pre-mean, sd, se
+summary(data0a)
+mean(data0a$Pre_Mean)
+sd<-mean(data0a$Pre_SD)
+n<-mean(data0a$S_size)
+n
+se<-sd/(sqrt(n))
+se
 
 #contrasting with other random effects options
 full.model3a <- rma.mv(yi, vi,random = ~ 1 | DisturbanceName,
@@ -366,8 +354,10 @@ par(mfrow=c(2,1))
 profile(full.model3, sigma2=1)
 profile(full.model3, sigma2=2)
 
-red_sites <- data_es0ia %>% filter(Site!="Grande-Terre")%>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")#%>% filter(Site!="Grande-Terre")
+#New data frame removing the five sites where total soil P was estimated from available P
+red_sites <- data_es0ia %>% filter(Site!="Grande-Terre")%>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")
 
+#Running same model with reduced data set
 full.model3_red<- rma.mv(yi, 
                          vi, 
                          random = list(~ 1 | Site,~1|DisturbanceName),
@@ -376,10 +366,7 @@ full.model3_red<- rma.mv(yi,
                          method = "REML")
 summary(full.model3_red)
 
-dataes0_new2
-
 ##Calculating Overall Effect Sizes for sub-annual data
-
 full.model3S <- rma.mv(yi,vi,random = list(~ 1 | Site,~1|DisturbanceName),
                        tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
                        data = data_es0iaS,
@@ -388,7 +375,6 @@ summary(full.model3S)
 (exp(full.model3S$b)-1)*100
 (exp(full.model3S$se)-1)*100
 
-levels(as.factor(data_es0iaSS$Case_study))
 full.model3SS <- rma.mv(yi, vi,random = list(~ 1 | Site,~1|DisturbanceName),
                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
                         data = data_es0iaSS,
@@ -397,10 +383,8 @@ summary(full.model3SS)
 (exp(full.model3SS$b)-1)*100
 (exp(full.model3SS$se)-1)*100
 
-2837.5-2835.206
-
 ## Leaf fall ####
-data_es0ilf$Case_study
+#Annual data
 full.model3lf <- rma.mv(yi,vi,random = list(~ 1 | Site,~1|DisturbanceName), #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
                         data = data_es0ilf,
@@ -409,8 +393,7 @@ summary(full.model3lf)
 (exp(full.model3lf$b)-1)*100
 (exp(full.model3lf$se)-1)*100
 
-levels(as.factor(data_es0ilfS$Case_study))
-
+#Sub-annual data
 full.model3lfS <- rma.mv(yi, 
                          vi, 
                          random = list(~ 1 | Site,~1|DisturbanceName), #individual effect size nested within basin (Basin is level 3, effect size is level 2)
@@ -428,10 +411,8 @@ full.model3lfSS <- rma.mv(yi,
 summary(full.model3lfSS)
 
 ###Wood fall####
-levels(as.factor(data_es0iwf$Case_study))
-full.model3wf <- rma.mv(yi, 
-                        vi, 
-                        random =  list(~ 1 | Site,~1|DisturbanceName), #individual effect size nested within basin (Basin is level 3, effect size is level 2)
+#Annual data
+full.model3wf <- rma.mv(yi,vi,random =  list(~ 1 | Site,~1|DisturbanceName), #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
                         data = data_es0iwf,
                         method = "REML")
@@ -439,9 +420,8 @@ summary(full.model3wf)
 (exp(full.model3wf$b)-1)*100
 (exp(full.model3wf$se)-1)*100
 
-full.model3wfS <- rma.mv(yi, 
-                         vi, 
-                         random =list(~ 1 | Site,~1|DisturbanceName), #individual effect size nested within basin (Basin is level 3, effect size is level 2)
+#Sub-annual data
+full.model3wfS <- rma.mv(yi,vi,random =list(~ 1 | Site,~1|DisturbanceName), #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
                          data = data_es0iwfS,
                          method = "REML")
@@ -456,10 +436,8 @@ full.model3wfSS <- rma.mv(yi,
 summary(full.model3wfSS)
 
 ### Miscellaneous fall
-data_es0imf$Case_study
-full.model3mf <- rma.mv(yi, 
-                        vi, 
-                        random = list(~ 1 | Site,~1|DisturbanceName), #individual effect size nested within basin (Basin is level 3, effect size is level 2)
+#Annual
+full.model3mf <- rma.mv(yi,vi,random = list(~ 1 | Site,~1|DisturbanceName), #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
                         data = data_es0imf,
                         method = "REML")
@@ -467,7 +445,7 @@ summary(full.model3mf)
 (exp(full.model3mf$b)-1)*100
 (exp(full.model3mf$se)-1)*100
 
-data_es0imfS$Case_study
+#Sub-annual
 full.model3mfS <- rma.mv(yi, 
                          vi, 
                          #random = ~ 1 | Site_ID, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
@@ -485,9 +463,8 @@ full.model3mfSS <- rma.mv(yi,
 summary(full.model3mfSS)
 
 ##FFS fall
-data_es0iff$Case_study
-full.model3ff <- rma(yi, 
-                        vi, 
+#Annual
+full.model3ff <- rma(yi,vi, 
                         #random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
                         data = data_es0iff,
@@ -512,10 +489,10 @@ summary(full.model3ffSS)
 
 ####Overall Effect Sizes Nutrients####
 
-##P flux
-full.model3tpf <- rma.mv(yi, 
-                         vi, 
-                         random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
+##P flux####
+
+#Total litterfall P flux
+full.model3tpf <- rma.mv(yi,vi,random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
                          data = data_es0itpf,
                          method = "REML")
@@ -523,113 +500,94 @@ summary(full.model3tpf)
 (exp(full.model3tpf$b)-1)*100
 (exp(full.model3tpf$se)-1)*100
 
-
-full.model3lpf <- rma.mv(yi, 
-                         vi, 
-                         random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
+#Leaf litterfall P flux
+full.model3lpf <- rma.mv(yi,vi,random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                         data = data_es0ilpf,
-                         method = "REML")
+                         data = data_es0ilpf,method = "REML")
 summary(full.model3lpf)
 (exp(full.model3lpf$b)-1)*100
 (exp(full.model3lpf$se)-1)*100
 
-full.model3wpf <- rma.mv(yi, 
-                         vi, 
-                         random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
+#Wood litterfall P flux
+full.model3wpf <- rma.mv(yi,vi,random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                         data = data_es0iwpf,
-                         method = "REML")
+                         data = data_es0iwpf,method = "REML")
 summary(full.model3wpf)
 (exp(full.model3wpf$b)-1)*100
 (exp(full.model3wpf$se)-1)*100
 
-full.model3mpf <- rma.mv(yi, 
-                         vi, 
-                         #random = ~ 1 | Site_ID, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
+#Misc P flux
+full.model3mpf <- rma.mv(yi,vi,#random = ~ 1 | Site_ID, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                         data = data_es0impf,
-                         method = "REML")
+                         data = data_es0impf,method = "REML")
 summary(full.model3mpf)
 
-## P concentration
-full.model3lpc <- rma.mv(yi, 
-                         vi, 
-                         #random = ~ 1 | Site_ID, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
+##N flux####
+
+#Total Litterfall N flux
+full.model3tnf <- rma.mv(yi,vi,random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                         data = data_es0ilpc,
-                         method = "REML")
+                         data = data_es0itnf,method = "REML")
+summary(full.model3tnf)
+(exp(full.model3tnf$b)-1)*100
+(exp(full.model3tnf$se)-1)*100
+
+#Leaf litterfall N flux
+full.model3lnf <- rma.mv(yi,vi,random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
+                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
+                         data = data_es0ilnf,method = "REML")
+summary(full.model3lnf)
+(exp(full.model3lnf$b)-1)*100
+(exp(full.model3lnf$se)-1)*100
+
+#Wood litterfall N flux
+full.model3wnf <- rma.mv(yi,vi,random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
+                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
+                         data = data_es0iwnf,method = "REML")
+summary(full.model3wnf)
+(exp(full.model3wnf$b)-1)*100
+(exp(full.model3wnf$se)-1)*100
+
+#Misc litterfall N flux
+full.model3mnf <- rma.mv(yi,vi,#random = ~ 1 | Site_ID, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
+                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
+                         data = data_es0imnf,method = "REML")
+summary(full.model3mnf)
+
+## P concentration####
+
+#Leaf litterfall P concentration
+full.model3lpc <- rma.mv(yi,vi,#random = ~ 1 | Site_ID, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
+                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
+                         data = data_es0ilpc,method = "REML")
 summary(full.model3lpc)
 tab_model(full.model3lpc)
 (exp(full.model3lpc$b)-1)*100
 (exp(full.model3lpc$se)-1)*100
 
-full.model3wpc <- rma.mv(yi, 
-                         vi, 
+#Wood litterfall P concentration
+full.model3wpc <- rma.mv(yi,vi, 
                          #random = ~ 1 | Site_ID, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                         data = data_es0iwpc,
-                         method = "REML")
+                         data = data_es0iwpc,method = "REML")
 summary(full.model3wpc)
 (exp(full.model3wpc$b)-1)*100
 (exp(full.model3wpc$se)-1)*100
 
-## N flux 
-full.model3tnf <- rma.mv(yi, 
-                         vi, 
-                         random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
-                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                         data = data_es0itnf,
-                         method = "REML")
-summary(full.model3tnf)
-(exp(full.model3tnf$b)-1)*100
-(exp(full.model3tnf$se)-1)*100
+## N concentration####
 
-full.model3lnf <- rma.mv(yi, 
-                         vi, 
-                         random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
+#Leaf litterfall N concentration
+full.model3lnc <- rma.mv(yi,vi,#random = ~ 1 | Site_ID, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                         data = data_es0ilnf,
-                         method = "REML")
-summary(full.model3lnf)
-(exp(full.model3lnf$b)-1)*100
-(exp(full.model3lnf$se)-1)*100
-
-full.model3wnf <- rma.mv(yi, 
-                         vi, 
-                         random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
-                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                         data = data_es0iwnf,
-                         method = "REML")
-summary(full.model3wnf)
-(exp(full.model3wnf$b)-1)*100
-(exp(full.model3wnf$se)-1)*100
-
-full.model3mnf <- rma.mv(yi, 
-                         vi, 
-                         #random = ~ 1 | Site_ID, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
-                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                         data = data_es0imnf,
-                         method = "REML")
-summary(full.model3mnf)
-
-## N concentration
-full.model3lnc <- rma.mv(yi, 
-                         vi, 
-                         #random = ~ 1 | Site_ID, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
-                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                         data = data_es0ilnc,
-                         method = "REML")
+                         data = data_es0ilnc,method = "REML")
 summary(full.model3lnc)
 (exp(full.model3lnc$b)-1)*100
 (exp(full.model3lnc$se)-1)*100
 
-full.model3wnc <- rma.mv(yi, 
-                         vi, 
-                         #random = ~ 1 | Site_ID, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
+#Wood litterfall N concentration
+full.model3wnc <- rma.mv(yi,vi,#random = ~ 1 | Site_ID, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                         data = data_es0iwnc,
-                         method = "REML")
+                         data = data_es0iwnc,method = "REML")
 summary(full.model3wnc)
 (exp(full.model3wnc$b)-1)*100
 (exp(full.model3wnc$se)-1)*100
@@ -641,29 +599,22 @@ z.trans<-function(x) {(x - mean(x, na.rm=T))/(2*sd(x, na.rm=T))}
 data_es0ia$stormfreq=z.trans(data_es0ia$StormFrequencyNorm)
 data_es0ia$timesincestorm=z.trans(data_es0ia$YearsSinceLastStorm)
 data_es0ia$soilP=z.trans(data_es0ia$Other_soil_P)
-data_es0ia$windsp=z.trans(data_es0ia$WMO_wind_ms)
+data_es0ia$hurrwind=z.trans(data_es0ia$HURRECON_wind_ms)
 data_es0ia$distrain=z.trans(data_es0ia$Disturb_Rainfall_mm)
 
 ##Case studies with Hurrecon wind data
 hurr_sites<-data_es0ia %>% filter(hurrwind!="NA")
-str(hurr_sites)#n = 46
+str(hurr_sites)#n = 45
 hurr_sites$hurrwind=z.trans(hurr_sites$HURRECON_wind_ms)
-
-hurr_sites$pred_site_wind<- 9.40127+(0.64772*hurr_sites$WMO_wind_ms)-(0.03751*hurr_sites$Distance_to_Disturb_km)
-hurr_sites$pred_site_wind
 
 hurr_sites_amb<-data_es0ia %>% filter(hurrwind!="NA")%>% filter(Treatment=="Ambient")
 str(hurr_sites_amb)#n = 42
 hurr_sites_amb$hurrwind=z.trans(hurr_sites_amb$HURRECON_wind_ms)
 
-#transforming the predicted site wind speed
-hurr_sites$predwind=z.trans(hurr_sites$pred_site_wind)
-
 ## Total Litterfall Response as a function of soil P####
 
 #Table4 - Model1a
-model.mods3full<-rma.mv(yi,vi, 
-                        random = list(~ 1 | Site, ~1|DisturbanceName), 
+model.mods3full<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), 
                         tdist = TRUE,data = data_es0ia,
                         method = "REML",
                         mods = ~soilP)#using z transformed soil P
@@ -672,13 +623,12 @@ tab_model(model.mods3full,p.val="kr")
 #Significant intercept and regression coefficient
 #The intercept represents the mean effect of mean soil P
 
-#under ambient conditions
-model.mods3_amb<-rma.mv(yi,vi, 
-                        random = list(~ 1 | Site, ~1|DisturbanceName), 
+#sites where hurrecon data is available
+model.mods3_hurr<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), 
                         tdist = TRUE,data = hurr_sites,
                         method = "REML",
                         mods = ~soilP)#using z transformed soil P
-summary(model.mods3_amb)
+summary(model.mods3_hurr)
 
 #testing other random effects structure - 
 model.mods3full.1<-rma.mv(yi,vi, 
@@ -698,13 +648,10 @@ summary(model.mods3full.2)
 #AICc to check best model with Site and Cyclone as crossed random effects is the best
 BIC(model.mods3full,model.mods3full.1,model.mods3full.2)
 
-#sensitivity analysis - testing the effect of soil P when 5 sites are removed
-
-model.mods3full_red<-rma.mv(yi,vi, 
-                        random = list(~ 1 | Site, ~1|DisturbanceName), 
+#Sensitivity analysis - testing the effect of soil P when 5 sites are removed####
+model.mods3full_red<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), 
                         tdist = TRUE,data = red_sites,
-                        method = "REML",
-                        mods = ~soilP)#using z transformed soil P
+                        method = "REML",mods = ~soilP)#using z transformed soil P
 summary(model.mods3full_red)
 #No change in significance of soil P when sites are deleted
 
@@ -715,16 +662,8 @@ model.mods3full_red2<-rma.mv(yi,vi,
                             mods = ~soilP)#using z transformed soil P
 summary(model.mods3full_red2)
 
-#no_cte_totlitfall
 
-model.mods3full_nocte<-rma.mv(yi,vi, 
-                            random = list(~ 1 | Site, ~1|DisturbanceName), 
-                            tdist = TRUE,data = no_cte_totlitfall,
-                            method = "REML",
-                            mods = ~soilP)#using z transformed soil P
-summary(model.mods3full_nocte)#no difference
-
-#Bringing disturbane intensity metrics along with soil P
+#Bringing disturbance intensity metrics along with soil P
 model_a<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist = TRUE, 
                 data = hurr_sites,method = "REML",
                 mods = ~hurrwind)#standardized HURRECON site-level wind speed
@@ -846,27 +785,39 @@ data_es0ilf$stormfreq=z.trans(data_es0ilf$StormFrequencyNorm)
 data_es0ilf$timesincestorm=z.trans(data_es0ilf$YearsSinceLastStorm)
 
 hurr_siteslf<-data_es0ilf %>% filter(hurrwind!="NA")
-str(hurr_siteslf)#n = 31
+str(hurr_siteslf)#n = 30
 
-#Leaf fall Table 2####
-mixed_lf_tab4<-rma.mv(yi,vi,random = list(~ 1 | Site,~1|DisturbanceName), 
+#Leaf fall Table 2#### CONTINUE HERE
+unique(levels(as.factor(data_es0ilf$Case_study)))
+
+mixed_lf_tab4<-rma.mv(yi,vi,random = list(~ 1|Site,~1|DisturbanceName), 
                tdist = TRUE,data = data_es0ilf,
                method = "ML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab4)
 
 #Leaf fall Table S8#### alt random effect
-mixed_lf_tab4a<-rma.mv(yi,vi,random = ~ 1 | Region/DisturbanceName, 
+mixed_lf_tab4a<-rma.mv(yi,vi,random = ~ 1 | DisturbanceName, 
                   tdist = TRUE,data = data_es0ilf,
                   method = "ML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab4a)
 
-mixed_lf_tab4b<-rma.mv(yi,vi,random = ~ 1 | Country/DisturbanceName, 
+mixed_lf_tab4b<-rma.mv(yi,vi,random = list(~ 1|Country, ~1|DisturbanceName), 
                  tdist = TRUE,data = data_es0ilf,
-                 method = "ML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_tab4b) 
+                 method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
+summary(mixed_lf_tab4b)
+
+mixed_lf_tab4c<-rma.mv(yi,vi,random = list(~ 1|Region, ~1|DisturbanceName), 
+                       tdist = TRUE,data = data_es0ilf,
+                       method = "ML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
+summary(mixed_lf_tab4c)
+
+mixed_lf_tab4d<-rma.mv(yi,vi,random = ~1|Site, 
+                       tdist = TRUE,data = data_es0ilf,
+                       method = "ML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
+summary(mixed_lf_tab4d)
 
 #comparing leaf fall models based on BIC
-BIC(mixed_lf_tab4,mixed_lf_tab4a,mixed_lf_tab4b)
+BIC(mixed_lf_tab4,mixed_lf_tab4a,mixed_lf_tab4b,mixed_lf_tab4c,mixed_lf_tab4d)
 
 #sensitivity analysis - removing sites where total soil P was estimated from available soil P
 red_siteslf <- data_es0ilf %>% filter(Site!="Grande-Terre")%>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")#%>% filter(Site!="Grande-Terre")
@@ -876,15 +827,15 @@ levels(as.factor(red_siteslf$Case_study))
 hurr_red_siteslf <- hurr_siteslf %>% filter(Site!="Grande-Terre")%>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")#%>% filter(Site!="Grande-Terre")
 str(red_siteslf)#26
 
-mixed_lf_red<-rma.mv(yi,vi,random = list(~ 1 | Site,~1|DisturbanceName), 
+mixed_lf_red<-rma.mv(yi,vi,random = list(~ 1 | Country,~1|DisturbanceName), 
                  tdist = TRUE,data = red_siteslf,
                  method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_red) 
 
 #Same for observations with HURRECON data
 
-#Table 4 Best Option for Leaf fall
-mixed_lf_tab4.0<-rma.mv(yi,vi,random = ~ 1 | Region/DisturbanceName, 
+#Table 2 Best Option for Leaf fall
+mixed_lf_tab4.0<-rma.mv(yi,vi,random = ~ 1 | Country/DisturbanceName, 
                         tdist = TRUE,data = data_es0ilf,
                         method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab4.0) 
@@ -897,9 +848,9 @@ summary(mixed_lf_tab4.1)
 
 ##Predictions
 ##Table 4 Model 2b - Final Leaf Meta Regression####
-mixed_lf_tab4.2<-rma.mv(yi,vi,random = list(~ 1 |Site,~1|DisturbanceName), 
-                      tdist = TRUE,data = hurr_siteslf,
-                      method = "REML",mods = ~soilP*hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
+mixed_lf_tab4.2<-rma.mv(yi,vi,random = ~ 1 |Site, 
+                      tdist = TRUE,data = data_es0ilf,
+                      method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab4.2) 
 
 mixed_lf_tab4.2a<-rma.mv(yi,vi,random = ~ 1 | Region/DisturbanceName, 
@@ -1588,7 +1539,6 @@ str(forrest_data_C)#aes(x=reorder(Site,-yi), y=yi))
 ESm=full.model3$b
 ESm
 SEm=sqrt(full.model3$se)
-SEm
 ESm+(1.96*SEm)
 ESm-(1.96*SEm)
 
