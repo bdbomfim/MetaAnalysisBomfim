@@ -10,7 +10,7 @@ library(rJava)
 library(leaps)
 
 ###META FOREST Total Litterfall####
-names(data_es0ia)
+str(data_es0ia)
 
 #Standardizing variables 2x sd per Gelman reccomendation 
 z.trans<-function(x) {(x - mean(x, na.rm=T))/(2*sd(x, na.rm=T))}
@@ -27,7 +27,7 @@ data_es0ia$windur<-z.trans(data_es0ia$Gale_wind_duration_minutes)
 names(data_es0ia)
 
 #Data frame
-datametaforest<-data_es0ia[,c(3,15,23,25,27,78:88)]%>% filter(hurrwind!="NA")
+datametaforest<-data_es0ia[,c(3,15,23,25,27,29,79:89)]%>% filter(hurrwind!="NA")
 str(datametaforest)#46obs 17 variables
 
 # Run model with many trees to check convergence
@@ -37,14 +37,14 @@ check_conv <- MetaForest(yi~.,
                          study = "Effectsize_ID",
                          whichweights = "random",
                          num.trees = 20000)
-plot(check_conv) #model converged at about 5000 trees, which will be used in the next step
+plot(check_conv) #model converged at about 7500 trees, which will be used in the next step
 
 #Model with 9000 trees for replication
 mf_rep <- MetaForest(yi~.,
                      data = datametaforest,
                      study = "Effectsize_ID",
                      whichweights = "random",#using random effects, as in classic meta-analysis
-                     num.trees = 5000)
+                     num.trees = 7500)
 #Printing the results of the analysis
 results<-summary(mf_rep, digits=2)
 results
@@ -68,11 +68,8 @@ plot(preselected2)
 
 #Using preselect_vars to retain only those moderators for which a 50% percentile interval 
 #of the variable importance metrics does not include zero
-
 #Retain only moderators with positive variable importance in more than 50% of replications
 retain_mods <- preselect_vars(preselected, cutoff = .5)
-retain_mods
-plot(retain_mods)#variables retained
 
 # Set up 3-fold grouped (=clustered) CV
 grouped_cv <- trainControl(method = "cv", 
@@ -95,7 +92,7 @@ mf_cv <- train(y = datametaforest$yi,
                method = ModelInfo_mf(), 
                trControl = grouped_cv,
                tuneGrid = tuning_grid,
-               num.trees = 9000)
+               num.trees = 7500)
 
 #Examine optimal tuning parameters
 mf_cv$results[which.min(mf_cv$results$RMSE), ]
@@ -117,7 +114,7 @@ final
 # Extracting the estimate of predictive performance R^2_{oob} from the final model
 #This is an estimate of how much variance the model would explain in a new data set 
 r2_oob <- final$forest$r.squared
-r2_oob #predictive performance of 47%
+r2_oob #predictive performance of 51.4%
 
 #Residual heterogeneity
 Vimp <- data.frame(final$forest$variable.importance)
@@ -158,7 +155,7 @@ var_importance <- data.frame(variable=setdiff(colnames(Vimp3), "Predictors"),
                              importance=as.vector(final$forest$variable.importance))
 var_importance
 names(datametaforest)
-predictor_names<-c("Holdridge zone","Geological group","Parent material P","Parent material","Longitude","Elevation","MAT/MAP","Soil P","Storm frequency","Time since last storm","Cyclone rainfall","Wind speed","Wind duration")
+predictor_names<-c("Holdridge zone","Geological group","Parent material P","Parent material","Soil order","Longitude","Elevation","MAT/MAP","Soil P","Storm frequency","Time since last storm","Cyclone rainfall","Wind speed","Wind duration")
 predictor_names
 Vimp3 <- cbind(data.frame(varimp=final$forest$variable.importance,predictors=predictor_names))
 str(Vimp3)
@@ -178,17 +175,16 @@ Fig4a <- Fig4a + ylab("Relative importance of predictors") + xlab("")+ theme(
 Fig4a
 
 #Saving in high res
-ggsave(filename = "Fig4a_VarImp_TotLit_Response.png",
+ggsave(filename = "Fig4a_RF-Response-Tot.png",
        plot = Fig4a, width = 14, height = 12, units = 'cm',
-       scale = 2, dpi = 800)
+       scale = 2, dpi = 1000)
 
 #Correlation plot of final variables in "final2"
 
 #Data
 names(datametaforest)
-CPFig4b_cor<-datametaforest[,c(2:5,8:16)]
-str(CPFig4b)## Final!
-CPFig4b_cor<-CPFig4b[,c(1,5:7,14:22)]
+CPFig4b_cor<-datametaforest[,c(2:6,9:17)]
+names(CPFig4b_cor)## Final!
 names(CPFig4b_cor)
 names(CPFig4b_cor)[names(CPFig4b_cor) == "Holdridge_ID"] <- "Holdridge zone"
 names(CPFig4b_cor)[names(CPFig4b_cor) == "long"] <- "Longitude"
@@ -203,7 +199,7 @@ names(CPFig4b_cor)[names(CPFig4b_cor) == "windur"] <- "Wind duration"
 names(CPFig4b_cor)[names(CPFig4b_cor) == "Rocktype_ID"] <- "Geological group"
 names(CPFig4b_cor)[names(CPFig4b_cor) == "RockP_ID"] <- "Parent material P"
 names(CPFig4b_cor)[names(CPFig4b_cor) == "Par_Mat_ID"] <- "Parent material"
-names(CPFig4b_cor)[names(CPFig4b_cor) == "Treatment_ID"] <- "Treatment"
+names(CPFig4b_cor)[names(CPFig4b_cor) == "Soil_ID"] <- "Soil order"
 
 #Calculating correlations and p values
 corrf4b <- round(cor(CPFig4b_cor,method="pearson"),2)
@@ -211,15 +207,15 @@ p.matf4b <- cor_pmat(CPFig4b_cor)
 
 #Figure
 Fig4b_2<-ggcorrplot(corrf4b, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
-                    outline.col = "white", p.mat = p.matf4b,method="square",ggtheme=ggplot2::theme_minimal(),show.legend=TRUE, 
-                    legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=28,
-                    colors = c("#ABA0A0", "white", "#ffa600",pch.cex=20,nbreaks = 8,legend.text.cex=26))+font("legend.text",size=16)+font("legend.title", size=18)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
+                    outline.col = "white", p.mat = p.matf4b,method="square",ggtheme=ggplot2::theme_classic(),show.legend=TRUE, 
+                    legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=28,insig="blank",
+                    colors = c("#ABA0A0", "white", "#ffa600",pch.cex=20,nbreaks = 8,legend.text.cex=26))+font("legend.text",size=18)+font("legend.title", size=22)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
 Fig4b_2
 
 #Saving figure in high res
 ggsave(filename = "Fig4b_Final.png",
        plot = Fig4b_2, width = 16, height = 18, units = 'cm',
-       scale = 2, dpi = 800)
+       scale = 2, dpi = 1000)
 
 Fig4a+Fig4b
 
@@ -243,8 +239,8 @@ Data_es0ilf$windur<-z.trans(Data_es0ilf$Gale_wind_duration_minutes)
 names(Data_es0ilf)
 
 #Final data for meta forest analysis
-datametaforestlf<-Data_es0ilf[,c(3,15,23,25,27,29,34,78:88)]%>% filter(hurrwind!="NA")
-str(datametaforestlf)#31 obs and 18 variables
+datametaforestlf<-Data_es0ilf[,c(3,15,23,25,27,79:89)]%>% filter(hurrwind!="NA")
+str(datametaforestlf)#30 obs and 16 variables
 
 # Run model with many trees to check convergence
 check_conv2lf <- MetaForest(yi~.,
@@ -253,23 +249,22 @@ check_conv2lf <- MetaForest(yi~.,
                             whichweights = "random",
                             num.trees = 20000)
 
-plot(check_conv2lf) #model converged at about 10000 trees, which will be used in the next step
+plot(check_conv2lf) #model converged at about 7500 trees, which will be used in the next step
 
-#Model with 5000 trees for replication
+#Model with 7500 trees for replication
 mf_rep2lf<- MetaForest(yi~.,
                        data = datametaforestlf,
                        study = "Effectsize_ID",
                        whichweights = "random",
-                       num.trees = 8000)
+                       num.trees = 7500)
 
-preselected2lf <- preselect(mf_rep2lf,
-                            replications = 100,
-                            algorithm = "recursive")
+preselected2lf <- preselect(mf_rep2lf,replications = 100,algorithm = "recursive")
 plot(preselected2lf)
 
 retain_mods2lf <- preselect_vars(preselected2lf, cutoff = .5)
 
-grouped_cv2lf <- trainControl(method = "cv", 
+#Control the computational nuances of the train function
+grouped_cv2lf <- trainControl(method = "cv", #resampling method
                               index = groupKFold(datametaforestlf$Effectsize_ID, k = 3))
 grouped_boot2lf <- trainControl(method = "cboot", 
                                 index = groupKFold(datametaforestlf$Effectsize_ID, k = 3))
@@ -289,7 +284,7 @@ mf_cv2lf <- train(y = datametaforestlf$yi,
                   method = ModelInfo_mf(), 
                   trControl = grouped_cv2lf,
                   tuneGrid = tuning_grid2lf,
-                  num.trees = 8000)
+                  num.trees = 7500)
 
 #Examine optimal tuning parameters
 mf_cv2lf$results[which.min(mf_cv2lf$results$RMSE), ]
@@ -324,7 +319,7 @@ var_importancelf <- data.frame(variable=setdiff(colnames(Vimp3lf), "Predictors")
 names(var_importancelf)
 var_importancelf
 
-predictor_nameslf<-c("Holdridge zone","Geological group","Parent material P","Parent material","Soil order","Longitude","Elevation","MAT/MAP","Soil P","Storm frequency","Time since last storm","Cyclone rainfall","Wind speed","Wind duration")
+predictor_nameslf<-c("Holdridge zone","Geological group","Parent material P","Parent material","Longitude","Elevation","MAT/MAP","Soil P","Storm frequency","Time since last storm","Cyclone rainfall","Wind speed","Wind duration")
 predictor_nameslf
 Vimp3lf <- cbind(data.frame(varimp=final2lf$forest$variable.importance,predictors=predictor_nameslf))
 str(Vimp3lf)
@@ -345,15 +340,15 @@ Fig4c <- Fig4c + ylab("Relative importance of predictors") + xlab("")+ theme(
 Fig4c
 
 #Saving in high res
-ggsave(filename = "Fig4c_VarImp_Leaf_Response.png",
+ggsave(filename = "Fig4c_RF_Leaf_Response.png",
        plot = Fig4c, width = 14, height = 12, units = 'cm',
-       scale = 2, dpi = 800)
+       scale = 2, dpi = 1000)
 
 #Correlation plot of final variables in "final2"
 
 names(datametaforestlf)
 
-CPFig4d_cor<-datametaforestlf[,c(2:6,10:18)]
+CPFig4d_cor<-datametaforestlf[,c(2:5,8:16)]
 names(CPFig4d_cor)
 #Updating names
 names(CPFig4d_cor)[names(CPFig4d_cor) == "Holdridge_ID"] <- "Holdridge zone"
@@ -369,7 +364,7 @@ names(CPFig4d_cor)[names(CPFig4d_cor) == "windur"] <- "Wind duration"
 names(CPFig4d_cor)[names(CPFig4d_cor) == "Rocktype_ID"] <- "Geological group"
 names(CPFig4d_cor)[names(CPFig4d_cor) == "RockP_ID"] <- "Parent material P"
 names(CPFig4d_cor)[names(CPFig4d_cor) == "Par_Mat_ID"] <- "Parent material"
-names(CPFig4d_cor)[names(CPFig4d_cor) == "Soil_ID"] <- "Soil order"
+#names(CPFig4d_cor)[names(CPFig4d_cor) == "Soil_ID"] <- "Soil order"
 
 names(CPFig4d_cor)
 
@@ -379,14 +374,14 @@ p.matf4d <- cor_pmat(CPFig4d_cor)
 
 #Figure
 Fig4d_2<-ggcorrplot(corrf4d, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
-                    outline.col = "white", p.mat = p.matf4d,method="square",ggtheme=ggplot2::theme_minimal(),show.legend=TRUE, 
-                    legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=28,
-                    colors = c("#46A332", "white", "#ffa600",pch.cex=20,nbreaks = 8,legend.text.cex=26))+font("legend.text",size=16)+font("legend.title", size=18)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
+                    outline.col = "white", p.mat = p.matf4d,method="square",ggtheme=ggplot2::theme_classic(),show.legend=TRUE, 
+                    legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=28,insig="blank",
+                    colors = c("#46A332", "white", "#ffa600",pch.cex=20,nbreaks = 8,legend.text.cex=26))+font("legend.text",size=18)+font("legend.title", size=22)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
 Fig4d_2
 
 #Saving in high res
 ggsave(filename = "Fig4d_Final.png",
        plot = Fig4d_2, width = 16, height = 18, units = 'cm',
-       scale = 2, dpi = 800)
+       scale = 2, dpi = 1000)
 
 ##END####
