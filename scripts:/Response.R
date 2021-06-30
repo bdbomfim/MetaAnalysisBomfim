@@ -35,13 +35,9 @@ library(modelsummary)
 library(tidyr)
 library(plyr)
 library(fs)
-library(readr)
-library(dygraphs)
-library(xts)
 library(plot3D)
 library(forcats)
 library(ggridges)
-library("forcats")
 library("broom")
 library(lmerTest)
 library(metafor)
@@ -91,7 +87,7 @@ unique(levels(as.factor(nutmeta$Case_study)))
 
 ###Litterfall Mass flux##
 
-##Total Litterfall mass####
+##Total Litterfall####
 #Annual-based, excluding CTE
 data0a<-metadat %>% filter(Fraction=="TotLitfall")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
 str(data0a)#48 observations
@@ -101,8 +97,11 @@ data0aS<- data0a%>% filter(Pre_Mean_MonthSpecific!="NA")#to exclude a factor lev
 str(data0aS)#23observations
 data0aS$Effectsize_ID
 #Annual with same observations as in sub-annual
-data0aSS<-data0a %>% filter(Effectsize_ID == "34"|Effectsize_ID == "44"|Effectsize_ID == "47"|Effectsize_ID == "1735"|Effectsize_ID == "1845"|Effectsize_ID == "2099"|Effectsize_ID == "2103"|Effectsize_ID == "2107"|Effectsize_ID == "2111"|
-                              Effectsize_ID == "2115"|Effectsize_ID == "2119"|Effectsize_ID=="2123"|Effectsize_ID == "2127"|Effectsize_ID == "2131"|Effectsize_ID == "2140"|Effectsize_ID == "2343"|Effectsize_ID == "2344"|Effectsize_ID == "2345"|Effectsize_ID == "2346"|Effectsize_ID == "2347"|Effectsize_ID == "2348"|Effectsize_ID == "2349")
+data0aSS<-data0a %>% filter(Effectsize_ID == "34"|Effectsize_ID == "44"|Effectsize_ID == "47"|Effectsize_ID == "1735"|Effectsize_ID == "1845"|Effectsize_ID == "2099"|
+                                    Effectsize_ID == "2103"|Effectsize_ID == "2107"|Effectsize_ID == "2111"|
+                              Effectsize_ID == "2115"|Effectsize_ID == "2119"|Effectsize_ID=="2123"|Effectsize_ID == "2127"|Effectsize_ID == "2131"|Effectsize_ID == "2140"|
+                                    Effectsize_ID == "2343"|Effectsize_ID == "2344"|
+                                    Effectsize_ID == "2345"|Effectsize_ID == "2346"|Effectsize_ID == "2347"|Effectsize_ID == "2348"|Effectsize_ID == "2349")
 str(data0aSS)#22 observations including the same effect sizes with and without sub-annual pre and post data
 
 ##Leaf fall####
@@ -114,7 +113,9 @@ data0alfS<- data0alf %>% filter(Pre_Mean_MonthSpecific!="NA")
 str(data0alfS)#16 observations
 data0alfS$Effectsize_ID
 #Annual with same observations as in sub-annual
-data0alfSS<-data0alf %>% filter(Effectsize_ID == "40"|Effectsize_ID == "45"|Effectsize_ID == "1711"|Effectsize_ID == "1757"|Effectsize_ID == "1867"|Effectsize_ID == "2100"|Effectsize_ID == "2104"|Effectsize_ID == "2108"|Effectsize_ID == "2112"|Effectsize_ID=="2116"|Effectsize_ID=="2120"|Effectsize_ID=="2124"|Effectsize_ID == "2128"|Effectsize_ID == "2149"|Effectsize_ID == "2151"|Effectsize_ID == "2167")
+data0alfSS<-data0alf %>% filter(Effectsize_ID == "40"|Effectsize_ID == "45"|Effectsize_ID == "1711"|Effectsize_ID == "1757"|Effectsize_ID == "1867"|Effectsize_ID == "2100"|
+                                        Effectsize_ID == "2104"|Effectsize_ID == "2108"|Effectsize_ID == "2112"|Effectsize_ID=="2116"|Effectsize_ID=="2120"|Effectsize_ID=="2124"|
+                                        Effectsize_ID == "2128"|Effectsize_ID == "2149"|Effectsize_ID == "2151"|Effectsize_ID == "2167")
 str(data0alfSS)#16 observations
 
 ##Wood fall####
@@ -126,7 +127,9 @@ data0awfS<- data0awf %>% filter(Pre_Mean_MonthSpecific!="NA")
 str(data0awfS)#14 observations
 data0awfS$Effectsize_ID
 #Annual with same observations as in sub-annual
-data0awfSS<-data0awf %>% filter(Effectsize_ID == "41"|Effectsize_ID == "42"|Effectsize_ID == "1779"|Effectsize_ID == "1889"|Effectsize_ID == "2101"|Effectsize_ID == "2105"|Effectsize_ID == "2109"|Effectsize_ID == "2113"|Effectsize_ID == "2117"|Effectsize_ID == "2121"|Effectsize_ID == "2125"|Effectsize_ID == "2129"|Effectsize_ID == "2153"|Effectsize_ID == "2155")
+data0awfSS<-data0awf %>% filter(Effectsize_ID == "41"|Effectsize_ID == "42"|Effectsize_ID == "1779"|Effectsize_ID == "1889"|
+                                        Effectsize_ID == "2101"|Effectsize_ID == "2105"|Effectsize_ID == "2109"|Effectsize_ID == "2113"|
+                                        Effectsize_ID == "2117"|Effectsize_ID == "2121"|Effectsize_ID == "2125"|Effectsize_ID == "2129"|Effectsize_ID == "2153"|Effectsize_ID == "2155")
 str(data0awfSS)#14 observations
 
 ## FFS fall ####
@@ -138,7 +141,9 @@ data0affS<-data0aff %>% filter(Pre_Mean_MonthSpecific!="NA")
 str(data0affS)#10 observations
 data0affS$Effectsize_ID
 #Annual with same observations as in sub-annual
-data0affSS<-data0aff %>% filter(Effectsize_ID == "1801"|Effectsize_ID == "1911"|Effectsize_ID == "2102"|Effectsize_ID == "2106"|Effectsize_ID == "2110"|Effectsize_ID == "2114"|Effectsize_ID == "2118"|Effectsize_ID == "2122"|Effectsize_ID == "2126"|Effectsize_ID == "2130")
+data0affSS<-data0aff %>% filter(Effectsize_ID == "1801"|Effectsize_ID == "1911"|Effectsize_ID == "2102"|Effectsize_ID == "2106"|
+                                        Effectsize_ID == "2110"|Effectsize_ID == "2114"|Effectsize_ID == "2118"|Effectsize_ID == "2122"|
+                                        Effectsize_ID == "2126"|Effectsize_ID == "2130")
 str(data0affSS)#10 observations
 
 ## Miscellaneous fall ####
@@ -152,7 +157,7 @@ data0amfS$Effectsize_ID
 data0amfSS<-data0amf %>% filter(Effectsize_ID == "43"|Effectsize_ID == "46"|Effectsize_ID == "1823"|Effectsize_ID == "1933")
 str(data0amfSS)#4 obs
 
-####Nutrient fluxes####
+####Nutrient flux####
 
 ####P flux####
 str(nutmeta)
@@ -212,12 +217,17 @@ str(data0wnc)#3
 
 ####STEP 2 Individual Effect size calculation####
 
-##Total Litterfall##
+##Mass Flux####
+
+#Total Litterfall
 str(data0a)#48 observations
 
 #Annual
 data_es0ia <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
                      sd1i = Post_SD, sd2i = Pre_SD, data = data0a, measure = "ROM") # ROM =  log transformed ratio of means (Hedges et al., 1999; Lajeunesse, 2011).
+data0a_all<-metadat %>% filter(Fraction=="TotLitfall")%>%filter(Cat_TSD_months=="0-0.5")
+data_es0ia_all <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
+                     sd1i = Post_SD, sd2i = Pre_SD, data = data0a_all, measure = "ROM") # ROM =  log transformed ratio of means (Hedges et al., 1999; Lajeunesse, 2011).
 #Sub-annual data
 data_es0iaS <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean_MonthSpecific, 
                       sd1i = Post_SD, sd2i = Pre_SD_MonthSpecific, data = data0aS, measure = "ROM") # ROM =  log transformed ratio of means (Hedges et al., 1999; Lajeunesse, 2011).str(data_es0iaS)
@@ -226,7 +236,6 @@ str(data_es0iaS)
 data_es0iaSS <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
                        sd1i = Post_SD, sd2i = Pre_SD, data = data0aSS, measure = "ROM") # ROM =  log transformed ratio of means (Hedges et al., 1999; Lajeunesse, 2011).str(data_es0iaS)
 
-#### Litterfall fractions ####
 #Leaf fall
 data_es0ilf <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
                       sd1i = Post_SD, sd2i = Pre_SD, data = data0alf, measure = "ROM")
@@ -301,7 +310,7 @@ data_es0iwnc <- escalc(n1i = Post_n, n2i = Pre_n, m1i = Post_Mean, m2i = Pre_Mea
 
 #### STEP 3 Overall Effect Size calculations ####
 
-## Total Litterfall ##
+## Total Litterfall Mass Flux##
 
 ##Final model for Pantropical response of total litterfall mass####
 full.model3 <- rma.mv(yi, vi,random = list(~ 1 | Site,~1|DisturbanceName),
@@ -369,16 +378,14 @@ summary(full.model3_red)
 ##Calculating Overall Effect Sizes for sub-annual data
 full.model3S <- rma.mv(yi,vi,random = list(~ 1 | Site,~1|DisturbanceName),
                        tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                       data = data_es0iaS,
-                       method = "REML")
+                       data = data_es0iaS,method = "REML")
 summary(full.model3S)
 (exp(full.model3S$b)-1)*100
 (exp(full.model3S$se)-1)*100
 
 full.model3SS <- rma.mv(yi, vi,random = list(~ 1 | Site,~1|DisturbanceName),
                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                        data = data_es0iaSS,
-                        method = "REML")
+                        data = data_es0iaSS,method = "REML")
 summary(full.model3SS)
 (exp(full.model3SS$b)-1)*100
 (exp(full.model3SS$se)-1)*100
@@ -387,35 +394,31 @@ summary(full.model3SS)
 #Annual data
 full.model3lf <- rma.mv(yi,vi,random = list(~ 1 | Site,~1|DisturbanceName), #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                        data = data_es0ilf,
-                        method = "REML")
+                        data = data_es0ilf,method = "REML")
 summary(full.model3lf)
 (exp(full.model3lf$b)-1)*100
 (exp(full.model3lf$se)-1)*100
 
 #Sub-annual data
-full.model3lfS <- rma.mv(yi, 
-                         vi, 
+full.model3lfS <- rma.mv(yi,vi, 
                          random = list(~ 1 | Site,~1|DisturbanceName), #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                         data = data_es0ilfS,
-                         method = "REML")
+                         data = data_es0ilfS,method = "REML")
 summary(full.model3lfS)
 
 full.model3lfSS <- rma.mv(yi, 
                           vi, 
                           random =  list(~ 1 | Site,~1|DisturbanceName), #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                           tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                          data = data_es0ilfSS,
-                          method = "REML")
+                          data = data_es0ilfSS,method = "REML")
 summary(full.model3lfSS)
 
 ###Wood fall####
+
 #Annual data
 full.model3wf <- rma.mv(yi,vi,random =  list(~ 1 | Site,~1|DisturbanceName), #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                        data = data_es0iwf,
-                        method = "REML")
+                        data = data_es0iwf,method = "REML")
 summary(full.model3wf)
 (exp(full.model3wf$b)-1)*100
 (exp(full.model3wf$se)-1)*100
@@ -423,68 +426,56 @@ summary(full.model3wf)
 #Sub-annual data
 full.model3wfS <- rma.mv(yi,vi,random =list(~ 1 | Site,~1|DisturbanceName), #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                         data = data_es0iwfS,
-                         method = "REML")
+                         data = data_es0iwfS,method = "REML")
 summary(full.model3wfS)
 
-full.model3wfSS <- rma.mv(yi, 
-                          vi, 
-                          random =list(~ 1 | Site,~1|DisturbanceName), #individual effect size nested within basin (Basin is level 3, effect size is level 2)
+full.model3wfSS <- rma.mv(yi,vi,random =list(~ 1 | Site,~1|DisturbanceName), #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                           tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                          data = data_es0iwfSS,
-                          method = "REML")
+                          data = data_es0iwfSS,method = "REML")
 summary(full.model3wfSS)
 
-### Miscellaneous fall
+### Miscellaneous fall####
+
 #Annual
 full.model3mf <- rma.mv(yi,vi,random = list(~ 1 | Site,~1|DisturbanceName), #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                        data = data_es0imf,
-                        method = "REML")
+                        data = data_es0imf,method = "REML")
 summary(full.model3mf)
 (exp(full.model3mf$b)-1)*100
 (exp(full.model3mf$se)-1)*100
 
 #Sub-annual
-full.model3mfS <- rma.mv(yi, 
-                         vi, 
+full.model3mfS <- rma.mv(yi,vi, 
                          #random = ~ 1 | Site_ID, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                         data = data_es0imfS,
-                         method = "REML")
+                         data = data_es0imfS,method = "REML")
 summary(full.model3mfS)
 
-full.model3mfSS <- rma.mv(yi, 
-                          vi, 
+full.model3mfSS <- rma.mv(yi,vi, 
                           #random = ~ 1 | Site_ID, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                           tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                          data = data_es0imfSS,
-                          method = "REML")
+                          data = data_es0imfSS,method = "REML")
 summary(full.model3mfSS)
 
-##FFS fall
+##FFS fall####
+
 #Annual
 full.model3ff <- rma(yi,vi, 
                         #random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                         tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                        data = data_es0iff,
-                        method = "REML")
+                        data = data_es0iff,method = "REML")
 summary(full.model3ff)
 
-full.model3ffS <- rma.mv(yi, 
-                         vi, 
+full.model3ffS <- rma.mv(yi,vi, 
                          #random = ~ 1 |Treatment, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                         data = data_es0iffS,
-                         method = "REML")
+                         data = data_es0iffS,method = "REML")
 summary(full.model3ffS)
 
-full.model3ffSS <- rma.mv(yi, 
-                          vi, 
+full.model3ffSS <- rma.mv(yi,vi, 
                           #random = ~ 1 | Site_ID, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                           tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                          data = data_es0iffSS,
-                          method = "REML")
+                          data = data_es0iffSS,method = "REML")
 summary(full.model3ffSS)
 
 ####Overall Effect Sizes Nutrients####
@@ -494,8 +485,7 @@ summary(full.model3ffSS)
 #Total litterfall P flux
 full.model3tpf <- rma.mv(yi,vi,random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
-                         data = data_es0itpf,
-                         method = "REML")
+                         data = data_es0itpf,method = "REML")
 summary(full.model3tpf)
 (exp(full.model3tpf$b)-1)*100
 (exp(full.model3tpf$se)-1)*100
@@ -592,15 +582,12 @@ summary(full.model3wnc)
 (exp(full.model3wnc$b)-1)*100
 (exp(full.model3wnc$se)-1)*100
 
-#### STEP 4 Meta-regressions Total Litterfall ####
+#### STEP 4 - Meta-regressions Total Litterfall Mass Flux ####
 
 #standardizing variables 2x sd per Gelman reccomendation 
 z.trans<-function(x) {(x - mean(x, na.rm=T))/(2*sd(x, na.rm=T))}
-data_es0ia$stormfreq=z.trans(data_es0ia$StormFrequencyNorm)
-data_es0ia$timesincestorm=z.trans(data_es0ia$YearsSinceLastStorm)
 data_es0ia$soilP=z.trans(data_es0ia$Other_soil_P)
 data_es0ia$hurrwind=z.trans(data_es0ia$HURRECON_wind_ms)
-data_es0ia$distrain=z.trans(data_es0ia$Disturb_Rainfall_mm)
 
 ##Case studies with Hurrecon wind data
 hurr_sites<-data_es0ia %>% filter(hurrwind!="NA")
@@ -611,16 +598,15 @@ hurr_sites_amb<-data_es0ia %>% filter(hurrwind!="NA")%>% filter(Treatment=="Ambi
 str(hurr_sites_amb)#n = 42
 hurr_sites_amb$hurrwind=z.trans(hurr_sites_amb$HURRECON_wind_ms)
 
-## Total Litterfall Response as a function of soil P####
+## Table 2 - Total Litterfall Response as a function of soil P####
 
-#Table4 - Model1a
+#Table2 - Model1a####
+
 model.mods3full<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), 
                         tdist = TRUE,data = data_es0ia,
-                        method = "REML",
-                        mods = ~soilP)#using z transformed soil P
+                        method = "REML",mods = ~soilP)#using z transformed soil P
 summary(model.mods3full)
-tab_model(model.mods3full,p.val="kr")
-#Significant intercept and regression coefficient
+tab_model(model.mods3full,p.val="kr")#Significant intercept and regression coefficient
 #The intercept represents the mean effect of mean soil P
 
 #sites where hurrecon data is available
@@ -628,11 +614,10 @@ model.mods3_hurr<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName),
                         tdist = TRUE,data = hurr_sites,
                         method = "REML",
                         mods = ~soilP)#using z transformed soil P
-summary(model.mods3_hurr)
+summary(model.mods3_hurr)#similar results
 
 #testing other random effects structure - 
-model.mods3full.1<-rma.mv(yi,vi, 
-                        random = ~ 1 |Region/DisturbanceName, 
+model.mods3full.1<-rma.mv(yi,vi,random = ~ 1 |Region/DisturbanceName, 
                         tdist = TRUE,data = data_es0ia,
                         method = "REML",
                         mods = ~soilP)#using z transformed soil P
@@ -675,10 +660,11 @@ model_b<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist = TRU
 summary(model_b)#not so great
 
 #Table 2 - Model2a####
-model_tab4<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist = TRUE, 
+
+model_tab2<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist = TRUE, 
                 data = hurr_sites,method = "REML",
                 mods = ~soilP*hurrwind)
-summary(model_tab4)#Both positive predictors, no significant interaction
+summary(model_tab2)#Both positive predictors, no significant interaction
 
 model_tab4S<-rma.mv(yi,vi,random = ~ 1 | Region/DisturbanceName, tdist = TRUE, 
                 data = hurr_sites,method = "REML",
@@ -695,10 +681,6 @@ model_a3<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist = TR
                  data = hurr_sites,method = "REML",
                  mods = ~soilP+hurrwind)
 summary(model_a3)
-
-hurr_sites$pred_site_wind<- 8.24618+0.67714*hurr_sites$WMO_wind_ms-0.04986*hurr_sites$Distance_to_Disturb_km
-hurr_sites$pred_site_wind
-xyplot(hurr_sites$pred_site_wind~hurr_sites$HURRECON_wind_ms)
 
 model_a.1<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist = TRUE, 
                 data = hurr_sites,method = "REML",
@@ -777,8 +759,10 @@ chart.Correlation(data_es0ia[,c(85,86,87)])#No correlation among moderators
 funnel(model_c,xlab = "Litterfall Mass Response",studlab = TRUE,cex=2,cex.lab=1.5,cex.axis=1.4)
 
 #### Leaf fall Response Meta-regression model ####
-#standardizing variables 2x sd per Gelman reccomendation 
+
+#standardizing variables 2x sd per Gelman's reccomendation 
 z.trans<-function(x) {(x - mean(x, na.rm=T))/(2*sd(x, na.rm=T))}
+
 data_es0ilf$soilP=z.trans(data_es0ilf$Other_soil_P)
 data_es0ilf$hurrwind=z.trans(data_es0ilf$HURRECON_wind_ms)
 data_es0ilf$stormfreq=z.trans(data_es0ilf$StormFrequencyNorm)
@@ -811,7 +795,7 @@ mixed_lf_tab4c<-rma.mv(yi,vi,random = list(~ 1|Region, ~1|DisturbanceName),
                        method = "ML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab4c)
 
-mixed_lf_tab4d<-rma.mv(yi,vi,random = ~1|Site, 
+mixed_lf_tab4d<-rma.mv(yi,vi,random = ~1|Region, 
                        tdist = TRUE,data = data_es0ilf,
                        method = "ML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab4d)
@@ -830,9 +814,7 @@ str(red_siteslf)#26
 mixed_lf_red<-rma.mv(yi,vi,random = list(~ 1 | Country,~1|DisturbanceName), 
                  tdist = TRUE,data = red_siteslf,
                  method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_red) 
-
-#Same for observations with HURRECON data
+summary(mixed_lf_red) #Same result for observations with HURRECON data
 
 #Table 2 Best Option for Leaf fall
 mixed_lf_tab4.0<-rma.mv(yi,vi,random = ~ 1 | Country/DisturbanceName, 
@@ -846,41 +828,40 @@ summary(mixed_lf_tab4.1)
 
 #Adding Cyclone metrics
 
-##Predictions
 ##Table 4 Model 2b - Final Leaf Meta Regression####
-mixed_lf_tab4.2<-rma.mv(yi,vi,random = ~ 1 |Site, 
+mixed_lf_tab4.2<-rma.mv(yi,vi,random = list(~ 1|Site,~1|DisturbanceName), 
                       tdist = TRUE,data = data_es0ilf,
                       method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab4.2) 
 
-mixed_lf_tab4.2a<-rma.mv(yi,vi,random = ~ 1 | Region/DisturbanceName, 
+mixed_lf_tab4.2a<-rma.mv(yi,vi,random = ~ 1 | DisturbanceName, 
                    tdist = TRUE,data = hurr_siteslf,
-                   method = "REML",mods = ~soilP*hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
+                   method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab4.2a)#this works
 
-mixed_lf_tab4.3a<-rma.mv(yi,vi,random = ~ 1 | Country/DisturbanceName, 
+mixed_lf_tab4.2b<-rma.mv(yi,vi,random = list(~ 1 | Country,~1|DisturbanceName), 
                          tdist = TRUE,data = hurr_siteslf,
-                         method = "REML",mods = ~soilP*hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_tab4.3a)#this works
-
-mixed_lf_tab4.2b<-rma.mv(yi,vi,random = list(~ 1 | Region, ~1|DisturbanceName), 
-                         tdist = TRUE,data = hurr_siteslf,
-                         method = "REML",mods = ~soilP*hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
+                         method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab4.2b)
 
-mixed_lf_tab4.3b<-rma.mv(yi,vi,random = list(~ 1 | Country, ~1|DisturbanceName), 
+mixed_lf_tab4.2c<-rma.mv(yi,vi,random = list(~ 1 | Region, ~1|DisturbanceName), 
                          tdist = TRUE,data = hurr_siteslf,
-                         method = "REML",mods = ~soilP*hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_tab4.3b)
-
-mixed_lf_tab4.2c<-rma.mv(yi,vi,random = ~1|DisturbanceName, 
-                         tdist = TRUE,data = hurr_siteslf,
-                         method = "REML",mods = ~soilP*hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
+                         method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab4.2c)
 
-mixed_lf_tab4.2d<-rma.mv(yi,vi,random = ~1|Site, 
+mixed_lf_tab4.3d<-rma.mv(yi,vi,random = ~ 1 | Region, 
                          tdist = TRUE,data = hurr_siteslf,
-                         method = "REML",mods = ~soilP*hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
+                         method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
+summary(mixed_lf_tab4.3d)
+
+mixed_lf_tab4.2c<-rma.mv(yi,vi,random = ~1|Site, 
+                         tdist = TRUE,data = hurr_siteslf,
+                         method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
+summary(mixed_lf_tab4.2c)
+
+mixed_lf_tab4.2d<-rma.mv(yi,vi,random = ~1|DisturbanceClass, 
+                         tdist = TRUE,data = hurr_siteslf,
+                         method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab4.2d)
 
 #with reduced sites
@@ -932,24 +913,6 @@ summary(res_results_leaf)
 chart.Correlation(data_es0ilf[,c(48,50,81)])
 
 (sum(full.model3_red2$sigma2) - sum(model.mods3fullb2$sigma2)) / sum(full.model3_red2$sigma2)#30% reduction in deviance
-
-## BIAS ####
-
-funnel(model.mods3fullb2,xlab = "Litterfall Mass Response",studlab = TRUE,cex=2,cex.lab=1.5,cex.axis=1.4)
-model.mods3full_e
-funnel(model.mods3full_e,xlab = "Litterfall Mass Response",studlab = dataes0_new2_b$Effectsize_ID,cex=2,cex.lab=1.5,cex.axis=1.4)
-
-ggsave(filename = "FUNNEL.png",
-       plot = FUNNEL, width = 14, height = 11, units = 'cm',
-       scale = 2, dpi = 600)
-funnel(model.mods4full, xlab="Response", 
-       contour = c(.95,.975,.99),
-       col.contour=c("darkblue","blue","lightblue"))
-eggers.test(x = model.mods4full)
-trimfill(model.mods4full)
-#+
-legend(2, 1.5, c("p < 0.05", "p<0.025", "< 0.01"),bty = "n",
-       fill=c("darkblue","blue","lightblue"))
 
 #### Multimodel Inference Meta-Regression ####
 
@@ -1522,13 +1485,13 @@ summmary(data_es0ia)
 data_es0ia$Case_study2= paste(data_es0ia$Site, data_es0ia$DisturbanceName,data_es0ia$Treatment,sep="| ")
 data_es0ia$Case_study2
 data_es0ia$Case_study
-data_es0ia$Case_study<-c("Cubuy| Georges","Bisley| Georges","East Peak| Georges","East Peak| Georges","East Peak| Georges","East Peak| Georges","Bisley| Hugo","El Verde| Hugo",            
+data_es0ia_all$Case_study<-c("Cubuy| Georges","Bisley| Georges","East Peak| Georges","East Peak| Georges","East Peak| Georges","East Peak| Georges","Bisley| Hugo","El Verde| Hugo",            
 "East Peak| Hugo","Kokee| Iniki","Kokee P+| Iniki","Kokee NP+| Iniki","Kokee N+| Iniki","El Verde| CTE","Utuado| Georges","Guanica| Georges","Milolii| Iniki","Makaha 1| Iniki","Kumuwela| Iniki","Halemanu| Iniki",           
 "Wooroonooran Basalt| Larry", "Wooroonooran Schist| Larry", "Mt Spec| Charlie","Mt Spec Disturbed| Charlie","Birthday Creek| Charlie","Birthday Creek| Aivu","Birthday Creek| Ivor","Bisley| Irma",              
 "Guanica| Irma","Guayama| Irma","Rio Abajo| Irma","Bisley| Maria","Guanica| Maria","Guayama| Maria","Rio Abajo| Maria","Chamela-Cuixmala| Jova","Chamela-Cuixmala| Patricia","Grande-Terre| Hugo","Lienhuachi| Kalmaegi","Lienhuachi| Fungwong",     
- "Lienhuachi| Sinlaku", "Lienhuachi| Jangmi", "Kengting III| Mindulle", "Kengting IV| Mindulle", "Kengting III| Haima", "Kengting IV| Haima", "Kengting III| Nanmadol", "Kengting IV| Nanmadol", "Gadgarra | Keith")
-
-forrest_data_C<-rbind(data.frame(ES=full.model3$yi,SE=sqrt(full.model3$vi),Type="Case",Site=data_es0ia$Site, Case_study=data_es0ia$Case_study, Cyclone=data_es0ia$DisturbanceName, SoilP=data_es0ia$Other_soil_P, Region=data_es0ia$Country))
+ "Lienhuachi| Sinlaku", "Lienhuachi| Jangmi", "Kengting III| Mindulle", "Kengting IV| Mindulle", "Kengting III| Haima", "Kengting IV| Haima", "Kengting III| Nanmadol", "Kengting IV| Nanmadol", "Gadgarra| Keith")
+data_es0ia_all$yi
+forrest_data_C<-rbind(data.frame(ES=data_es0ia_all$yi,SE=sqrt(data_es0ia_all$vi),Type="Case",Site=data_es0ia_all$Site, Case_study=data_es0ia_all$Case_study, Cyclone=data_es0ia_all$DisturbanceName, SoilP=data_es0ia_all$Other_soil_P, Region=data_es0ia_all$Country))
 forrest_data_C
 forrest_data_C$SoilP=as.numeric(forrest_data_C$SoilP)
 forrest_data_C$Case_study=as.factor(forrest_data_C$Case_study)
@@ -1543,19 +1506,18 @@ ESm+(1.96*SEm)
 ESm-(1.96*SEm)
 
 ## Colors used for the Regions, respectively: Australia, Guadeloupe, Hawaii, Mexico, Puerto Rico, Taiwan
-
 ###+labs(y = bquote('Density Litterfall mass'~(g/m^2/day)),x = "Months since disturbance")+scale_fill_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))+ annotate("text", x = 0, y = 0.15, label = "b", face="bold",size=8,colour="black")
 
 #setting pantropical response shading
-full.model3$ci
-b1 <- list(geom_hline(yintercept = 2.53, color = '#003f5c',alpha=0.4),
-           annotate("rect", ymin = 1.16, ymax = 3.91,xmin = -Inf, xmax = Inf,alpha=0.1,linetype=2))
+summary(full.model3)
+b1 <- list(geom_hline(yintercept = 2.30, color = '#003f5c',alpha=0.4),
+           annotate("rect", ymin = 1.39, ymax = 3.21,xmin = -Inf, xmax = Inf,alpha=0.1,linetype=2))
 b1
 
 ## Fig3a #### Response of Total Litterfall Mass####
 plot1D<-ggplot(data=forrest_data_C,aes(x=reorder(Case2,-ES),y=ES,ymax=ES+(1.96*SE),ymin=ES-(1.96*SE),color=Region))+geom_pointrange(alpha=0.9,size=1.2)+guides(title="Region")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
 plot2D<-plot1D+coord_flip()+geom_hline(aes(yintercept=0), lty=2, color = "magenta", cex=1.2, alpha = 0.6)#+geom_hline(aes(yintercept=3.64), lty=2, colour = "#003f5c", cex=0.9, alpha = 0.4)
-plot3D<-plot2D+xlab("Case study")+theme_bw()+ylab(expression(Response~(ln~litterfall[ti]/litterfall[t0]))) #ylab(expression(Response~(ln~Total~litterfall~t[i]~t[0]^-1)))
+plot3D<-plot2D+xlab("Case study")+theme_bw()+ylab(expression(Response~ln~(litterfall[ti]/litterfall[t0]))) #ylab(expression(Response~(ln~Total~litterfall~t[i]~t[0]^-1)))
 finalFig3a<-plot3D+theme(axis.title=element_text(size=26),axis.text.x=element_text(size=22,angle=0, hjust=0.5),axis.text.y=element_text(size=17,angle=0, hjust=1))+theme(legend.title = element_blank(), legend.text = element_text (size = 24),legend.position=c(0.8,0.9),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),                                                                                                                                                                        legend.box.background = element_rect(colour = "grey"))+b1+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 1.5)))
 finalFig3a<-finalFig3a+ annotate("text", y = -1, x = 46, fontface="bold",label = "a", size=8,colour="black")
 finalFig3a
@@ -1563,7 +1525,8 @@ finalFig3a
 #Saving in high res
 ggsave(filename = "Fig3a_Response_New.png",
        plot = finalFig3a, width = 15, height = 18, units = 'cm',
-       scale = 2, dpi = 600)
+       scale = 2, dpi = 1000)
+
 ####Fig3b-d####
 
 ##Fig3b Data
@@ -1611,8 +1574,7 @@ data_impact_fracPN <- rbind(data.frame(group="Wood", var="P conc.", estimate2=fu
                                        row.names=FALSE, stringsAsFactors=TRUE))
 
 data_impact_fracPN
-full.model3lnc$b
-((exp(full.model3lpc$se))-1)*100
+summary(full.model3lnc)
 
 ##Fig3b
 pfrac4<-ggplot(data_frac4, aes(x=group,y=estimate,ymax=ci_up,ymin=ci_low,shape=var))+scale_y_continuous(breaks=c(-6,-4,-2,0,2,4,6))+
@@ -1620,14 +1582,12 @@ pfrac4<-ggplot(data_frac4, aes(x=group,y=estimate,ymax=ci_up,ymin=ci_low,shape=v
   geom_hline(aes(yintercept=0), lty=2,size=1,col="magenta",alpha=0.8) + # this adds a dotted line for effect size of 0
   labs(y="", x="") +#scale_shape_discrete(solid=F)+
   theme_bw() + # ggplot2 has a few theme options, I like minimal and classic
-  theme(axis.title.x =element_text(vjust = -0.5),
-        axis.text.x =element_text(vjust = -0.3),
-        axis.title.y =element_text(vjust = 1),
-        axis.title=element_text(size=20),
+  theme(axis.title.x =element_text(vjust = -0.5),axis.text.x =element_text(vjust = -0.3),
+        axis.title.y =element_text(vjust = 1),axis.title=element_text(size=20),
         axis.text=element_text(size=24),legend.text =  element_text(size=24),
         legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.box="horizontal",legend.key=element_rect(fill=alpha('transparent', 0.4)),legend.title = element_blank(),legend.position = c(0.84,0.96),legend.box.background = element_blank())
 pfrac4#+ scale_color_grey(start=0.65, end=0.25)
-Fig3b<-pfrac4+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+ annotate("text", y = 5.2, x = 0.5, fontface="bold",label = "b", size=8,colour="black")+ annotate("text", y = 0.4, x = 1.14, fontface="bold",label = "(11)", size=6,colour="black")+ annotate("text", y = 0.4, x = 2, fontface="bold",label = "(30)", size=6,colour="black")+ annotate("text", y = 0.4, x = 3, fontface="bold",label = "(31)", size=6,colour="black")+ annotate("text", y = 0.4, x =4.1, fontface="bold",label = "(9)", size=6,colour="black")
+Fig3b<-pfrac4+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+ annotate("text", y = 5.2, x = 0.5, fontface="bold",label = "b", size=8,colour="black")+ annotate("text", y = 0.4, x = 1.16, fontface="bold",label = "(11)", size=6,colour="black")+ annotate("text", y = 0.4, x = 2, fontface="bold",label = "(29)", size=6,colour="black")+ annotate("text", y = 0.4, x = 3, fontface="bold",label = "(30)", size=6,colour="black")+ annotate("text", y = 0.4, x =4.13, fontface="bold",label = "(9)", size=6,colour="black")
 Fig3b
 
 ### Fig3c
@@ -1640,8 +1600,8 @@ Fig3c<-ggplot(data_impact_frac2, aes(x=group,y=estimate2,ymax=ci_up2,ymin=ci_low
   theme(axis.title.x =element_text(vjust = 0.5),axis.text.x =element_text(vjust = 0.3),
         axis.title.y =element_text(vjust = 0.5,size=26),
         axis.text=element_text(size=24),legend.box="horizontal",legend.text =  element_text(size=24),legend.title = element_blank(),legend.position = c(.86,.88),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)))+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-Fig3c<-Fig3c+ annotate("text", y = 6.2, x = 0.5, fontface="bold",label = "c", size=8,colour="black")+ annotate("text", y = 0.4, x = 0.8, fontface="bold",label = "(11)", size=6,colour="black")+ annotate("text", y = 0.4, x = 1.16, fontface="bold",label = "(10)", size=6,colour="black")+
-  annotate("text", y = 0.4, x = 1.8, fontface="bold",label = "(9)", size=6,colour="black")+annotate("text", y = 0.4, x = 2.16, fontface="bold",label = "(8)", size=6,colour="black")+ annotate("text", y = 0.4, x = 2.8, fontface="bold",label = "(10)", size=6,colour="black")+annotate("text", y = 0.4, x = 3.16, fontface="bold",label = "(10)", size=6,colour="black")+ annotate("text", y = 0.4, x =3.8, fontface="bold",label = "(3)", size=6,colour="black")+ annotate("text", y = 0.4, x =4.16, fontface="bold",label = "(3)", size=6,colour="black")
+Fig3c<-Fig3c+ annotate("text", y = 6.2, x = 0.5, fontface="bold",label = "c", size=8,colour="black")+ annotate("text", y = 0.4, x = 0.8, fontface="bold",label = "(10)", size=6,colour="black")+ annotate("text", y = 0.4, x = 1.16, fontface="bold",label = "(9)", size=6,colour="black")+
+  annotate("text", y = 0.4, x = 1.8, fontface="bold",label = "(8)", size=6,colour="black")+annotate("text", y = 0.4, x = 2.16, fontface="bold",label = "(7)", size=6,colour="black")+ annotate("text", y = 0.4, x = 2.8, fontface="bold",label = "(9)", size=6,colour="black")+annotate("text", y = 0.4, x = 3.16, fontface="bold",label = "(9)", size=6,colour="black")+ annotate("text", y = 0.4, x =3.8, fontface="bold",label = "(3)", size=6,colour="black")+ annotate("text", y = 0.4, x =4.16, fontface="bold",label = "(3)", size=6,colour="black")
 Fig3c
 
 ##Fig3d
@@ -1660,16 +1620,16 @@ Fig3d<-Fig3d+ annotate("text", y = 1.2, x = 0.45, fontface="bold",label = "d", s
   annotate("text", y = 0.06, x = 1.85, fontface="bold",label = "(10)", size=6,colour="black")+annotate("text", y = 0.06, x = 2.09, fontface="bold",label = "(10)", size=6,colour="black")
 Fig3d
 
-#Fig3b-d
+#Figure 3b-d
 FinalFig3 <- Fig3b+Fig3c+Fig3d+plot_layout(ncol=1)
 FinalFig3
 
-#Fig3a-d
+#Final Figure 3a-d####
 Fig3<-finalFig3a+FinalFig3+plot_layout(ncol=2)
 Fig3
 
-#Saving in high res the Final Fig3a-d
-ggsave(filename = "Fig3ad_Final_v2.png",plot = Fig3, width = 22, height = 18, units = 'cm',scale = 2, dpi = 1000)
+#Saving in high res the Final Figure 3a-d
+ggsave(filename = "Fig3ad_Final.png",plot = Fig3, width = 22, height = 18, units = 'cm',scale = 2, dpi = 1000)
 
 ####Mass and Nutrient Flux Fractions by % change####
 
@@ -1782,10 +1742,10 @@ b <- list(geom_vline(xintercept = 3.85, color = 'black'),
 modelplot(mod, background = b)
 
 
-####SupFigS5 Litterfall mass fractions with seasonality ####
+####Supplementary Figure S1 Litterfall mass fractions with seasonality ####
 
-full.model3ffS$k
-data_frac3 <- rbind(data.frame(group="Total", variable="Annual (all)",estimate=full.model3$b, 
+#Data frame
+data_frac_S1 <- rbind(data.frame(group="Total", variable="Annual (all)",estimate=full.model3$b, 
                                ci_low=full.model3$ci.lb, ci_up=full.model3$ci.ub,
                                row.names=FALSE, stringsAsFactors=TRUE),
                     data.frame(group="Wood", variable="Annual (all)",estimate=full.model3wf$b, 
@@ -1794,11 +1754,11 @@ data_frac3 <- rbind(data.frame(group="Total", variable="Annual (all)",estimate=f
                     data.frame(group="Leaf", variable="Annual (all)",estimate=full.model3lf$b, 
                                ci_low=full.model3lf$ci.lb, ci_up=full.model3lf$ci.ub,
                                row.names=FALSE, stringsAsFactors=TRUE),
-                    data.frame(group="FFS", variable="Annual (all)", estimate=full.model3ff$b, 
-                               ci_low=full.model3ff$ci.lb, ci_up=full.model3ff$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE),
                     data.frame(group="Misc.", variable="Annual (all)",estimate=full.model3mf$b, 
                                ci_low=full.model3mf$ci.lb, ci_up=full.model3mf$ci.ub,
+                               row.names=FALSE, stringsAsFactors=TRUE),
+                    data.frame(group="FFS", variable="Annual (all)", estimate=full.model3ff$b, 
+                               ci_low=full.model3ff$ci.lb, ci_up=full.model3ff$ci.ub,
                                row.names=FALSE, stringsAsFactors=TRUE),
                     data.frame(group="Total", variable="Subannual (red.)",estimate=full.model3S$b, 
                                ci_low=full.model3S$ci.lb, ci_up=full.model3S$ci.ub,
@@ -1809,11 +1769,11 @@ data_frac3 <- rbind(data.frame(group="Total", variable="Annual (all)",estimate=f
                     data.frame(group="Leaf", variable="Subannual (red.)",estimate=full.model3lfS$b, 
                                ci_low=full.model3lfS$ci.lb, ci_up=full.model3lfS$ci.ub,
                                row.names=FALSE, stringsAsFactors=TRUE),
-                    data.frame(group="FFS", variable="Subannual (red.)",estimate=full.model3ffS$b,
-                               ci_low=full.model3ffS$ci.lb, ci_up=full.model3ffS$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE),
                     data.frame(group="Misc.", variable="Subannual (red.)",estimate=full.model3mfS$b, 
                                ci_low=full.model3mfS$ci.lb, ci_up=full.model3mfS$ci.ub,
+                               row.names=FALSE, stringsAsFactors=TRUE),
+                    data.frame(group="FFS", variable="Subannual (red.)",estimate=full.model3ffS$b,
+                               ci_low=full.model3ffS$ci.lb, ci_up=full.model3ffS$ci.ub,
                                row.names=FALSE, stringsAsFactors=TRUE),
                     data.frame(group="Total", variable="Annual (red.)",estimate=full.model3SS$b,
                                ci_low=full.model3SS$ci.lb, ci_up=full.model3SS$ci.ub,
@@ -1824,87 +1784,34 @@ data_frac3 <- rbind(data.frame(group="Total", variable="Annual (all)",estimate=f
                     data.frame(group="Leaf", variable="Annual (red.)",estimate=full.model3lfSS$b, 
                                ci_low=full.model3lfSS$ci.lb, ci_up=full.model3lfSS$ci.ub,
                                row.names=FALSE, stringsAsFactors=TRUE),
-                    data.frame(group="FFS", variable="Annual (red.)",estimate=full.model3ffSS$b,
-                               ci_low=full.model3ffSS$ci.lb, ci_up=full.model3ffSS$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE),
                     data.frame(group="Misc.", variable="Annual (red.)",estimate=full.model3mfSS$b, 
                                ci_low=full.model3mfSS$ci.lb, ci_up=full.model3mfSS$ci.ub,
+                               row.names=FALSE, stringsAsFactors=TRUE),
+                    data.frame(group="FFS", variable="Annual (red.)",estimate=full.model3ffSS$b,
+                               ci_low=full.model3ffSS$ci.lb, ci_up=full.model3ffSS$ci.ub,
                                row.names=FALSE, stringsAsFactors=TRUE))
-data_frac3
+data_frac_S1
 
-####FigS5 ggplot####
+####FigS1 ggplot####
 
-data_frac3
-
-pfrac3<-ggplot(data_frac3, aes(x=group,y=estimate,ymax=ci_up,ymin=ci_low, shape = variable))+scale_y_continuous(breaks=c(-6,-4,-2,0,2,4,6,8))+
+pfrac_S1<-ggplot(data_frac_S1, aes(x=group,y=estimate,ymax=ci_up,ymin=ci_low, shape = variable))+scale_y_continuous(breaks=c(-6,-4,-2,0,2,4,6,8))+
   geom_pointrange(mapping=aes(color=variable),size=1, position=position_dodge(width=c(0.8, 1.2)))+coord_flip()+
   geom_hline(aes(yintercept=0), lty=2,size=1,col="magenta",alpha=0.8) + # this adds a dotted line for effect size of 0
   labs(y="Pantropical response with 95% CI", x="Litterfall fraction") +scale_shape_discrete(solid=F)+
   theme_bw() + # ggplot2 has a few theme options, I like minimal and classic
-  theme(axis.title.x =element_text(vjust = -0.5),
-        axis.text.x =element_text(vjust = -0.3),
-        axis.title.y =element_text(vjust = 1),
-        axis.title=element_text(size=28),
-        axis.text=element_text(size=26),legend.text =  element_text(size=20),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),legend.title = element_blank(),legend.position = c(0.84,0.73),legend.box.background = element_rect(colour = "black"))
-FigS5<-pfrac3+ scale_color_manual(values=c("#141212","#5E3FBA","#A81C38"))+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())#scale_color_grey(start=0.65, end=0.25)
-FigS5
+  theme(axis.title.x =element_text(vjust = -0.5),axis.text.x =element_text(vjust = -0.3),
+        axis.title.y =element_text(vjust = 1),axis.title=element_text(size=28),
+        axis.text=element_text(size=26),legend.text =  element_text(size=20),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),legend.title = element_blank(),legend.position = c(0.7,0.89),legend.box.background = element_rect(colour = "gray"))
+Fig_S1<-pfrac_S1+ scale_color_manual(values=c("#141212","#5E3FBA","#A81C38"))+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())#scale_color_grey(start=0.65, end=0.25)
+Fig_S1<-Fig_S1+ annotate("text", y = 6.5, x = 5.2, fontface="bold",label = "(7)", size=5,colour="black")+ annotate("text", y = 6.5, x = 5, fontface="bold",label = "(7)", size=5,colour="black")+ annotate("text", y = 6.5, x = 4.7, fontface="bold",label = "(11)", size=5,colour="black")+
+annotate("text", y = 6.5, x = 4.22, fontface="bold",label = "(4)", size=5,colour="black")+ annotate("text", y = 6.5, x = 4, fontface="bold",label = "(4)", size=5,colour="black")+ annotate("text", y = 6.5, x = 3.7, fontface="bold",label = "(9)", size=5,colour="black")+
+annotate("text", y = 6.5, x = 3.22, fontface="bold",label = "(16)", size=5,colour="black")+ annotate("text", y = 6.5, x = 3, fontface="bold",label = "(16)", size=5,colour="black")+ annotate("text", y = 6.5, x = 2.7, fontface="bold",label = "(30)", size=5,colour="black")+
+annotate("text", y = 6.5, x = 2.22, fontface="bold",label = "(14)", size=5,colour="black")+ annotate("text", y = 6.5, x = 2, fontface="bold",label = "(14)", size=5,colour="black")+ annotate("text", y = 6.5, x = 1.7, fontface="bold",label = "(29)", size=5,colour="black")+
+annotate("text", y = 6.5, x = 1.22, fontface="bold",label = "(23)", size=5,colour="black")+ annotate("text", y = 6.5, x = 1, fontface="bold",label = "(23)", size=5,colour="black")+ annotate("text", y = 6.5, x = 0.7, fontface="bold",label = "(48)", size=5,colour="black")
 
-ggsave(filename = "FigS5_Fractions_Mass_Resp.png",
-       plot = FigS5, width = 13, height = 10, units = 'cm',
-       scale = 2, dpi = 600)
+#Saving Figure S1
+ggsave(filename = "FigS1_Fractions_Mass_Response.png",
+       plot = Fig_S1, width = 13, height = 10, units = 'cm',
+       scale = 2, dpi = 1000)
 
-#### Supplementary Figures ####
-
-## Litterfall fractions mass flux
-
-forrest_data_lf<-rbind(data.frame(ES=full.model3lf$yi,SE=sqrt(full.model3lf$vi),Type="Case",Site=data_es0ilf$Site, Case_study=data_es0ilf$Effectsize_ID, Cyclone=data_es0ilf$DisturbanceName, SoilP=data_es0ia$Other_soil_P, Region=data_es0ia$Country))
-forrest_data_lf
-forrest_data_C$SoilP=as.numeric(forrest_data_C$SoilP)
-forrest_data_C$Case_study=as.factor(forrest_data_C$Case_study)
-forrest_data_C$Case2<-factor(forrest_data_C$Case_study, levels=rev(levels(forrest_data_C$Case_study)))
-str(forrest_data_C)
-levels(forrest_data_C$Site2)#aes(x=reorder(Site,-yi), y=yi))
-
-plot1C<-ggplot(data=forrest_data_C,aes(x=reorder(Case2,-ES),y=ES,ymax=ES+(1.96*SE),ymin=ES-(1.96*SE)))+geom_pointrange(aes(color=Region),alpha=0.8)+guides(title="Region")
-
-plot2C<-plot1C+coord_flip()+geom_hline(aes(yintercept=0), lty=2, color = "magenta", cex=0.9, alpha = 0.6)+geom_hline(aes(yintercept=3.88), lty=2, color = "black", cex=0.9, alpha = 0.6)
-
-plot3C<-plot2C+xlab("Case study")+ylab("Response [ln(litterfall ti/t0)]")+theme_bw()                                                                                      #color="black")
-
-plot3C+theme(axis.title=element_text(size=18),axis.text.x=element_text(size=17,angle=0, hjust=0.5),axis.text.y=element_text(size=17,angle=0, hjust=1))+theme(legend.title = element_text (size = 20), legend.text = element_text (size = 18),legend.position=c(0.85,0.9),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),legend.box.background = element_rect(colour = "black"))+b1+scale_color_discrete("Dark2")
-
-summary(full.model3)
-#calculating overall mean and high and low limits of confidence interval
-ESm=full.model3$b
-ESm
-SEm=sqrt(full.model3$se)
-SEm
-ESm+(1.96*SEm)
-ESm-(1.96*SEm)
-
-## Colors used for the Regions, respectively: Australia, Guadeloupe, Hawaii, Mexico, Puerto Rico, Taiwan
-
-###+labs(y = bquote('Density Litterfall mass'~(g/m^2/day)),x = "Months since disturbance")+scale_fill_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))+ annotate("text", x = 0, y = 0.15, label = "b", face="bold",size=8,colour="black")
-
-
-b1 <- list(geom_hline(yintercept = 3.64, color = '#003f5c',alpha=0.2),
-           annotate("rect", alpha = .1,ymin = 2.37, ymax = 4.91,xmin = -Inf, xmax = Inf,alpha=0.2))
-b1
-
-##Fig3a
-
-plotlf<-ggplot(data=forrest_data_C,aes(x=reorder(Case2,-ES),y=ES,ymax=ES+(1.96*SE),ymin=ES-(1.96*SE),color=Region))+geom_pointrange(alpha=0.9,size=1.2)+guides(title="Region")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
-
-plotlf
-
-plotlf2<-plotlf+coord_flip()+geom_hline(aes(yintercept=0), lty=2, color = "magenta", cex=0.9, alpha = 0.6)+geom_hline(aes(yintercept=3.64), lty=2, colour = "#003f5c", cex=0.9, alpha = 0.4)
-plotlf2
-
-plotlf3<-plotlf2+xlab("Case study")+ylab("Response [ln(litterfall ti/t0)]")+theme_bw()                                                                                    
-
-finalFig3a<-plot3D+theme(axis.title=element_text(size=18),axis.text.x=element_text(size=17,angle=0, hjust=0.5),axis.text.y=element_text(size=17,angle=0, hjust=1))+theme(legend.title = element_blank(), legend.text = element_text (size = 22),legend.position=c(0.85,0.9),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),
-                                                                                                                                                                         legend.box.background = element_rect(colour = "grey"))+b1+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 1.5)))
-finalFig3a
-ggsave(filename = "Fig3a-Response.png",
-       plot = finalFig3a, width = 12, height = 15, units = 'cm',
-       scale = 2, dpi = 600)
+##END##
