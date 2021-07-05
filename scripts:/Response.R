@@ -647,7 +647,6 @@ model.mods3full_red2<-rma.mv(yi,vi,
                             mods = ~soilP)#using z transformed soil P
 summary(model.mods3full_red2)
 
-
 #Bringing disturbance intensity metrics along with soil P
 model_a<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist = TRUE, 
                 data = hurr_sites,method = "REML",
@@ -723,40 +722,15 @@ levels(data_es0ia$Site)
 red_sites <- data_es0ia %>% filter(Site!="Grande-Terre")%>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")#%>% filter(Site!="Grande-Terre")
 
 red_sites_hurr <- hurr_sites %>% filter(Site!="Grande-Terre")%>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")#%>% filter(Site!="Grande-Terre")
-red_sites_hurr_amb <- hurr_sites_amb %>% filter(Site!="Grande-Terre")%>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")#%>% filter(Site!="Grande-Terre")
+str(red_sites_hurr)
 
-#Table S3####
-model_a2_red<-rma.mv(yi, 
-                vi, 
+#Table S8 Model 2a####
+model_a2_red<-rma.mv(yi,vi, 
                 random = list(~ 1 | Site, ~1|DisturbanceName), 
-                tdist = TRUE, 
-                data = red_sites_hurr,# n = 41
+                tdist = TRUE,data = red_sites_hurr,# n = 41
                 method = "REML",
                 mods = ~soilP*hurrwind)
-summary(model_a2_red)#41 case studies - when the 5 sites are removed, there is a significant positive interaction betwen soil P and wind speed
-
-model_a2_red_amb<-rma.mv(yi, 
-                     vi, 
-                     random = list(~ 1 | Site, ~1|DisturbanceName), 
-                     tdist = TRUE, 
-                     data = red_sites_hurr_amb,# n = 41
-                     method = "REML",
-                     mods = ~soilP*hurrwind)
-summary(model_a2_red_amb)
-
-
-#Cook's distance for best model
-hatvalues(model_c,type="diagonal")
-x <- cooks.distance(model_c)
-x
-plot(x, type="o", pch=19, xlab="Observed Outcome", ylab="Cook's Distance")
-
-#Testing correlations among moderator variables in best model (model_c)
-names(data_es0ia)
-chart.Correlation(data_es0ia[,c(85,86,87)])#No correlation among moderators
-
-#Funnel plot - not so useful because does not resolve the non-independence that the random effects resolves
-funnel(model_c,xlab = "Litterfall Mass Response",studlab = TRUE,cex=2,cex.lab=1.5,cex.axis=1.4)
+summary(model_a2_red)#40 case studies - when the 5 sites are removed, there is a significant positive interaction betwen soil P and wind speed
 
 #### Leaf fall Response Meta-regression model ####
 
@@ -771,13 +745,19 @@ data_es0ilf$timesincestorm=z.trans(data_es0ilf$YearsSinceLastStorm)
 hurr_siteslf<-data_es0ilf %>% filter(hurrwind!="NA")
 str(hurr_siteslf)#n = 30
 
-#Leaf fall Table 2#### CONTINUE HERE
+#Leaf fall Table 2####
 unique(levels(as.factor(data_es0ilf$Case_study)))
 
-mixed_lf_tab4<-rma.mv(yi,vi,random = list(~ 1|Site,~1|DisturbanceName), 
+mixed_lf_tab2_1b<-rma.mv(yi,vi,random = list(~ 1|Site,~1|DisturbanceName), 
                tdist = TRUE,data = data_es0ilf,
-               method = "ML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_tab4)
+               method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
+summary(mixed_lf_tab2_1b)
+
+#Final Model Table 2 model 1b
+mixed_lf_tab2_1b.1<-rma.mv(yi,vi,random = ~ 1|Site, 
+                         tdist = TRUE,data = data_es0ilf,
+                         method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
+summary(mixed_lf_tab2_1b.1)
 
 #Leaf fall Table S8#### alt random effect
 mixed_lf_tab4a<-rma.mv(yi,vi,random = ~ 1 | DisturbanceName, 
@@ -788,7 +768,7 @@ summary(mixed_lf_tab4a)
 mixed_lf_tab4b<-rma.mv(yi,vi,random = list(~ 1|Country, ~1|DisturbanceName), 
                  tdist = TRUE,data = data_es0ilf,
                  method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_tab4b)
+summary(mixed_lf_tab4b)#second best option
 
 mixed_lf_tab4c<-rma.mv(yi,vi,random = list(~ 1|Region, ~1|DisturbanceName), 
                        tdist = TRUE,data = data_es0ilf,
@@ -798,18 +778,28 @@ summary(mixed_lf_tab4c)
 mixed_lf_tab4d<-rma.mv(yi,vi,random = ~1|Region, 
                        tdist = TRUE,data = data_es0ilf,
                        method = "ML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_tab4d)
+summary(mixed_lf_tab4d)#BIC is highest
+
+mixed_lf_tab4e<-rma.mv(yi,vi,random = ~1|Site, 
+                       tdist = TRUE,data = data_es0ilf,
+                       method = "ML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
+summary(mixed_lf_tab4e)#BIC is highest
 
 #comparing leaf fall models based on BIC
-BIC(mixed_lf_tab4,mixed_lf_tab4a,mixed_lf_tab4b,mixed_lf_tab4c,mixed_lf_tab4d)
+BIC(mixed_lf_tab2,mixed_lf_tab4a,mixed_lf_tab4b,mixed_lf_tab4c,mixed_lf_tab4d,mixed_lf_tab4e)
 
 #sensitivity analysis - removing sites where total soil P was estimated from available soil P
 red_siteslf <- data_es0ilf %>% filter(Site!="Grande-Terre")%>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")#%>% filter(Site!="Grande-Terre")
-str(red_siteslf)#26
+str(red_siteslf)#25
 levels(as.factor(red_siteslf$Case_study))
 
 hurr_red_siteslf <- hurr_siteslf %>% filter(Site!="Grande-Terre")%>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")#%>% filter(Site!="Grande-Terre")
-str(red_siteslf)#26
+str(red_siteslf)#25 same as red_siteslf 
+
+mixed_lf_S8_1b<-rma.mv(yi,vi,random = ~ 1 | Site, 
+                     tdist = TRUE,data = red_siteslf,
+                     method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
+summary(mixed_lf_S8_1b)
 
 mixed_lf_red<-rma.mv(yi,vi,random = list(~ 1 | Country,~1|DisturbanceName), 
                  tdist = TRUE,data = red_siteslf,
@@ -828,16 +818,21 @@ summary(mixed_lf_tab4.1)
 
 #Adding Cyclone metrics
 
-##Table 4 Model 2b - Final Leaf Meta Regression####
-mixed_lf_tab4.2<-rma.mv(yi,vi,random = list(~ 1|Site,~1|DisturbanceName), 
+##Table 2 Model 2b - Final Leaf Meta Regression####
+mixed_lf_tab2_2b<-rma.mv(yi,vi,random = ~ 1|Site, 
                       tdist = TRUE,data = data_es0ilf,
-                      method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_tab4.2) 
+                      method = "REML",mods = ~soilP*hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
+summary(mixed_lf_tab2_2b) 
 
-mixed_lf_tab4.2a<-rma.mv(yi,vi,random = ~ 1 | DisturbanceName, 
+mixed_lf_tab2_2b.1<-rma.mv(yi,vi,random = ~ 1|Site, 
+                         tdist = TRUE,data = data_es0ilf,
+                         method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
+summary(mixed_lf_tab2_2b.1) 
+
+mixed_lf_tab2.2a<-rma.mv(yi,vi,random = ~ 1 | Site, 
                    tdist = TRUE,data = hurr_siteslf,
                    method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_tab4.2a)#this works
+summary(mixed_lf_tab2.2a)#this works
 
 mixed_lf_tab4.2b<-rma.mv(yi,vi,random = list(~ 1 | Country,~1|DisturbanceName), 
                          tdist = TRUE,data = hurr_siteslf,
