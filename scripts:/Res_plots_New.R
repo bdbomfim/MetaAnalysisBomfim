@@ -34,22 +34,6 @@ str(data_esall_amb2)#1128
 
 ##Total Litterfall mass resilience [ln(post/pre)] including all Treatments####
 
-#1 to 36 months
-tot_amb<-data_esall_amb %>% filter(Fraction=="TotLitfall")
-str(tot_amb)#250 obs
-levels(tot_amb$Treatment)
-
-dres_amb_tot <- tot_amb %>%group_by(yi,vi,Case_study,Treatment,TSD_months)  #%>%dplyr::summarise(counts = dplyr::n())
-dres_amb_tot
-Obs_res_tot<- cbind(data.frame(Obs=tot_amb$yi,Se=sqrt(tot_amb$vi),Months=factor(tot_amb$TSD_months),
-                                  SoilP=tot_amb$Other_soil_P,fac_SoilP=factor(tot_amb$Other_soil_P),
-                                  Case_study=tot_amb$Case_study,Cyclone_freq=tot_amb$StormFrequencyNorm,Country=tot_amb$Country))
-str(Obs_res_tot)
-Obs_res_tot$Months
-Obs_res_tot$Months<-factor(Obs_res_tot$Months, levels = c("1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17",
-                                                                "18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36"))
-levels(Obs_res_tot$Months)
-
 ##Including CTE TrimDeb
 data_esall_amb_final2<-data_esall_amb2 %>% filter(Fraction!="Misc fall")
 str(data_esall_amb_final2)
@@ -63,7 +47,6 @@ data_esall_amb_final2$Months<-factor(data_esall_amb_final2$TSD_months, levels = 
                                                                                   "18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36"))
 levels(data_esall_amb_final2$Months)
 
-
 Obs_res_all2<- cbind(data.frame(Obs=data_esall_amb_final2$yi,Se=sqrt(data_esall_amb_final2$vi),Months=factor(data_esall_amb_final2$TSD_months),
                                SoilP=data_esall_amb_final2$Other_soil_P,Fraction=data_esall_amb_final2$Fraction,fac_SoilP=factor(data_esall_amb_final2$Other_soil_P),
                                Case_study=data_esall_amb_final2$Case_study,Cyclone_freq=data_esall_amb_final2$StormFrequencyNorm,Country=data_esall_amb_final2$Country))
@@ -76,6 +59,7 @@ data_esall_amb_final2$Case_study= paste(data_esall_amb_final2$Site, data_esall_a
 ##Calculating Overall Resilience for certain points in time since disturbance
 data_es_tot_amb<-data_esall_amb_final2 %>% filter(Fraction=="TotLitfall")
 str(data_es_tot_amb)#286
+levels(data_es_tot_amb$Treatment)
 
 #1 month
 data_es_tot_amb_1<-data_es_tot_amb %>% filter(TSD_months==1)
@@ -175,23 +159,21 @@ tot_pant_res
 ##Plotting points and Pantropical effect sizes
 names(data_es_tot_amb)
 Fig_res_amb_tot <- ggplot(data_es_tot_amb, aes(y=yi, x=Months,group=Case_study))
-Fig_res_amb_tot<-Fig_res_amb_tot+geom_point(aes(group=Case_study,col=Country,size=vi),shape=21,stroke=1.3,alpha=0.5)
+Fig_res_amb_tot<-Fig_res_amb_tot+geom_point(aes(group=Case_study,col=Country,size=vi),shape=21,stroke=1.5,alpha=0.5)
 Fig_res_amb_tot<-Fig_res_amb_tot+geom_pointrange(data=tot_pant_res,mapping=aes(group=Months,x=Months,y=estimate,ymax=estimate+(1.96*se),ymin=estimate-(1.96*se), col="Pantropical"),size=1, stroke=1,shape=21)+theme_bw()
 Fig_res_amb_tot<-Fig_res_amb_tot+guides(title="Region")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","black","#665191","#af060f"))
 Fig_res_amb_tot<-Fig_res_amb_tot+labs(color="")+guides(size=FALSE)
-Fig_res_amb_tot
 Fig_res_amb_tot<-Fig_res_amb_tot+theme_bw()+geom_segment(aes(x=1, y=0, xend=36, yend=0), lty=2, color = "magenta", cex=1.4)+
   scale_x_discrete(breaks = c(1, 3, 6, 9,12, 15, 18,21,24,27,30,33,36))+
   ylim(-3,2)+
   #ylab(expression(Response~(ln~litterfall[ti]/litterfall[t0])))+xlab("Time since disturbance (Months)")+ #ylab(expression(Resilience~(ln~Litterfall~t[x]~t[0]^-1)))+
- theme(axis.title.x =element_text(vjust = 0.5,size=24),axis.text.x =element_text(vjust = 1,size=22),
-        axis.title.y =element_text(vjust = 1,size=24),strip.background = element_rect(color="white", fill="white",linetype="solid"),
-        axis.text.y=element_text(size=22),legend.text =  element_text(size=26),
+ theme(axis.title.x =element_text(vjust = 0.5,size=28),axis.text.x =element_text(vjust = 1,size=22),
+        axis.title.y =element_text(vjust = 1,size=28),strip.background = element_rect(color="white", fill="white",linetype="solid"),
+        axis.text.y=element_text(size=22),legend.text =  element_text(size=28),
         legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),
         legend.title = element_text(size=22),legend.box="vertical",legend.position="right")+ 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 1.3)))
-Fig_res_amb_tot<-Fig_res_amb_tot+annotate("text", x =7, y = 2, fontface="bold",label = "a Total litterfall", size=8,colour="black")+labs(x="")
-Fig_res_amb_tot<-Fig_res_amb_tot+ylab(expression(Resilience~(ln~litterfall[tx]/litterfall[t0])))
+Fig_res_amb_tot<-Fig_res_amb_tot+annotate("text", x =7.2, y = 2, fontface="bold",label = "a Total litterfall", size=9,colour="black")+labs(x="",y="Resilience")
 Fig_res_amb_tot
 
 ##Leaf fall####
@@ -301,23 +283,21 @@ leaf_pant_res
 
 ##Plotting points and Pantropical effect sizes
 Fig_res_amb_leaf <- ggplot(data_es_leaf_amb, aes(y=yi, x=Months,group=Case_study))
-Fig_res_amb_leaf<-Fig_res_amb_leaf+geom_point(aes(group=Case_study,col=Country,size=vi),shape=21,stroke=1.3,alpha=0.5)
+Fig_res_amb_leaf<-Fig_res_amb_leaf+geom_point(aes(group=Case_study,col=Country,size=vi),shape=21,stroke=1.5,alpha=0.5)
 Fig_res_amb_leaf<-Fig_res_amb_leaf+geom_pointrange(data=leaf_pant_res,mapping=aes(group=Months,x=Months,y=estimate,ymax=estimate+(1.96*se),ymin=estimate-(1.96*se), col="Pantropical"),size=1, stroke=1,shape=21)+theme_bw()
 Fig_res_amb_leaf<-Fig_res_amb_leaf+guides(title="Region")+scale_color_manual(values=c("#1dabe6","#b35a2d","#ffa600","black","#665191","#af060f"))
 Fig_res_amb_leaf<-Fig_res_amb_leaf+labs(color="")+guides(size=FALSE)
 Fig_res_amb_leaf<-Fig_res_amb_leaf+theme_bw()+geom_segment(aes(x=1, y=0, xend=36, yend=0), lty=2, color = "magenta", cex=1.4)+
   scale_x_discrete(breaks = c(1, 3, 6, 9,12, 15, 18,21,24,27,30,33,36))+
-  ylim(-3,2)+
-  ylab(expression(Resilience~(ln~litterfall[tx]/litterfall[t0])))+
-  #ylab(expression(Resilience~(ln~Litterfall~t[x]~t[0]^-1)))+
-  theme(axis.title.x =element_text(vjust = 0.5,size=24),
+  ylim(-3,2)+#ylab(expression(Resilience~(ln~litterfall[tx]/litterfall[t0])))+#ylab(expression(Resilience~(ln~Litterfall~t[x]~t[0]^-1)))+
+  theme(axis.title.x =element_text(vjust = 0.5,size=28),
         axis.text.x =element_text(vjust = 1,size=22),
-        axis.title.y =element_text(vjust = 1,size=24),strip.background = element_rect(color="white", fill="white",linetype="solid"),
-        axis.text.y=element_text(size=22),legend.text =  element_text(size=26),
+        axis.title.y =element_text(vjust = 1,size=28),strip.background = element_rect(color="white", fill="white",linetype="solid"),
+        axis.text.y=element_text(size=22),legend.text =  element_text(size=28),
         legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),
         legend.title = element_text(size=22),legend.box="horizontal",legend.position="none")+ 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 1.5)))+
-annotate("text", x =5, y = 2, fontface="bold",label = "b Leaf fall", size=8,colour="black")+labs(x="")
+annotate("text", x =7.5, y = 2, fontface="bold",label = "b Leaf litterfall", size=9,colour="black")+labs(x="",y="Resilience")
 Fig_res_amb_leaf<-Fig_res_amb_leaf+xlab("Time since disturbance (Months)")
 Fig_res_amb_leaf
 
@@ -427,23 +407,21 @@ wood_pant_res
 
 names(data_es_wood_amb)
 Fig_res_amb_wood <- ggplot(data_es_wood_amb, aes(y=yi, x=Months,group=Case_study))
-Fig_res_amb_wood<-Fig_res_amb_wood+geom_point(aes(group=Case_study,col=Country,size=vi),shape=21,stroke=1.3,alpha=0.5)
+Fig_res_amb_wood<-Fig_res_amb_wood+geom_point(aes(group=Case_study,col=Country,size=vi),shape=21,stroke=1.5,alpha=0.5)
 Fig_res_amb_wood<-Fig_res_amb_wood+geom_pointrange(data=wood_pant_res,mapping=aes(group=Months,x=Months,y=estimate,ymax=estimate+(1.96*se),ymin=estimate-(1.96*se), col="Pantropical"),size=1, stroke=1,shape=21)+theme_bw()
 Fig_res_amb_wood<-Fig_res_amb_wood+guides(title="Region")+scale_color_manual(values=c("#1dabe6","#b35a2d","#ffa600","black","#665191","#af060f"))
 Fig_res_amb_wood<-Fig_res_amb_wood+labs(color="")+guides(size=FALSE)
-Fig_res_amb_wood
 Fig_res_amb_wood<-Fig_res_amb_wood+theme_bw()+geom_segment(aes(x=1, y=0, xend=36, yend=0), lty=2, color = "magenta", cex=1.4)+
    scale_x_discrete(breaks = c(1, 3, 6, 9,12, 15, 18,21,24,27,30,33,36))+
-  ylim(-3,2)+
-  ylab(expression(Resilience~(ln~litterfall[tx]/litterfall[t0])))+xlab("Time since disturbance (Months)")+#ylab(expression(Resilience~(ln~Litterfall~t[x]~t[0]^-1)))+
-  theme(axis.title.x =element_text(vjust = 0.5,size=24),
+  ylim(-3,2)+#ylab(expression(Resilience~(ln~litterfall[tx]/litterfall[t0])))+xlab("Time since disturbance (Months)")+#ylab(expression(Resilience~(ln~Litterfall~t[x]~t[0]^-1)))+
+  theme(axis.title.x =element_text(vjust = 0.5,size=28),
         axis.text.x =element_text(vjust = 1,size=22),
-        axis.title.y =element_text(vjust = 1,size=24),strip.background = element_rect(color="white", fill="white",linetype="solid"),
-        axis.text.y=element_text(size=22),legend.text =  element_text(size=26),
+        axis.title.y =element_text(vjust = 1,size=28),strip.background = element_rect(color="white", fill="white",linetype="solid"),
+        axis.text.y=element_text(size=22),legend.text =  element_text(size=28),
         legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),
         legend.title = element_text(size=22),legend.box="horizontal",legend.position="none")+ 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 1.5)))+
-  annotate("text", x =6, y = 2, fontface="bold",label = "c Wood fall", size=8,colour="black")+labs(x="")
+  annotate("text", x =8, y = 2, fontface="bold",label = "c Wood litterfall", size=9,colour="black")+labs(x="",y="Resilience")
 Fig_res_amb_wood
 
 ##FFS fall####
@@ -550,25 +528,23 @@ ffs_pant_res
 
 ##Plotting points and Pantropical effect sizes
 Fig_res_amb_ffs <- ggplot(data_es_ffs_amb, aes(y=yi, x=Months,group=Case_study))
-Fig_res_amb_ffs<-Fig_res_amb_ffs+geom_point(aes(group=Case_study,col=Country,size=vi),shape=21,stroke=1.3,alpha=0.5)
+Fig_res_amb_ffs<-Fig_res_amb_ffs+geom_point(aes(group=Case_study,col=Country,size=vi),shape=21,stroke=1.5,alpha=0.5)
 Fig_res_amb_ffs<-Fig_res_amb_ffs+geom_pointrange(data=ffs_pant_res,mapping=aes(group=Months,x=Months,y=estimate,ymax=estimate+(1.96*se),ymin=estimate-(1.96*se), col="Pantropical"),size=1, stroke=1,shape=21)+theme_bw()
 Fig_res_amb_ffs<-Fig_res_amb_ffs+guides(title="Region")+scale_color_manual(values=c("#1dabe6","#b35a2d","black","#665191"))
 Fig_res_amb_ffs<-Fig_res_amb_ffs+labs(color="")+guides(size=FALSE)
-Fig_res_amb_ffs
 Fig_res_amb_ffs<-Fig_res_amb_ffs+theme_bw()+geom_segment(aes(x=1, y=0, xend=36, yend=0), lty=2, color = "magenta", cex=1.4)+
   scale_x_discrete(breaks = c(1, 3, 6, 9,12, 15, 18,21,24,27,30,33,36))+
-  ylim(-3,2)+
-  ylab(expression(Resilience~(ln~litterfall[tx]/litterfall[t0])))+
+  ylim(-3,2)+#ylab(expression(Resilience~(ln~litterfall[tx]/litterfall[t0])))+
   #ylab(expression(Resilience~(ln~Litterfall~t[x]~t[0]^-1)))+xlab("Time since disturbance (Months)")+
-  theme(axis.title.x =element_text(vjust = 0.5,size=24),
+  theme(axis.title.x =element_text(vjust = 0.5,size=28),
         axis.text.x =element_text(vjust = 1,size=22),
-        axis.title.y =element_text(vjust = 1,size=24),strip.background = element_rect(color="white", fill="white",linetype="solid"),
-        axis.text.y=element_text(size=22),legend.text =  element_text(size=26),
+        axis.title.y =element_text(vjust = 1,size=28),strip.background = element_rect(color="white", fill="white",linetype="solid"),
+        axis.text.y=element_text(size=22),legend.text =  element_text(size=28),
         legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),
         legend.title = element_text(size=22),legend.box="horizontal",legend.position="none")+ 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 1.5)))+
-  annotate("text", x =5, y = 2, fontface="bold",label = "d FFS fall", size=8,colour="black")+labs(x="")
-Fig_res_amb_ffs<-Fig_res_amb_ffs+xlab("Time since disturbance (Months)")
+  annotate("text", x =7, y = 2, fontface="bold",label = "d FFS litterfall", size=9,colour="black")+labs(x="")
+Fig_res_amb_ffs<-Fig_res_amb_ffs+labs(x="Time since disturbance (Months)",y="Resilience")
 Fig_res_amb_ffs
 
 #Final Figure 6####
@@ -576,8 +552,8 @@ Fig6v2<-Fig_res_amb_tot+Fig_res_amb_wood+Fig_res_amb_leaf+Fig_res_amb_ffs+plot_l
 Fig6v2
 
 #Saving in High Res
-ggsave(filename = "Fig6v4_Resilience_mass.png",
-       plot = Fig6v2, width = 23, height = 14, units = 'cm',
+ggsave(filename = "Fig6_Resilience_mass.png",
+       plot = Fig6v2, width = 24, height = 14, units = 'cm',
        scale = 2, dpi = 1000)
 
 ##END###
