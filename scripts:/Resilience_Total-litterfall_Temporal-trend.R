@@ -329,36 +329,4 @@ ggsave(filename = "Fig9_Resilience_Pred_Tot_Leaf_v2.png",
        plot = Fig9, width = 12, height = 14, units = 'cm',
        scale = 2, dpi = 1200)
 
-##Extra Plots####
-
-##Plotting the total litterfall data 1 to 36 months - All Treatments
-dres <- tot_lit_all %>%group_by(Site,DisturbanceName,Treatment,TSD_months)  %>%
-  dplyr::summarise(counts = dplyr::n())
-dres 
-p<- dres %>% ggplot(aes(x = TSD_months, fill=Treatment)) +geom_histogram(binwidth = 0.5)+theme_bw()+
-  theme(strip.background = element_rect(color="white", fill="white",linetype="solid"),axis.text = element_text(angle=0, hjust=0.5,vjust = 1,size=18),axis.title=element_text(size=22),
-        legend.position="right",legend.text =  element_text(size=20,angle=0),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),legend.title = element_blank(),
-        legend.box.background = element_rect(colour = "black"))+
-  scale_fill_brewer(palette="Paired")+
-  labs(x="Time since disturbance (months)",y="Number of observations")#+ annotate("text", x = 10, y = 25, label = "3-year resilience of total litterfall",size=6,colour="black")
-Fig_res_at<-p + facet_wrap(~Site)+theme(strip.text.x = element_text(size=18))
-Fig_res_at
-
-##Plotting the total litterfall data 1 to 36 months - Ambient only
-dres_amb <- tot_lit_amb %>%group_by(Country, Site,DisturbanceName,Treatment,TSD_months)  %>%
-  dplyr::summarise(counts = dplyr::n())
-dres_amb
-p_amb<- dres_amb %>% ggplot(aes(x = TSD_months, fill=Treatment)) +geom_histogram(binwidth = 0.5)+theme_bw()+guides(color = guide_legend(title = "Country"),legend.key.width=32)+
-  theme(strip.background = element_rect(color="white", fill="white",linetype="solid"),axis.text= element_text(angle=0, hjust=0.5,vjust = 1,size=18),axis.title=element_text(size=22),
-        legend.position="right",legend.text =  element_text(size=20,angle=0),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),legend.title = element_blank(),
-        legend.box.background = element_rect(colour = "black"))+scale_fill_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))+
-  #scale_fill_brewer(palette="Paired")+
-  labs(x="Time since disturbance (months)",y="Number of observations")#+ annotate("text", x = 10, y = 25, label = "3-year resilience of total litterfall",size=6,colour="black")
-FigS3<-p_amb + facet_wrap(~Site)+theme(strip.text.x = element_text(size=18))
-FigS3
-#saving high rest
-ggsave(filename = "FigS3_amb.png",
-       plot = FigS3, width = 22, height = 19, units = 'cm',
-       scale = 2, dpi = 1000)
-
 ##END##

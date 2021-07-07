@@ -594,10 +594,6 @@ hurr_sites<-data_es0ia %>% filter(hurrwind!="NA")
 str(hurr_sites)#n = 45
 hurr_sites$hurrwind=z.trans(hurr_sites$HURRECON_wind_ms)
 
-hurr_sites_amb<-data_es0ia %>% filter(hurrwind!="NA")%>% filter(Treatment=="Ambient")
-str(hurr_sites_amb)#n = 42
-hurr_sites_amb$hurrwind=z.trans(hurr_sites_amb$HURRECON_wind_ms)
-
 ## Table 2 - Total Litterfall Response as a function of soil P####
 
 #Table2 - Model1a####
@@ -659,7 +655,6 @@ model_b<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist = TRU
 summary(model_b)#not so great
 
 #Table 2 - Model2a####
-
 model_tab2<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist = TRUE, 
                 data = hurr_sites,method = "REML",
                 mods = ~soilP*hurrwind)
@@ -753,13 +748,14 @@ mixed_lf_tab2_1b<-rma.mv(yi,vi,random = list(~ 1|Site,~1|DisturbanceName),
                method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab2_1b)
 
-#Final Model Table 2 model 1b
+#Table 2 model 1b####
 mixed_lf_tab2_1b.1<-rma.mv(yi,vi,random = ~ 1|Site, 
                          tdist = TRUE,data = data_es0ilf,
                          method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab2_1b.1)
 
-#Leaf fall Table S8#### alt random effect
+#Leaf fall Alternative random effects#
+
 mixed_lf_tab4a<-rma.mv(yi,vi,random = ~ 1 | DisturbanceName, 
                   tdist = TRUE,data = data_es0ilf,
                   method = "ML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
@@ -788,7 +784,7 @@ summary(mixed_lf_tab4e)#BIC is highest
 #comparing leaf fall models based on BIC
 BIC(mixed_lf_tab2,mixed_lf_tab4a,mixed_lf_tab4b,mixed_lf_tab4c,mixed_lf_tab4d,mixed_lf_tab4e)
 
-#sensitivity analysis - removing sites where total soil P was estimated from available soil P
+#Sensitivity analysis - removing sites where total soil P was estimated from available soil P
 red_siteslf <- data_es0ilf %>% filter(Site!="Grande-Terre")%>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")#%>% filter(Site!="Grande-Terre")
 str(red_siteslf)#25
 levels(as.factor(red_siteslf$Case_study))
@@ -796,25 +792,11 @@ levels(as.factor(red_siteslf$Case_study))
 hurr_red_siteslf <- hurr_siteslf %>% filter(Site!="Grande-Terre")%>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")#%>% filter(Site!="Grande-Terre")
 str(red_siteslf)#25 same as red_siteslf 
 
+#Table S8 model 1b####
 mixed_lf_S8_1b<-rma.mv(yi,vi,random = ~ 1 | Site, 
                      tdist = TRUE,data = red_siteslf,
                      method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_S8_1b)
-
-mixed_lf_red<-rma.mv(yi,vi,random = list(~ 1 | Country,~1|DisturbanceName), 
-                 tdist = TRUE,data = red_siteslf,
-                 method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_red) #Same result for observations with HURRECON data
-
-#Table 2 Best Option for Leaf fall
-mixed_lf_tab4.0<-rma.mv(yi,vi,random = ~ 1 | Country/DisturbanceName, 
-                        tdist = TRUE,data = data_es0ilf,
-                        method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_tab4.0) 
-mixed_lf_tab4.1<-rma.mv(yi,vi,random = ~ 1 | Region/DisturbanceName, 
-                 tdist = TRUE,data = hurr_siteslf,
-                 method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_tab4.1) 
+summary(mixed_lf_S8_1b)#N = 25
 
 #Adding Cyclone metrics
 
@@ -824,90 +806,11 @@ mixed_lf_tab2_2b<-rma.mv(yi,vi,random = ~ 1|Site,
                       method = "REML",mods = ~soilP*hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab2_2b) 
 
-mixed_lf_tab2_2b.1<-rma.mv(yi,vi,random = ~ 1|Site, 
-                         tdist = TRUE,data = data_es0ilf,
-                         method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_tab2_2b.1) 
-
-mixed_lf_tab2.2a<-rma.mv(yi,vi,random = ~ 1 | Site, 
-                   tdist = TRUE,data = hurr_siteslf,
-                   method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_tab2.2a)#this works
-
-mixed_lf_tab4.2b<-rma.mv(yi,vi,random = list(~ 1 | Country,~1|DisturbanceName), 
-                         tdist = TRUE,data = hurr_siteslf,
-                         method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_tab4.2b)
-
-mixed_lf_tab4.2c<-rma.mv(yi,vi,random = list(~ 1 | Region, ~1|DisturbanceName), 
-                         tdist = TRUE,data = hurr_siteslf,
-                         method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_tab4.2c)
-
-mixed_lf_tab4.3d<-rma.mv(yi,vi,random = ~ 1 | Region, 
-                         tdist = TRUE,data = hurr_siteslf,
-                         method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_tab4.3d)
-
-mixed_lf_tab4.2c<-rma.mv(yi,vi,random = ~1|Site, 
-                         tdist = TRUE,data = hurr_siteslf,
-                         method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_tab4.2c)
-
-mixed_lf_tab4.2d<-rma.mv(yi,vi,random = ~1|DisturbanceClass, 
-                         tdist = TRUE,data = hurr_siteslf,
-                         method = "REML",mods = ~soilP+hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_tab4.2d)
-
-#with reduced sites
-mixed_lf.0_red<-rma.mv(yi,vi,random = list(~ 1 | Site,~1|DisturbanceName), 
-                   tdist = TRUE,data = red_siteslf,
-                   method = "REML",mods = ~soilP+windsp+d2track)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf.0_red) 
-
-mixed_lf.1<-rma.mv(yi,vi,random = list(~ 1 | Site,~1|DisturbanceName), 
-                 tdist = TRUE,data = data_es0ilf,
-                 method = "REML",mods = ~soilP+stormfreq)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf.1) 
-
-mixed_lf.2<-rma.mv(yi,vi,random = ~ 1 | DisturbanceName, 
-                 tdist = TRUE,data = data_es0ilf,
-                 method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf.2)
-
-mixed_lf.3<-rma.mv(yi,vi,random = list(~1|Site,~ 1 | DisturbanceName), 
-                   tdist = TRUE,data = data_es0ilf,
-                   method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf.3)
-
-# compare models using BIC
-BIC(mixed_lf,mixed_lf.1,mixed_lf.2,mixed_lf.3) 
-
-
-mixed_lf2<-rma.mv(yi,vi,random = ~ 1 | Site, 
-                 tdist = TRUE,data = data_es0ilf,
-                 method = "REML",mods = ~soilP*windsp+soilP*d2track)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf2) 
-
-
-
-mixed_lf3<-rma.mv(yi,vi,random = ~ 1 | Site/DisturbanceName, 
-                  tdist = TRUE,data = data_es0ilf,
-                  method = "REML",mods = ~soilP+windsp+d2track+soilP*d2track+soilP*windsp)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf3)
-
-res_results_leaf<-multimodel.inference(TE = "yi", 
-                                      seTE = "vi",
-                                      data = data_es0ilf,
-                                      predictors = c("soilP", "windsp", "d2track"),
-                                      interaction = TRUE,method="REML",test = "knha",eval.criterion='BIC')
-
-summary(res_results_leaf)
-
-
-chart.Correlation(data_es0ilf[,c(48,50,81)])
-
-(sum(full.model3_red2$sigma2) - sum(model.mods3fullb2$sigma2)) / sum(full.model3_red2$sigma2)#30% reduction in deviance
+#Table S8 model 1b####
+mixed_lf_tabS8_2b<-rma.mv(yi,vi,random = ~ 1|Site, 
+                         tdist = TRUE,data = red_siteslf,
+                         method = "REML",mods = ~soilP*hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
+summary(mixed_lf_tabS8_2b) 
 
 #### Multimodel Inference Meta-Regression ####
 
@@ -936,242 +839,29 @@ chart.Correlation(dataes0_new[,c(48,50,79,42)])
 names(dataes0_new)
 chart.Correlation(data_es0ia[,c(81,50,48)])
 
-###RESPONSE predition data ####
-
-pred.bm.resp<-data.frame(predict.rma(model.mods3fullb2))
-pred.bm.resp
-
-
-names(data_es0ia$StormFrequencyNorm)
-
-
-####RESPONSE PREDICTIONS linear model####
-
-pred.bm.resp<-data.frame(predict.rma(model.mods3fullb2))
-pred.bm.resp
-summary(model.mods3fullb2)
-
-pred.bm.resp_final<-data.frame(predict.rma(model.mods3full_e2))
-pred.bm.resp_final
-
-names(dataes0_new)
-lm_Rp2<-glm(yi~logsoilP,data=dataes0_new2)
-summary(lm_Rp2)
-nagelkerke(lm_Rp2)
-lm_Rp2$fitted.values
-with(summary(lm_Rp2), 1 - deviance/null.deviance)
-
-lm_Rp2.1<-glm(yi~logsoilP+WMO_wind_kts,data=dataes0_new2)
-summary(lm_Rp2.1)
-nagelkerke(lm_Rp2.1)
-lm_Rp2$fitted.values
-with(summary(lm_Rp2.1), 1 - deviance/null.deviance)
-anova(lm_Rp2.1,null,test="Chisq")
-
-lm_Rp2.2<-glm(yi~logsoilP+WMO_wind_kts+Distance_to_Disturb_km,data=dataes0_new2)
-summary(lm_Rp2.2)
-nagelkerke(lm_Rp2.2)
-
-with(summary(lm_Rp2.2), 1 - deviance/null.deviance)
-anova(lm_Rp2.2,null,test="Chisq")
-
-lm_Rp2.3<-glm(yi~WMO_wind_kts+Distance_to_Disturb_km,data=dataes0_new2)
-summary(lm_Rp2.3)
-nagelkerke(lm_Rp2.3)
-
-null=glm(yi~1,data=dataes0_new2)
-anova(lm_Rp2.3,lm_Rp2.2,lm_Rp2,null,test="Chisq")
-
-lme_Rp<-lme(yi~logsoilP,random=~1|Site, data=dataes0_new2)
-summary(lme_Rp)
-library(rcompanion)
-nagelkerke(lme_Rp)
-
-library(lmtest)
-lrtest(lme_Rp)
-sjPlot::tab_model(lme_Rp)
-
-
-lme_Rp2<-lme(yi~logsoilP+WMO_wind_kts,random=~1|Site, data=dataes0_new2)
-summary(lme_Rp2)
-sjPlot::tab_model(lme_Rp2)
-
-
-#### FINAL linear mixed model to predict the Response ####
-
-lm_Rp2b.1<-lmer(yi~(1|Site)+soilP+windsp+soilP*d2track, data=data_es0ia)#+(1|Site)
-summary(lm_Rp2b.1)
-sjPlot::tab_model(lm_Rp2b.1,show.df = TRUE,digits.p = 2,p.threshold = 0.05)
-
-lm_Rp2b.2<-lmer(yi~soilP+(1|Site), data=data_es0ia)
-summary(lm_Rp2b.2)
-r.squaredGLMM(lm_Rp2b.1)
-predict(lm_Rp2b.1)
-fitted(lm_Rp2b)
-
-lm_Rp2b.1lf<-lmer(yi~(1|Site)+soilP+windsp+soilP*d2track, data=data_es0ilf)#+(1|Site)
-summary(lm_Rp2b.1lf)
-sjPlot::tab_model(lm_Rp2b.1lf,show.df = TRUE,digits.p = 2,p.threshold = 0.05)
-sjPlot::tab_model(lm_Rp2b.1,lm_Rp2b.1lf,show.df = TRUE,digits.p = 2,p.threshold = 0.05)
-fixef(lm_Rp2b.1lf)
-anova(lm_Rp2b.1lf)
-
-r.squaredGLMM(lm_Rp2b.1lf)
-modelplot(lm_Rp2b.1lf)
-
-lm_Rp2b.1lf_b<-lme(yi~logsoilP+logwindsp+logdist, random = ~ 1|Site, data=data_es0ilf)
-summary(lm_Rp2b.1lf_b)
-calc.relimp(lm_Rp2b.1lf_b, type = c("lmg"), rela = TRUE)
-
-
-lm_Rp2c<-lmer(yi~logsoilP+(1|Site)+WMO_wind_kts+YearsSinceLastStorm, data=dataes0_new2)#+(1|Site)
-summary(lm_Rp2c)
-sjPlot::tab_model(lm_Rp2c)
-
-lm_Rp2c<-lmer(yi~logsoilP+(1|Site), data=dataes0_new2)#+(1|Site)
-summary(lm_Rp2c)
-
-sjPlot::tab_model(lm_Rp2b)
-sjPlot::tab_model(model.mods6b,p.val = "kr", show.df = TRUE)
-
-gam_Rp2a<-gamm(yi~s(logsoilP)+s(WMO_wind_kts)+s(Distance_to_Disturb_km),random=list(Site=~1), data=dataes0_new2)
-summary(gam_Rp2a$gam)
-
-shapiro.test(residuals(lm_Rp2))
-modelplot(lm_Rp2)
-calc.relimp(lm_Rp2a, type = c("lmg"), rela = TRUE)
-predictors2 <- c('Log soil P','Wind speed','Log soil P')
-relimp2 <- c(10.9,83.9, 16.1)
-relimp.data2<- data.frame(predictors2, relimp2)
-relimp.data2 %>%
-  ggplot(aes(x=reorder(predictors2,relimp2),y=relimp2)) +
-  geom_col(fill="steelblue") + 
-  coord_flip()+theme_minimal()+theme(axis.title=element_text(size=20),
-                                     axis.text=element_text(size=18))+ labs(x="Predictors", y="Relative importance (%)")+
-  geom_text(aes(label=relimp2), position = position_stack(vjust= 0.5),
-            colour = "white", size = 10)
-
-lm_Rp3<-lm(yi~WMO_wind_kts+logsoilP,data=data_es0ia)#best model
-summary(lm_Rp3)
-shapiro.test(residuals(lm_Rp3))
-modelplot(lm_Rp3)
-
-mm_Rp3<-lme(yi~WMO_wind_kts+logsoilP+Distance_to_Disturb_km,random=~1|Site_ID, data=dataes0_new)
-summary(mm_Rp3)
-sjPlot::tab_model(mm_Rp3)
-sjPlot::tab_model(model.mods6b,p.val = "kr", show.df = TRUE)
-modelplot(mm_Rp3)
-calc.relimp(mm_Rp3, type = c("lmg"), rela = TRUE)
-predictors2 <- c('Wind speed','Log soil P')
-tab_model(mm_Rp3)
-sem.model.fits(mm_Rp3)
-
-#calculating relative importance for each predictor
-calc.relimp(lm_Rp3, type = c("lmg"), rela = TRUE)
-
-predictors <- c('Wind speed','Log soil P','Storm frequency','Log soil P * Storm frequency')
-relimp <- c(53.4, 11, 26.5,9)
-relimp.data<- data.frame(predictors, relimp)
-relimp.data %>%
-  ggplot(aes(x=reorder(predictors,relimp),y=relimp)) +
-  geom_col(fill="steelblue") + 
-  coord_flip()+theme_minimal()+theme(axis.title=element_text(size=20),
-                                     axis.text=element_text(size=18))+ labs(x="Predictors", y="Relative importance (%)")+
-  geom_text(aes(label=relimp), position = position_stack(vjust= 0.5),
-            colour = "white", size = 10)
-
-lm_Rp3a<-lm(yi~WMO_wind_kts+logsoilP+StormsPerYearSince1955,data=data_es0ia)
-summary(lm_Rp3a)
-shapiro.test(residuals(lm_Rp3a))
-
-datared<- data_es0ia %>% filter(Site!="Halemanu") %>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")%>% filter(Site!="Kumuwela")
-
-lm_Rp4<-lm(yi~WMO_wind_kts+logsoilP*StormsPerYearSince1955,data=datared)
-summary(lm_Rp4)
-shapiro.test(residuals(lm_Rp4))
-
-AIC(lm_Rp2,lm_Rp3,lm_Rp4)
 
 ####RESPONSE PREDICTION Figures####
 
-#example
-preds_x<-predict(model_c,levels=0, addx=TRUE) # let's transfer LRR to RR
-preds_x
-
-pred.bm.resp<-data.frame(predict.rma(model.mods4full))
-pred.bm.resp
-
-pred.bm.resp_final<-data.frame(predict.rma(model.mods3full_e2))
-pred.bm.resp_final
-
-metaregplot<- cbind(data.frame(data_es0ia$Site, data_es0ia$yi, fitted(lm_Rp2b.1),data_es0ia$soilP,data_es0ia$windsp,data_es0ia$d2track))
-metaregplot
-
-preg2<-ggplot(metaregplot, aes(x=fitted.lm_Rp2b.1., y=data_es0ia.yi))+geom_point(size=6,alpha=0.9,col="black",fill="#2F2747")+geom_smooth(method = 'glm', col="#9f8a89", alpha=0.1)+
-  theme_pubr()+ # ggplot2 has a few theme options, I like minimal and classic
-  theme(axis.title=element_text(size=24),
-        axis.text=element_text(size=20))+ labs(x="Predicted response", y="Observed response")
-rsq_label <- paste('R^2 == 0.73')
-Fig5.1<-preg2+#scale_color_gradient(low="#544A4A", high="#D8001F")+#breaks=c(400,800,1200,1600,2000))+#scale_color_gradientn(colours = rainbow(5))+#+scale_color_gradient(low="blue", high="red")
-  theme(legend.title = element_text (size = 24), legend.text = element_text (size = 22),legend.position = "right",legend.justification = c("right"))+scale_size_continuous(range=c(1,20))+
-  labs(fill=NULL,size="Ln wind speed",color="Ln soil P")+ annotate("text", x = 0.2, y = 6, label = rsq_label, size=10,hjust=0,colour="black",parse=TRUE) #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
-
-#Old Fig5a
-Fig5.1 #labs(y = bquote('Density Litterfall mass'~(g/m^2/day))
-ggsave(filename = "Fig5a_new.png",
-       plot = Fig5.1, width = 8, height = 8, units = 'cm',
-       scale = 2, dpi = 600)
-
-model.mods3full_ext1_zt.1$pred
-mypreds_resp_tot<-predict(model.mods3full_ext1_zt.1,addx=TRUE)
-data_es0ia$pred<-mypreds_resp_tot$pred
-data_es0ia$se<-mypreds_resp_tot$se 
-
-data_es0ia$d2track
-
 ##Predictions based on best Meta-Regression model for total litterfall####
 #The best model is model_tab4
-preds_x2<-predict(model_tab4,levels=0, addx=TRUE) # let's transfer LRR to RR
+preds_x2<-predict(model_tab2,levels=0, addx=TRUE)
 preds_x2<-data.frame(preds_x2)
 str(preds_x2)
 
 #Data frame
-metaregplot.1_x2<- cbind(data.frame(hurr_sites$Site, hurr_sites$yi, hurr_sites$vi,preds_x2$pred,preds_x2$se,hurr_sites$soilP,hurr_sites$hurrwind,fac_soilP=factor(hurr_sites$Other_soil_P),hurr_sites$d2track,hurr_sites$Other_soil_P,hurr_sites$HURRECON_wind_ms,hurr_sites$Distance_to_Disturb_km))
+metaregplot.1_x2<- cbind(data.frame(hurr_sites$Site, hurr_sites$yi, hurr_sites$vi,preds_x2$pred,preds_x2$se,hurr_sites$soilP,hurr_sites$hurrwind,fac_soilP=factor(hurr_sites$Other_soil_P),hurr_sites$Other_soil_P,hurr_sites$HURRECON_wind_ms))
 str(metaregplot.1_x2)
 levels(as.factor(hurr_sites$soilP))
 metaregplot.1_x2$hurr_sites.Other_soil_P
 
-#Figure
-preg_tot<-ggplot(metaregplot.1_x2, aes(x=hurr_sites.HURRECON_wind_ms, y=preds_x2.pred))+geom_point(shape=21,aes(col=fac_soilP,size=preds_x2.se),stroke=1.4)
-preg_tot<-preg_tot+ scale_size_continuous(range = c(2, 10))#+ scale_fill_fermenter(n.breaks = 12, palette = "Paired")#scale_fill_manual(values = c("#A38D8D","#F0A13C", "#B77878", "#C44474","#DE2BCF", "#CF1A33")) #+scale_fill_viridis_c(guide="legend")  #scale_fill_gradient2(low="black", mid = "white", high="red")+theme_pubr()#scale_size_area(max_size = 10)
-preg_tot<-preg_tot+scale_color_manual(values=c("#1a1a1a","#4d4d4d","#878787","#313695","#8073ac","#4575b4","#74add1","#abd9e9","#00876c","#3c986d","#60a86d","#84b76e","#a8c671","#cdd476","#f4e07f","#f4c76a","#f3ad5a","#e9774c","#de77ae","#c51b7d","#d73027","#a50026"))
-preg_tot<-preg_tot+ labs(x="HURRECON wind speed (m/s)", y="Predicted response to cyclone")+
-  stat_smooth(method="glm",formula=y~x,fullrange=T,se=FALSE,size=1,colour="#9f8a89")+
-stat_smooth(method="glm",aes(x=hurr_sites.HURRECON_wind_ms,y=preds_x2$ci.lb),formula=y~x,fullrange=T,se=FALSE,size=1,colour="#9f8a89",linetype=3)+
-  stat_smooth(method="glm",aes(x=hurr_sites.HURRECON_wind_ms,y=preds_x2$ci.ub),formula=y~x,fullrange=T,se=FALSE,size=1,colour="#9f8a89",linetype=3)
-#geom_smooth(method = 'glm', col="#9f8a89",alpha=0.1,se=FALSE)
-#preg_tot
-#preg_tot<-preg_tot#+labs(x="Predicted response",y="Observed response")
-#rsq_label <- paste('R^2 == 0.73')
-preg_tot<-preg_tot+guides(size = guide_legend(override.aes = list(col = "black",shape=21)),color = guide_legend(override.aes = list(size = 8)))
-#preg_tot
-Fig5a_new<-preg_tot+theme_pubr()+#scale_color_gradient(low="#544A4A", high="#D8001F")+#breaks=c(400,800,1200,1600,2000))+#scale_color_gradientn(colours = rainbow(5))+
-  theme(legend.position = "right", legend.justification = "right",legend.title = element_text (size = 21), legend.text = element_text (size = 20),axis.title=element_text(size=28),axis.text=element_text(size=26))+
-  labs(size="",color="Total soil P (mg/kg)")+guides(size=FALSE)+ annotate("text", x = 18, y = 6.5, label = "a Total litterfall", size=10,hjust=0,colour="black",fontface="bold") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
+##Figure 5a
 
-#Fig5a_new####
-Fig5a_new
-
-ggsave(filename = "Fig5a_Final.png",
-       plot = Fig5a_new, width = 12, height = 12, units = 'cm',
-       scale = 2, dpi = 600)
-metaregplot.1_x2$hurr_sites.Other_soil_P
 #Changing color scheme to include unidirectional and log soil P
 preg_tot2<-ggplot(metaregplot.1_x2, aes(x=hurr_sites.HURRECON_wind_ms, y=preds_x2.pred))+geom_point(shape=21,aes(col=log(hurr_sites.Other_soil_P),size=preds_x2.se),stroke=1.6)
 preg_tot2<-preg_tot2+ scale_size_continuous(range = c(2, 10))#+ scale_fill_fermenter(n.breaks = 12, palette = "Paired")#scale_fill_manual(values = c("#A38D8D","#F0A13C", "#B77878", "#C44474","#DE2BCF", "#CF1A33")) #+scale_fill_viridis_c(guide="legend")  #scale_fill_gradient2(low="black", mid = "white", high="red")+theme_pubr()#scale_size_area(max_size = 10)
 preg_tot2<-preg_tot2+scale_color_gradient(low="#FFFD7D",high="#D8001F")#scale_color_continuous(type="viridis") #FCFF00
 preg_tot2
-preg_tot2<-preg_tot2+ labs(x="HURRECON wind speed (m/s)", y="Predicted response to cyclone")+
+preg_tot2<-preg_tot2+ labs(x="Wind speed (m/s)", y="Predicted response")+
   stat_smooth(method="glm",formula=y~x,fullrange=T,se=FALSE,size=1,colour="#9f8a89")+
   stat_smooth(method="glm",aes(x=hurr_sites.HURRECON_wind_ms,y=preds_x2$ci.lb),formula=y~x,fullrange=T,se=FALSE,size=1,colour="#9f8a89",linetype=3)+
   stat_smooth(method="glm",aes(x=hurr_sites.HURRECON_wind_ms,y=preds_x2$ci.ub),formula=y~x,fullrange=T,se=FALSE,size=1,colour="#9f8a89",linetype=3)
@@ -1188,7 +878,7 @@ Fig5a_new2
 ##Leaf fall response to cyclone####
 
 #Predictions
-preds_x_leaf<-predict(mixed_lf_tab4.2,levels=0, addx=TRUE) # let's transfer LRR to RR
+preds_x_leaf<-predict(mixed_lf_tab2_2b,levels=0, addx=TRUE) # let's transfer LRR to RR
 preds_x_leaf<-data.frame(preds_x_leaf)
 str(preds_x_leaf)
 
@@ -1199,50 +889,21 @@ hurr_siteslf$fac_P=as.factor(hurr_siteslf$Other_soil_P)
 levels(hurr_siteslf$fac_P)
 hurr_siteslf$fac_P
 
-preg_tot<-preg_tot+scale_color_manual(values=c("#1a1a1a","#4d4d4d","#878787","#313695","#8073ac","#4575b4","#74add1","#abd9e9","#00876c","#3c986d","#60a86d","#84b76e","#a8c671","#cdd476","#f4e07f","#f4c76a","#f3ad5a","#e9774c","#de77ae","#c51b7d","#d73027","#a50026"))
-
-#Figure
-preg_lf<-ggplot(metaregplot.1_x_leaf, aes(x=hurr_siteslf.HURRECON_wind_ms, y=preds_x_leaf.pred))+geom_point(shape=21,aes(col=fac_soilP,size=preds_x_leaf.se),stroke=1.4)
-preg_lf<-preg_lf+ scale_size_continuous(range = c(2, 10))#+ scale_fill_fermenter(n.breaks = 12, palette = "Paired")#scale_fill_manual(values = c("#A38D8D","#F0A13C", "#B77878", "#C44474","#DE2BCF", "#CF1A33")) #+scale_fill_viridis_c(guide="legend")  #scale_fill_gradient2(low="black", mid = "white", high="red")+theme_pubr()#scale_size_area(max_size = 10)
-preg_lf<-preg_lf+scale_color_manual(values=c("#1a1a1a","#4d4d4d","#8073ac","#4575b4","#abd9e9","#00876c","#84b76e","#a8c671","#f4e07f","#f4c76a","#f3ad5a","#e9774c","#de77ae","#c51b7d","#d73027"))
-preg_lf
-preg_lf<-preg_lf+ labs(x="HURRECON wind speed (m/s)", y="Predicted response to cyclone")+
-  stat_smooth(method="glm",formula=y~x,fullrange=T,se=FALSE,size=1,colour="#9f8a89")+
-  stat_smooth(method="glm",aes(x=hurr_siteslf.HURRECON_wind_ms,y=preds_x_leaf$ci.lb),formula=y~x,fullrange=T,se=FALSE,size=1,colour="#9f8a89",linetype=3)+
-  stat_smooth(method="glm",aes(x=hurr_siteslf.HURRECON_wind_ms,y=preds_x_leaf$ci.ub),formula=y~x,fullrange=T,se=FALSE,size=1,colour="#9f8a89",linetype=3)
-#geom_smooth(method = 'glm', col="#9f8a89",alpha=0.1,se=FALSE)
-#preg_tot
-#preg_tot<-preg_tot#+labs(x="Predicted response",y="Observed response")
-#rsq_label <- paste('R^2 == 0.73')
-preg_lf<-preg_lf+guides(size = guide_legend(override.aes = list(col = "black",shape=21)),color = guide_legend(override.aes = list(size = 8)))
-preg_lf
-Fig5b_new<-preg_lf+theme_pubr()+
-  theme(legend.position = "top", legend.justification = "center",legend.title = element_text (size = 21), legend.text = element_text (size = 20),axis.title=element_text(size=28),axis.text=element_text(size=26))+
-  labs(size="",color="Total soil P \n(mg/kg)")+guides(size=FALSE,color=FALSE)+ annotate("text", x = 16, y = 4.6, label = "b Leaf fall", size=10,hjust=0,colour="black",fontface="bold") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
-
-#Fig5b_new####
-Fig5b_new
-
-Fig5_Response<-Fig5a_new+Fig5b_new+plot_layout(ncol=2)+ plot_layout(guides = 'collect')& theme(legend.justification = "left")
-Fig5_Response
-
-ggsave(filename = "Fig5ab_Final2.png",
-       plot = Fig5_Response, width = 20, height = 12, units = 'cm',
-       scale = 2, dpi = 600)
+#Figure 5b
 
 #Changing color scheme to include unidirectional and log soil P
 preg_lf2<-ggplot(metaregplot.1_x_leaf, aes(x=hurr_siteslf.HURRECON_wind_ms, y=preds_x_leaf.pred))+geom_point(shape=21,aes(col=log(hurr_siteslf.Other_soil_P),size=preds_x_leaf.se),stroke=1.6)
 preg_lf2<-preg_lf2+ scale_size_continuous(range = c(2, 10))#+ scale_fill_fermenter(n.breaks = 12, palette = "Paired")#scale_fill_manual(values = c("#A38D8D","#F0A13C", "#B77878", "#C44474","#DE2BCF", "#CF1A33")) #+scale_fill_viridis_c(guide="legend")  #scale_fill_gradient2(low="black", mid = "white", high="red")+theme_pubr()#scale_size_area(max_size = 10)
 preg_lf2<-preg_lf2+scale_color_gradient(low="#FFFD7D",high="#D8001F")#scale_color_continuous(type="viridis")
 preg_lf2
-preg_lf2<-preg_lf2+ labs(x="HURRECON wind speed (m/s)", y="Predicted response to cyclone")+
+preg_lf2<-preg_lf2+ labs(x="Wind speed (m/s)", y="Predicted response")+
   stat_smooth(method="glm",formula=y~x,fullrange=T,se=FALSE,size=1,colour="#9f8a89")+
   stat_smooth(method="glm",aes(x=hurr_siteslf.HURRECON_wind_ms,y=preds_x_leaf$ci.lb),formula=y~x,fullrange=T,se=FALSE,size=1,colour="#9f8a89",linetype=3)+
   stat_smooth(method="glm",aes(x=hurr_siteslf.HURRECON_wind_ms,y=preds_x_leaf$ci.ub),formula=y~x,fullrange=T,se=FALSE,size=1,colour="#9f8a89",linetype=3)
 preg_lf2<-preg_lf2+guides(size = guide_legend(override.aes = list(col = "black",shape=21)))#,color = guide_legend(override.aes = list(size = 8)))
 Fig5b_new2<-preg_lf2+theme_pubr()+guides(color = guide_colourbar(barwidth = 15, barheight = 1.5,nbin=30,ticks.colour="black",ticks.linewidth = 2.5))+
   theme(legend.position = "top",legend.justification = "center",legend.title = element_text (size = 19), legend.text = element_text (size = 20),axis.title=element_text(size=26),axis.text=element_text(size=24))+
-  labs(size="",color="Soil P \n(ln mg/kg)")+guides(size=FALSE)+ annotate("text", x = 5, y = 5.2, label = "b Leaf fall", size=8,hjust=0,colour="black",fontface="bold") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
+  labs(size="",color="Soil P \n(ln mg/kg)")+guides(size=FALSE)+ annotate("text", x = 5, y = 5.2, label = "b Leaf litterfall", size=8,hjust=0,colour="black",fontface="bold") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
 
 #Fig5b_new2####
 Fig5b_new2
@@ -1252,7 +913,7 @@ Fig5_Response2<-Fig5a_new2+Fig5b_new2+plot_layout(ncol=2)#+ plot_layout(guides =
 Fig5_Response2
 
 #Saving in High Res
-ggsave(filename = "Fig5ab_Final3.png",
+ggsave(filename = "Fig5ab.png",
        plot = Fig5_Response2, width = 16, height = 10, units = 'cm',
        scale = 2, dpi = 1200)
 
@@ -1512,8 +1173,8 @@ b1
 ## Fig3a #### Response of Total Litterfall Mass####
 plot1D<-ggplot(data=forrest_data_C,aes(x=reorder(Case2,-ES),y=ES,ymax=ES+(1.96*SE),ymin=ES-(1.96*SE),color=Region))+geom_pointrange(alpha=0.9,size=1.2)+guides(title="Region")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
 plot2D<-plot1D+coord_flip()+geom_hline(aes(yintercept=0), lty=2, color = "magenta", cex=1.2, alpha = 0.6)#+geom_hline(aes(yintercept=3.64), lty=2, colour = "#003f5c", cex=0.9, alpha = 0.4)
-plot3D<-plot2D+xlab("Case study")+theme_bw()+ylab(expression(Response~ln~(litterfall[ti]/litterfall[t0]))) #ylab(expression(Response~(ln~Total~litterfall~t[i]~t[0]^-1)))
-finalFig3a<-plot3D+theme(axis.title=element_text(size=26),axis.text.x=element_text(size=22,angle=0, hjust=0.5),axis.text.y=element_text(size=17,angle=0, hjust=1))+theme(legend.title = element_blank(), legend.text = element_text (size = 24),legend.position=c(0.8,0.9),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),                                                                                                                                                                        legend.box.background = element_rect(colour = "grey"))+b1+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 1.5)))
+plot3D<-plot2D+xlab("Case study")+theme_bw()+ylab("Response")#ylab(expression(Response~ln~(litterfall[ti]/litterfall[t0]))) #ylab(expression(Response~(ln~Total~litterfall~t[i]~t[0]^-1)))
+finalFig3a<-plot3D+theme(axis.title=element_text(size=28),axis.text.x=element_text(size=22,angle=0, hjust=0.5),axis.text.y=element_text(size=17,angle=0, hjust=1))+theme(legend.title = element_blank(), legend.text = element_text (size = 24),legend.position=c(0.8,0.9),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),                                                                                                                                                                        legend.box.background = element_rect(colour = "grey"))+b1+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 1.5)))
 finalFig3a<-finalFig3a+ annotate("text", y = -1, x = 46, fontface="bold",label = "a", size=8,colour="black")
 finalFig3a
 
@@ -1787,26 +1448,6 @@ data_frac_S1 <- rbind(data.frame(group="Total", variable="Annual (all)",estimate
                                row.names=FALSE, stringsAsFactors=TRUE))
 data_frac_S1
 
-####FigS1 ggplot####
 
-pfrac_S1<-ggplot(data_frac_S1, aes(x=group,y=estimate,ymax=ci_up,ymin=ci_low, shape = variable))+scale_y_continuous(breaks=c(-6,-4,-2,0,2,4,6,8))+
-  geom_pointrange(mapping=aes(color=variable),size=1, position=position_dodge(width=c(0.8, 1.2)))+coord_flip()+
-  geom_hline(aes(yintercept=0), lty=2,size=1,col="magenta",alpha=0.8) + # this adds a dotted line for effect size of 0
-  labs(y="Pantropical response with 95% CI", x="Litterfall fraction") +scale_shape_discrete(solid=F)+
-  theme_bw() + # ggplot2 has a few theme options, I like minimal and classic
-  theme(axis.title.x =element_text(vjust = -0.5),axis.text.x =element_text(vjust = -0.3),
-        axis.title.y =element_text(vjust = 1),axis.title=element_text(size=28),
-        axis.text=element_text(size=26),legend.text =  element_text(size=20),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),legend.title = element_blank(),legend.position = c(0.7,0.89),legend.box.background = element_rect(colour = "gray"))
-Fig_S1<-pfrac_S1+ scale_color_manual(values=c("#141212","#5E3FBA","#A81C38"))+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())#scale_color_grey(start=0.65, end=0.25)
-Fig_S1<-Fig_S1+ annotate("text", y = 6.5, x = 5.2, fontface="bold",label = "(7)", size=5,colour="black")+ annotate("text", y = 6.5, x = 5, fontface="bold",label = "(7)", size=5,colour="black")+ annotate("text", y = 6.5, x = 4.7, fontface="bold",label = "(11)", size=5,colour="black")+
-annotate("text", y = 6.5, x = 4.22, fontface="bold",label = "(4)", size=5,colour="black")+ annotate("text", y = 6.5, x = 4, fontface="bold",label = "(4)", size=5,colour="black")+ annotate("text", y = 6.5, x = 3.7, fontface="bold",label = "(9)", size=5,colour="black")+
-annotate("text", y = 6.5, x = 3.22, fontface="bold",label = "(16)", size=5,colour="black")+ annotate("text", y = 6.5, x = 3, fontface="bold",label = "(16)", size=5,colour="black")+ annotate("text", y = 6.5, x = 2.7, fontface="bold",label = "(30)", size=5,colour="black")+
-annotate("text", y = 6.5, x = 2.22, fontface="bold",label = "(14)", size=5,colour="black")+ annotate("text", y = 6.5, x = 2, fontface="bold",label = "(14)", size=5,colour="black")+ annotate("text", y = 6.5, x = 1.7, fontface="bold",label = "(29)", size=5,colour="black")+
-annotate("text", y = 6.5, x = 1.22, fontface="bold",label = "(23)", size=5,colour="black")+ annotate("text", y = 6.5, x = 1, fontface="bold",label = "(23)", size=5,colour="black")+ annotate("text", y = 6.5, x = 0.7, fontface="bold",label = "(48)", size=5,colour="black")
-
-#Saving Figure S1
-ggsave(filename = "FigS1_Fractions_Mass_Response.png",
-       plot = Fig_S1, width = 13, height = 10, units = 'cm',
-       scale = 2, dpi = 1000)
 
 ##END##
