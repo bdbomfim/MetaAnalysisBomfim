@@ -318,6 +318,237 @@ ggsave(filename = "FigS2_Resilience_annual_subannual.png",
        plot = FigS2, width = 24, height = 16, units = 'cm',
        scale = 2, dpi = 1000)
 
+##Figure Sup Predictors variability###
+
+names(CPFig4b_cor)#these are the variables to be plotted
+
+sup_fig_mod<-data_es0ia%>% filter(HURRECON_wind_ms!="NA")
+names(sup_fig_mod)
+
+#Boxplot showing range in data points for the reponse predictors of total litterfall mass flux
+#Holdridge
+df_h <- sup_fig_mod %>%
+  group_by(Holdridge_life_zone,Country) %>%
+  dplyr::summarise(counts = dplyr::n())
+p_df_h<-df_h %>% ggplot(aes(x=Holdridge_life_zone, y = counts)) +geom_point(aes(color=Country),shape=21,size=2,stroke=1.5) +theme_classic2()+
+  theme(axis.title=element_text(size=18),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=60, hjust=1,vjust = 1,size=12))+#guides(fill = guide_legend(title = ""),legend.key.width=32)+ #scale_x_continuous(name="Months since disturbance", breaks = c(0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84))+
+  theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
+        legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+
+  labs(y = "n",x = "Holdridge life zone")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+
+df_rt <- sup_fig_mod %>%
+  group_by(RockType,Country) %>%
+  dplyr::summarise(counts = dplyr::n())
+p_df_rt<-df_rt %>% ggplot(aes(x=RockType, y = counts)) +geom_point(aes(color=Country),shape=21,size=2,stroke=1.5) +theme_classic2()+
+  theme(axis.title=element_text(size=18),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=45, hjust=1,vjust = 1,size=12))+#guides(fill = guide_legend(title = ""),legend.key.width=32)+ #scale_x_continuous(name="Months since disturbance", breaks = c(0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84))+
+  theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
+        legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+scale_y_continuous(breaks=c(1,3,5,7,9))+
+  labs(y = "n",x = "Geological group")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+
+df_rp <- sup_fig_mod %>%
+  group_by(RockPClass,Country) %>%
+  dplyr::summarise(counts = dplyr::n())
+p_df_rp<-df_rp %>% ggplot(aes(x=RockPClass, y = counts)) +geom_point(aes(color=Country),shape=21,size=2,stroke=1.5) +theme_classic2()+
+  theme(axis.title=element_text(size=18),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=0, hjust=0.5,vjust = 1,size=18))+#guides(fill = guide_legend(title = ""),legend.key.width=32)+ #scale_x_continuous(name="Months since disturbance", breaks = c(0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84))+
+  theme(legend.title = element_blank (), legend.text = element_text (size = 18), legend.position = "none",
+        legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+scale_y_continuous(breaks=c(1,3,5,7,9,11,13))+
+  labs(y = "n",x = "Parent material P class")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+
+df_pm <- sup_fig_mod %>%
+  group_by(Par_Mat,Country) %>%
+  dplyr::summarise(counts = dplyr::n())
+p_df_pm<-df_pm %>% ggplot(aes(x=Par_Mat, y = counts)) +geom_point(aes(color=Country),shape=21,size=2,stroke=1.5) +theme_classic2()+
+  theme(axis.title=element_text(size=18),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=60, hjust=1,vjust = 1,size=12))+#guides(fill = guide_legend(title = ""),legend.key.width=32)+ #scale_x_continuous(name="Months since disturbance", breaks = c(0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84))+
+  theme(legend.title = element_blank (), legend.text = element_text (size = 18), legend.position = "none",
+        legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+scale_y_continuous(breaks=c(1,3,5,7,9,11,13))+
+  labs(y = "n",x = "Parent material")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+
+df_so <- sup_fig_mod %>%
+  group_by(USDA_Soil_Order,Country) %>%
+  dplyr::summarise(counts = dplyr::n())
+p_df_so<-df_so %>% ggplot(aes(x=USDA_Soil_Order, y = counts)) +geom_point(aes(color=Country),shape=21,size=2,stroke=1.5) +theme_classic2()+
+  theme(axis.title=element_text(size=18),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=40, hjust=1,vjust = 1,size=12))+#guides(fill = guide_legend(title = ""),legend.key.width=32)+ #scale_x_continuous(name="Months since disturbance", breaks = c(0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84))+
+  theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
+        legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+scale_y_continuous(breaks=c(1,3,5,7,9,11,13))+
+  labs(y = "n",x = "Soil order (US)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+
+df_lo <- sup_fig_mod %>%
+  group_by(Longitude,Country) %>%
+  dplyr::summarise(counts = dplyr::n())
+p_df_lo<-df_lo %>% ggplot(aes(x=Longitude, y = counts)) +geom_point(aes(color=Country),shape=21,size=2,stroke=1.5) +theme_classic2()+
+  theme(axis.title=element_text(size=18),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=0, hjust=0.5,vjust = 1,size=18))+#guides(fill = guide_legend(title = ""),legend.key.width=32)+ #scale_x_continuous(name="Months since disturbance", breaks = c(0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84))+
+  theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
+        legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+scale_y_continuous(breaks=c(1,2,3,4,5))+scale_x_continuous(breaks=c(-150,-100,-50,0,50,100,150))+
+  labs(y = "n",x = "Longitude (UTM)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+
+df_el <- sup_fig_mod %>%
+  group_by(Elevation_m,Country) %>%
+  dplyr::summarise(counts = dplyr::n())
+p_df_el<-df_el %>% ggplot(aes(x=Elevation_m, y = counts)) +geom_point(aes(color=Country),shape=21,size=2,stroke=1.5) +theme_classic2()+
+  theme(axis.title=element_text(size=18),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=0, hjust=0.5,vjust = 1,size=18))+#guides(fill = guide_legend(title = ""),legend.key.width=32)+ #scale_x_continuous(name="Months since disturbance", breaks = c(0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84))+
+  theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
+        legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+scale_x_continuous(breaks=c(0,100,300,500,700,900,1100,1300))+
+  labs(y = "n",x = "Elevation (m)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+
+df_map <- sup_fig_mod %>%
+  group_by(MAT_MAP_x100,Country) %>%
+  dplyr::summarise(counts = dplyr::n())
+p_df_map<-df_map %>% ggplot(aes(x=MAT_MAP_x100, y = counts)) +geom_point(aes(color=Country),shape=21,size=2,stroke=1.5) +theme_classic2()+
+  theme(axis.title=element_text(size=18),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=0, hjust=0.5,vjust = 1,size=18))+#guides(fill = guide_legend(title = ""),legend.key.width=32)+ #scale_x_continuous(name="Months since disturbance", breaks = c(0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84))+
+  theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
+        legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+scale_x_continuous(breaks=c(0.5,1,1.5,2,2.5,3,3.5))+
+  labs(y = "n",x = "MAT/MAP x 100 (C/mm)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+
+df_sp <- sup_fig_mod %>%
+  group_by(Other_soil_P,Country) %>%
+  dplyr::summarise(counts = dplyr::n())
+p_df_sp<-df_sp %>% ggplot(aes(x=Other_soil_P, y = counts)) +geom_point(aes(color=Country),shape=21,size=2,stroke=1.5) +theme_classic2()+
+  theme(axis.title=element_text(size=18),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=0, hjust=0.5,vjust = 1,size=18))+#guides(fill = guide_legend(title = ""),legend.key.width=32)+ #scale_x_continuous(name="Months since disturbance", breaks = c(0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84))+
+  theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
+        legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+scale_x_continuous(breaks=c(0,100,300,500,700,900,1100,1300,1500))+
+  labs(y = "n",x = "Total soil P (mg/kg)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+
+df_sf <- sup_fig_mod %>%
+  group_by(StormFrequencyNorm,Country) %>%
+  dplyr::summarise(counts = dplyr::n())
+p_df_sf<-df_sf %>% ggplot(aes(x=StormFrequencyNorm, y = counts)) +geom_point(aes(color=Country),shape=21,size=2,stroke=1.5) +theme_classic2()+
+  theme(axis.title=element_text(size=18),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=0, hjust=0.5,vjust = 1,size=18))+#guides(fill = guide_legend(title = ""),legend.key.width=32)+ #scale_x_continuous(name="Months since disturbance", breaks = c(0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84))+
+  theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
+        legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+scale_x_continuous(breaks=c(0.25,0.5,0.75,1))+
+  labs(y = "n",x = "Storm frequency (storms/year)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+
+df_tss <- sup_fig_mod %>%
+  group_by(YearsSinceLastStorm,Country) %>%
+  dplyr::summarise(counts = dplyr::n())
+p_df_tss<-df_tss %>% ggplot(aes(x=YearsSinceLastStorm, y = counts)) +geom_point(aes(color=Country),shape=21,size=2,stroke=1.5) +theme_classic2()+
+  theme(axis.title=element_text(size=18),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=0, hjust=0.5,vjust = 1,size=18))+#guides(fill = guide_legend(title = ""),legend.key.width=32)+ #scale_x_continuous(name="Months since disturbance", breaks = c(0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84))+
+  theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
+        legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+#scale_x_continuous(breaks=c(0.25,0.5,0.75,1))+
+  labs(y = "n",x = "Time since last storm (years)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+
+df_cr <- sup_fig_mod %>%
+  group_by(Disturb_Rainfall_mm,Country) %>%
+  dplyr::summarise(counts = dplyr::n())
+p_df_cr<-df_cr %>% ggplot(aes(x=Disturb_Rainfall_mm, y = counts)) +geom_point(aes(color=Country),shape=21,size=2,stroke=1.5) +theme_classic2()+
+  theme(axis.title=element_text(size=18),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=0, hjust=0.5,vjust = 1,size=18))+#guides(fill = guide_legend(title = ""),legend.key.width=32)+ #scale_x_continuous(name="Months since disturbance", breaks = c(0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84))+
+  theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
+        legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+#scale_x_continuous(breaks=c(0.25,0.5,0.75,1))+
+  labs(y = "n",x = "Cyclone rainfall (mm)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+
+df_wp <- sup_fig_mod %>%
+  group_by(HURRECON_wind_ms,Country) %>%
+  dplyr::summarise(counts = dplyr::n())
+df_wp
+p_df_wp<-df_wp %>% ggplot(aes(x=HURRECON_wind_ms, y = counts)) +geom_point(aes(color=Country),shape=21,size=2,stroke=1.5) +theme_classic2()+
+  theme(axis.title=element_text(size=18),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=0, hjust=0.5,vjust = 1,size=18))+#guides(fill = guide_legend(title = ""),legend.key.width=32)+ #scale_x_continuous(name="Months since disturbance", breaks = c(0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84))+
+  theme(legend.title = element_blank (), legend.text = element_text (size = 18), legend.position = "top",
+        legend.justification = c("center", "top"),legend.box.just = "right",legend.margin = margin(2, 2, 2, 2))+#scale_x_continuous(breaks=c(0.25,0.5,0.75,1))+
+  labs(y = "n",x = "Wind speed (m/s)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+p_df_wp
+df_wd <- sup_fig_mod %>%
+  group_by(Gale_wind_duration_minutes,Country) %>%
+  dplyr::summarise(counts = dplyr::n())
+df_wd
+p_df_wd<-df_wd %>% ggplot(aes(x=Gale_wind_duration_minutes, y = counts)) +geom_point(aes(color=Country),shape=21,size=2,stroke=1.5) +theme_classic2()+
+  theme(axis.title=element_text(size=18),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=0, hjust=0.5,vjust = 1,size=18))+#guides(fill = guide_legend(title = ""),legend.key.width=32)+ #scale_x_continuous(name="Months since disturbance", breaks = c(0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84))+
+  theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
+        legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+scale_x_continuous(breaks=c(0,1000,2000,3000,4000,5000,6000))+
+  labs(y = "n",x = "Gale wind duration (minutes)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+
+
+#sup_fig<-ggplot(CPFig4d_cor, aes(x=Holdridge zone,y=H, fill = meso_cap2.Season)) +
+sup_fig_dd_1<-(p_df_wp|p_df_sp|p_df_sf)/(p_df_tss|p_df_cr|p_df_wd)/(p_df_map|p_df_el|p_df_lo)/(p_df_so|p_df_rp)/(p_df_rt|p_df_h|p_df_pm)+plot_annotation(tag_levels = 'a')& 
+  theme(plot.tag = element_text(size = 22,face="bold"),plot.tag.position =c(0.02,1))#
+sup_fig_dd_1
+
+#saving as png
+ggsave(filename = "Fig_sup_DD_resp.png",
+       plot = sup_fig_dd_1, width = 24, height = 26, units = 'cm',scale = 2, dpi = 1000)
+
+##Figure S3 Resilience Correlations####
+
+####Correlation plot of final variables in random forest total litterfall mass flux resilience
+
+#Data
+names(datametaforest_restot)
+CPFig8b_cor<-datametaforest_restot[,c(2:6,9:18)]
+names(CPFig8b_cor)## Final!
+#Changing column names
+names(CPFig8b_cor)[names(CPFig8b_cor) == "Holdridge_ID"] <- "Holdridge zone"
+names(CPFig8b_cor)[names(CPFig8b_cor) == "long"] <- "Longitude"
+names(CPFig8b_cor)[names(CPFig8b_cor) == "elev"] <- "Elevation"
+names(CPFig8b_cor)[names(CPFig8b_cor) == "mat_map"] <- "MAT/MAP"
+names(CPFig8b_cor)[names(CPFig8b_cor) == "soilP"] <- "Soil P"
+names(CPFig8b_cor)[names(CPFig8b_cor) == "Soil_ID"] <- "Soil order"
+names(CPFig8b_cor)[names(CPFig8b_cor) == "stormfreq"] <- "Storm frequency"
+names(CPFig8b_cor)[names(CPFig8b_cor) == "timesincestorm"] <- "Time since last storm"
+names(CPFig8b_cor)[names(CPFig8b_cor) == "distrain"] <- "Cyclone rainfall"
+names(CPFig8b_cor)[names(CPFig8b_cor) == "hurrwind"] <- "Wind speed"
+names(CPFig8b_cor)[names(CPFig8b_cor) == "windur"] <- "Wind duration"
+names(CPFig8b_cor)[names(CPFig8b_cor) == "Rocktype_ID"] <- "Geological group"
+names(CPFig8b_cor)[names(CPFig8b_cor) == "RockP_ID"] <- "Parent material P"
+names(CPFig8b_cor)[names(CPFig8b_cor) == "Par_Mat_ID"] <- "Parent material"
+names(CPFig8b_cor)[names(CPFig8b_cor) == "tsd"] <- "Time since cyclone"
+
+#Calculating correlation coefficients and p values
+corrf8b <- round(cor(CPFig8b_cor,method="pearson"),2)
+p.matf8b <- cor_pmat(CPFig8b_cor)
+
+#FigureS3a correlation
+FigS3a<-ggcorrplot(corrf8b, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
+                    outline.col = "white", p.mat = p.matf8b,method="square",ggtheme=ggplot2::theme_classic(),show.legend=TRUE, 
+                    legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=28,insig="blank",
+                    colors = c("#ABA0A0", "white", "#ffa600",pch.cex=20,nbreaks = 8,legend.text.cex=26))+font("legend.text",size=18)+font("legend.title", size=22)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
+FigS3a
+
+#Saving figure in high res
+ggsave(filename = "FigS3a_Resilience_Correlations_TotLit.png",
+       plot = FigS3a, width = 16, height = 18, units = 'cm',
+       scale = 2, dpi = 800)
+
+#Correlation among leaf fall resilience predictors####
+
+#Selecting columns
+names(datametaforest_reslf)
+CPFig8d_cor<-datametaforest_reslf[,c(2:6,9:18)]
+names(CPFig8d_cor)
+#Changing column names
+names(CPFig8d_cor)[names(CPFig8d_cor) == "Holdridge_ID"] <- "Holdridge zone"
+names(CPFig8d_cor)[names(CPFig8d_cor) == "long"] <- "Longitude"
+names(CPFig8d_cor)[names(CPFig8d_cor) == "tsd"] <- "Time since cyclone"
+names(CPFig8d_cor)[names(CPFig8d_cor) == "elev"] <- "Elevation"
+names(CPFig8d_cor)[names(CPFig8d_cor) == "mat_map"] <- "MAT/MAP"
+names(CPFig8d_cor)[names(CPFig8d_cor) == "soilP"] <- "Soil P"
+names(CPFig8d_cor)[names(CPFig8d_cor) == "Soil_ID"] <- "Soil order"
+names(CPFig8d_cor)[names(CPFig8d_cor) == "stormfreq"] <- "Storm frequency"
+names(CPFig8d_cor)[names(CPFig8d_cor) == "timesincestorm"] <- "Time since last storm"
+names(CPFig8d_cor)[names(CPFig8d_cor) == "distrain"] <- "Cyclone rainfall"
+names(CPFig8d_cor)[names(CPFig8d_cor) == "hurrwind"] <- "Wind speed"
+names(CPFig8d_cor)[names(CPFig8d_cor) == "windur"] <- "Wind duration"
+names(CPFig8d_cor)[names(CPFig8d_cor) == "Rocktype_ID"] <- "Geological group"
+names(CPFig8d_cor)[names(CPFig8d_cor) == "RockP_ID"] <- "Parent material P"
+names(CPFig8d_cor)[names(CPFig8d_cor) == "Par_Mat_ID"] <- "Parent material"
+
+#Checking if names are correct
+names(CPFig8d_cor)
+
+#Calculating correlation coefficients and p values
+corrf8d <- round(cor(CPFig8d_cor,method="pearson"),2)
+p.matf8d <- cor_pmat(CPFig8d_cor)
+
+#FigureS3b
+FigS3b<-ggcorrplot(corrf8d, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
+                   outline.col = "white", p.mat = p.matf8d,method="square",ggtheme=ggplot2::theme_classic(),show.legend=TRUE, 
+                   legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=28,insig="blank",
+                   colors = c("#46A332", "white", "#ffa600",pch.cex=20,nbreaks = 8,legend.text.cex=26))+font("legend.text",size=18)+font("legend.title", size=22)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
+FigS3b
+
+#Saving in high res
+ggsave(filename = "FigS3b_Resilience_Corr_Leaf.png",
+       plot = FigS3b, width = 16, height = 18, units = 'cm',
+       scale = 2, dpi = 800)
+
+
 ##Mass flux change with P concentration change####
 
 str(data_es0ia)

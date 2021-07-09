@@ -270,26 +270,26 @@ Fig_res1to21
 Fig_res1to21<-Fig_res1to21+geom_line(aes(group=Case_study,col=log(Other_soil_P)),size=1.2)
 Fig_res1to21<-Fig_res1to21+theme_pubr()+geom_segment(aes(x=1, y=0, xend=21, yend=0), lty=2, color = "magenta", cex=1.4)+
   scale_x_discrete(breaks = c(1, 3, 6, 9,12, 15, 18,21))+scale_shape_discrete(solid=F)+
-  ylab(expression(Resilience~(ln~Litterfall~t[x]~t[0]^-1)))+xlab("")+
-  theme(axis.title.x =element_text(vjust = 0.5,size=24),
+  #ylab(expression(Resilience~(ln~Litterfall~t[x]~t[0]^-1)))+xlab("")+
+  theme(axis.title.x =element_text(vjust = 0.5,size=28),
         axis.text.x =element_text(vjust = 1,size=22),
-        axis.title.y =element_text(vjust = 1,size=24),strip.background = element_rect(color="white", fill="white",linetype="solid"),
-        axis.text=element_text(size=26),legend.text =  element_text(size=20),
+        axis.title.y =element_text(vjust = 1,size=28),strip.background = element_rect(color="white", fill="white",linetype="solid"),
+        axis.text.y=element_text(size=22),legend.text =  element_text(size=22),
         legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),
         legend.title = element_text(size=20),legend.box="horizontal",legend.position="top",legend.justification="center")+ 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_colourbar(barwidth = 15, barheight = 1.5,nbin=30,ticks.colour="black",ticks.linewidth = 2.5))+
-  labs(color="Soil P \n(ln mg/kg)",size="Effect size variance")+guides(fill=FALSE,size=FALSE)+ 
-  annotate("text", x = 1, y = 2.2, label = "a Total litterfall", size=8,hjust=0,colour="black",fontface="bold") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
+  labs(color="Soil P \n(ln mg/kg)",size="Effect size variance",y="Resilience",x="Time since disturbance (Months)")+guides(fill=FALSE,size=FALSE)+ 
+  annotate("text", x = 1, y = 2.2, label = "Total litterfall", size=8,hjust=0,colour="black",fontface="bold") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
 Fig_res1to21
 
 #Final figure Total litterfall and Leaf fall
 Fig9<-Fig_res1to21+Fig_res1to21_l+plot_layout(ncol=1,heights=c(1,1))
 Fig9
 
-##Figure9a####
-ggsave(filename = "Fig9_Resilience_Pred_Tot_Leaf.png",
-       plot = Fig9, width = 12, height = 14, units = 'cm',
-       scale = 2, dpi = 1200)
+##Figure9####
+ggsave(filename = "Fig9_Resilience_Pred_Tot.png",
+       plot = Fig_res1to21, width = 12, height = 10, units = 'cm',
+       scale = 2, dpi = 1000)
 
 ##PREDICTIONS with Soil P and TSD only
 
