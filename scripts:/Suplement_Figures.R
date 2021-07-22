@@ -12,24 +12,24 @@ names(metadat)
 metadat$Case_study= paste(metadat$Site, metadat$DisturbanceName,metadat$Treatment, sep=" | ")
 
 ####FigureS1 Response annual vs subannual####
-pfrac_S1<-ggplot(data_frac_S1, aes(x=group,y=estimate,ymax=ci_up,ymin=ci_low, shape = variable))+scale_y_continuous(breaks=c(-6,-4,-2,0,2,4,6,8))+
+pfrac_S1<-ggplot(data_frac_S1, aes(x=group,y=-1*estimate,ymax=-1*ci_up,ymin=-1*ci_low, shape = variable))+scale_y_continuous(breaks=c(-8,-6,-4,-2,0,2))+
   geom_pointrange(mapping=aes(color=variable),size=1, position=position_dodge(width=c(0.8, 1.2)))+coord_flip()+
   geom_hline(aes(yintercept=0), lty=2,size=1,col="magenta",alpha=0.8) + # this adds a dotted line for effect size of 0
-  labs(y="Pantropical response with 95% CI", x="Litterfall fraction") +scale_shape_discrete(solid=F)+
+  labs(y="Pantropical resistance", x="Litterfall fraction") +scale_shape_discrete(solid=F)+
   theme_bw() + # ggplot2 has a few theme options, I like minimal and classic
   theme(axis.title.x =element_text(vjust = -0.5),axis.text.x =element_text(vjust = -0.3),
         axis.title.y =element_text(vjust = 1),axis.title=element_text(size=28),
-        axis.text=element_text(size=26),legend.text =  element_text(size=20),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),legend.title = element_blank(),legend.position = c(0.7,0.89),legend.box.background = element_rect(colour = "gray"))
+        axis.text=element_text(size=26),legend.text =  element_text(size=20),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),legend.title = element_blank(),legend.position = c(0.3,0.89),legend.box.background = element_rect(colour = "gray"))
 Fig_S1<-pfrac_S1+ scale_color_manual(values=c("#141212","#5E3FBA","#A81C38"))+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())#scale_color_grey(start=0.65, end=0.25)
-Fig_S1<-Fig_S1+ annotate("text", y = 6.5, x = 5.2, fontface="bold",label = "(7)", size=5,colour="black")+ annotate("text", y = 6.5, x = 5, fontface="bold",label = "(7)", size=5,colour="black")+ annotate("text", y = 6.5, x = 4.7, fontface="bold",label = "(11)", size=5,colour="black")+
-  annotate("text", y = 6.5, x = 4.22, fontface="bold",label = "(4)", size=5,colour="black")+ annotate("text", y = 6.5, x = 4, fontface="bold",label = "(4)", size=5,colour="black")+ annotate("text", y = 6.5, x = 3.7, fontface="bold",label = "(9)", size=5,colour="black")+
-  annotate("text", y = 6.5, x = 3.22, fontface="bold",label = "(16)", size=5,colour="black")+ annotate("text", y = 6.5, x = 3, fontface="bold",label = "(16)", size=5,colour="black")+ annotate("text", y = 6.5, x = 2.7, fontface="bold",label = "(30)", size=5,colour="black")+
-  annotate("text", y = 6.5, x = 2.22, fontface="bold",label = "(14)", size=5,colour="black")+ annotate("text", y = 6.5, x = 2, fontface="bold",label = "(14)", size=5,colour="black")+ annotate("text", y = 6.5, x = 1.7, fontface="bold",label = "(29)", size=5,colour="black")+
-  annotate("text", y = 6.5, x = 1.22, fontface="bold",label = "(23)", size=5,colour="black")+ annotate("text", y = 6.5, x = 1, fontface="bold",label = "(23)", size=5,colour="black")+ annotate("text", y = 6.5, x = 0.7, fontface="bold",label = "(48)", size=5,colour="black")
-
+Fig_S1<-Fig_S1+ annotate("text", y = -6.5, x = 5.2, fontface="bold",label = "(7)", size=5,colour="black")+ annotate("text", y = -6.5, x = 5, fontface="bold",label = "(7)", size=5,colour="black")+ annotate("text", y = -6.5, x = 4.7, fontface="bold",label = "(11)", size=5,colour="black")+
+  annotate("text", y = -6.5, x = 4.22, fontface="bold",label = "(4)", size=5,colour="black")+ annotate("text", y = -6.5, x = 4, fontface="bold",label = "(4)", size=5,colour="black")+ annotate("text", y = -6.5, x = 3.7, fontface="bold",label = "(9)", size=5,colour="black")+
+  annotate("text", y = -6.5, x = 3.22, fontface="bold",label = "(16)", size=5,colour="black")+ annotate("text", y = -6.5, x = 3, fontface="bold",label = "(16)", size=5,colour="black")+ annotate("text", y = -6.5, x = 2.7, fontface="bold",label = "(30)", size=5,colour="black")+
+  annotate("text", y = -6.5, x = 2.22, fontface="bold",label = "(14)", size=5,colour="black")+ annotate("text", y = -6.5, x = 2, fontface="bold",label = "(14)", size=5,colour="black")+ annotate("text", y = -6.5, x = 1.7, fontface="bold",label = "(29)", size=5,colour="black")+
+  annotate("text", y = -6.5, x = 1.22, fontface="bold",label = "(23)", size=5,colour="black")+ annotate("text", y = -6.5, x = 1, fontface="bold",label = "(23)", size=5,colour="black")+ annotate("text", y = -6.5, x = 0.7, fontface="bold",label = "(48)", size=5,colour="black")
+Fig_S1
 #Saving Figure S1
-ggsave(filename = "FigS1_Fractions_Mass_Response.png",
-       plot = Fig_S1, width = 13, height = 10, units = 'cm',
+ggsave(filename = "FigS1_Fractions_Mass_Resistance.png",
+       plot = Fig_S1, width = 12, height = 14, units = 'cm',
        scale = 2, dpi = 1000)
 
 #FigureS2 Resilience annual and subannual####
@@ -318,7 +318,7 @@ ggsave(filename = "FigS2_Resilience_annual_subannual.png",
        plot = FigS2, width = 24, height = 16, units = 'cm',
        scale = 2, dpi = 1000)
 
-##Figure Sup Predictors variability###
+##Figure Total Litterfall Mass Flux Response Predictors variability#####
 
 names(CPFig4b_cor)#these are the variables to be plotted
 
@@ -372,6 +372,7 @@ p_df_so<-df_so %>% ggplot(aes(x=USDA_Soil_Order, y = counts)) +geom_point(aes(co
         legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+scale_y_continuous(breaks=c(1,3,5,7,9,11,13))+
   labs(y = "n",x = "Soil order (US)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
 
+#Longitude
 df_lo <- sup_fig_mod %>%
   group_by(Longitude,Country) %>%
   dplyr::summarise(counts = dplyr::n())
@@ -380,7 +381,15 @@ p_df_lo<-df_lo %>% ggplot(aes(x=Longitude, y = counts)) +geom_point(aes(color=Co
   theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
         legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+scale_y_continuous(breaks=c(1,2,3,4,5))+scale_x_continuous(breaks=c(-150,-100,-50,0,50,100,150))+
   labs(y = "n",x = "Longitude (UTM)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+p_lo <- df_lo %>%
+  ggplot(aes(x=Longitude)) +
+  geom_density(fill="#e9ecef",alpha=0.8,position = 'identity') +
+  #scale_fill_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f")) +
+  theme_classic2() +labs(fill="")+labs(y = "Density",x = "Longitude (UTM)")+
+  geom_label( aes(x=80, y=0.015, label="Longitude"), color="#404080",size=5.5)
+p_lo
 
+#Elevation
 df_el <- sup_fig_mod %>%
   group_by(Elevation_m,Country) %>%
   dplyr::summarise(counts = dplyr::n())
@@ -389,7 +398,15 @@ p_df_el<-df_el %>% ggplot(aes(x=Elevation_m, y = counts)) +geom_point(aes(color=
   theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
         legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+scale_x_continuous(breaks=c(0,100,300,500,700,900,1100,1300))+
   labs(y = "n",x = "Elevation (m)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+p_el <- df_el %>%
+  ggplot(aes(x=Elevation_m)) +
+  geom_density(fill="#e9ecef",alpha=0.8,position = 'identity') +
+  #scale_fill_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f")) +
+  theme_classic2() +labs(fill="")+labs(y = "Density",x = "Elevation (m)")+
+  geom_label( aes(y=0.001, x=880, label="Elevation"), color="#404080",size=5.5)
+p_el
 
+#MAT/MAP
 df_map <- sup_fig_mod %>%
   group_by(MAT_MAP_x100,Country) %>%
   dplyr::summarise(counts = dplyr::n())
@@ -398,15 +415,32 @@ p_df_map<-df_map %>% ggplot(aes(x=MAT_MAP_x100, y = counts)) +geom_point(aes(col
   theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
         legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+scale_x_continuous(breaks=c(0.5,1,1.5,2,2.5,3,3.5))+
   labs(y = "n",x = "MAT/MAP x 100 (C/mm)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+p_map <- df_map %>%
+  ggplot(aes(x=MAT_MAP_x100)) +
+  geom_density(fill="#e9ecef",alpha=0.8,position = 'identity') +
+  #scale_fill_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f")) +
+  theme_classic2() +labs(fill="")+labs(y = "Density",x = "MAT/MAP x 100 (C/mm)")+
+  geom_label( aes(x=2.5, y=0.65, label="(MAT/MAP)x100"), color="#404080",size=5.5)
+p_map
 
+#Soil P
 df_sp <- sup_fig_mod %>%
   group_by(Other_soil_P,Country) %>%
   dplyr::summarise(counts = dplyr::n())
+summary(df_sp)
+
 p_df_sp<-df_sp %>% ggplot(aes(x=Other_soil_P, y = counts)) +geom_point(aes(color=Country),shape=21,size=2,stroke=1.5) +theme_classic2()+
   theme(axis.title=element_text(size=18),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=0, hjust=0.5,vjust = 1,size=18))+#guides(fill = guide_legend(title = ""),legend.key.width=32)+ #scale_x_continuous(name="Months since disturbance", breaks = c(0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84))+
   theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
         legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+scale_x_continuous(breaks=c(0,100,300,500,700,900,1100,1300,1500))+
   labs(y = "n",x = "Total soil P (mg/kg)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+p_sp <- df_sp %>%
+  ggplot(aes(x=log(Other_soil_P))) +
+  geom_density(fill="#e9ecef",alpha=0.8,position = 'identity') +
+  #scale_fill_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f")) +
+  theme_classic2() +labs(fill="")+labs(y = "Density",x = "Total soil P (ln mg/kg)")+
+  geom_label( aes(x=3.8, y=0.5, label="Total soil P"), color="#404080",size=5.5)
+p_sp
 
 df_sf <- sup_fig_mod %>%
   group_by(StormFrequencyNorm,Country) %>%
@@ -416,7 +450,14 @@ p_df_sf<-df_sf %>% ggplot(aes(x=StormFrequencyNorm, y = counts)) +geom_point(aes
   theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
         legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+scale_x_continuous(breaks=c(0.25,0.5,0.75,1))+
   labs(y = "n",x = "Storm frequency (storms/year)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+p_sf<-df_sf %>% ggplot(aes(x=StormFrequencyNorm)) +
+  geom_density(fill="#e9ecef",alpha=0.8) +
+  #scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f")) +
+  theme_classic2() +labs(x="Storm frequency (storms/year)",y="Density")+
+  geom_label( aes(x=0.7, y=2.5, label="Storm frequency"), color="#404080",size=5.5)
+p_sf
 
+#Time since disturbance
 df_tss <- sup_fig_mod %>%
   group_by(YearsSinceLastStorm,Country) %>%
   dplyr::summarise(counts = dplyr::n())
@@ -425,7 +466,14 @@ p_df_tss<-df_tss %>% ggplot(aes(x=YearsSinceLastStorm, y = counts)) +geom_point(
   theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
         legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+#scale_x_continuous(breaks=c(0.25,0.5,0.75,1))+
   labs(y = "n",x = "Time since last storm (years)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+p_tss<-df_tss %>% ggplot(aes(x=YearsSinceLastStorm)) +
+  geom_density(fill="#e9ecef",alpha=0.8) +
+  #scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f")) +
+  theme_classic2() +labs(x="Time since last storm (years)",y="Density")+
+  geom_label( aes(x=8, y=0.09, label="Time since last storm"), color="#404080",size=5.5)
+p_tss
 
+#Cyclone rainfall
 df_cr <- sup_fig_mod %>%
   group_by(Disturb_Rainfall_mm,Country) %>%
   dplyr::summarise(counts = dplyr::n())
@@ -434,17 +482,33 @@ p_df_cr<-df_cr %>% ggplot(aes(x=Disturb_Rainfall_mm, y = counts)) +geom_point(ae
   theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
         legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+#scale_x_continuous(breaks=c(0.25,0.5,0.75,1))+
   labs(y = "n",x = "Cyclone rainfall (mm)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+p_cr<-df_cr %>% ggplot(aes(x=Disturb_Rainfall_mm)) +
+  geom_density(fill="#e9ecef",alpha=0.8) +
+  #scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f")) +
+  theme_classic2() +labs(x="Cyclone rainfall (mm)",y="Density")+
+  geom_label( aes(x=600, y=0.0025, label="Cyclone rainfall"), color="#404080",size=5.5)
+p_cr
 
+#Wind speed
 df_wp <- sup_fig_mod %>%
   group_by(HURRECON_wind_ms,Country) %>%
   dplyr::summarise(counts = dplyr::n())
-df_wp
+summary(df_wp)
 p_df_wp<-df_wp %>% ggplot(aes(x=HURRECON_wind_ms, y = counts)) +geom_point(aes(color=Country),shape=21,size=2,stroke=1.5) +theme_classic2()+
   theme(axis.title=element_text(size=18),axis.text.y=element_text(size=18),axis.text.x = element_text(angle=0, hjust=0.5,vjust = 1,size=18))+#guides(fill = guide_legend(title = ""),legend.key.width=32)+ #scale_x_continuous(name="Months since disturbance", breaks = c(0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84))+
   theme(legend.title = element_blank (), legend.text = element_text (size = 18), legend.position = "top",
         legend.justification = c("center", "top"),legend.box.just = "right",legend.margin = margin(2, 2, 2, 2))+#scale_x_continuous(breaks=c(0.25,0.5,0.75,1))+
   labs(y = "n",x = "Wind speed (m/s)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
 p_df_wp
+p_wp <- df_wp %>%
+  ggplot( aes(x=HURRECON_wind_ms)) +
+  geom_density(fill="#e9ecef",alpha=0.8) +
+  #scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f")) +
+  theme_classic2() +labs(x="Wind speed (m/s)",y="Density")+
+  geom_label( aes(x=23, y=0.025, label="Wind speed"), color="#404080",size=5.5)
+p_wp
+
+#Wind duration
 df_wd <- sup_fig_mod %>%
   group_by(Gale_wind_duration_minutes,Country) %>%
   dplyr::summarise(counts = dplyr::n())
@@ -454,16 +518,27 @@ p_df_wd<-df_wd %>% ggplot(aes(x=Gale_wind_duration_minutes, y = counts)) +geom_p
   theme(legend.title = element_blank (), legend.text = element_text (size = 24), legend.position = "none",
         legend.justification = c("right", "top"),legend.box.just = "right",legend.margin = margin(6, 6, 6, 6))+scale_x_continuous(breaks=c(0,1000,2000,3000,4000,5000,6000))+
   labs(y = "n",x = "Gale wind duration (minutes)")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
+p_wd <- df_wd %>%
+  ggplot( aes(x=Gale_wind_duration_minutes)) +
+  geom_density(fill="#e9ecef",alpha=0.8) +
+  #scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f")) +
+  theme_classic2() +labs(x="Wind duration (minutes)",y="Density")+
+  geom_label( aes(x=4800, y=0.0002, label="Wind duration"), color="#404080",size=5.5)
+p_wd
 
 
 #sup_fig<-ggplot(CPFig4d_cor, aes(x=Holdridge zone,y=H, fill = meso_cap2.Season)) +
-sup_fig_dd_1<-(p_df_wp|p_df_sp|p_df_sf)/(p_df_tss|p_df_cr|p_df_wd)/(p_df_map|p_df_el|p_df_lo)/(p_df_so|p_df_rp)/(p_df_rt|p_df_h|p_df_pm)+plot_annotation(tag_levels = 'a')& 
+sup_fig_dd_1<-(p_wp|p_lo|p_sf|p_wd)/(p_df_tss|p_df_sp|p_df_map|p_df_cr)/(p_df_el|p_df_so|p_df_rp)/(p_df_rt|p_df_h|p_df_pm)+plot_annotation(tag_levels = 'a')& 
   theme(plot.tag = element_text(size = 22,face="bold"),plot.tag.position =c(0.02,1))#
 sup_fig_dd_1
 
+sup_fig_dd_2<-(p_wp|p_lo|p_sf)/(p_wd|p_tss|p_sp)/(p_map|p_cr|p_el)+plot_annotation(tag_levels = 'a')& 
+  theme(plot.tag = element_text(size = 22,face="bold"),plot.tag.position =c(0.02,1))#
+sup_fig_dd_2
+
 #saving as png
-ggsave(filename = "Fig_sup_DD_resp.png",
-       plot = sup_fig_dd_1, width = 24, height = 26, units = 'cm',scale = 2, dpi = 1000)
+ggsave(filename = "Fig_sup_distribution_response.png",
+       plot = sup_fig_dd_2, width = 26, height = 26, units = 'cm',scale = 2, dpi = 1000)
 
 ##Figure S3 Resilience Correlations####
 

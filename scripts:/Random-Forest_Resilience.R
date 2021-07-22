@@ -27,7 +27,7 @@ tot_lit_amb_1to21_final$windur<-z.trans(tot_lit_amb_1to21_final$Gale_wind_durati
 
 names(tot_lit_amb_1to21_final)
 
-datametaforest_restot<-tot_lit_amb_1to21_final[,c(3,15,23,25,27,29,79:81,83:84,86,88:93)]%>% filter(hurrwind!="NA")
+datametaforest_restot<-tot_lit_amb_1to21_final[,c(3,15,23,25,27,29,78:89)]%>% filter(hurrwind!="NA")
 str(datametaforest_restot)#213obs 18 variables
 
 # Run model with many trees to check convergence
@@ -181,46 +181,6 @@ ggsave(filename = "Fig8a_VarImp_TotLit_Resilience.png",
        plot = Fig8a, width = 14, height = 12, units = 'cm',
        scale = 2, dpi = 600)
 
-####Correlation plot of final variables in "final2"
-
-#Data
-names(datametaforest_restot)
-CPFig8b_cor<-datametaforest_restot[,c(2:6,9:18)]
-names(CPFig8b_cor)## Final!
-#Changing column names
-names(CPFig8b_cor)[names(CPFig8b_cor) == "Holdridge_ID"] <- "Holdridge zone"
-#names(CPFig8b_cor)[names(CPFig8b_cor) == "Fujita_scale"] <- "Fujita scale"
-names(CPFig8b_cor)[names(CPFig8b_cor) == "long"] <- "Longitude"
-names(CPFig8b_cor)[names(CPFig8b_cor) == "elev"] <- "Elevation"
-names(CPFig8b_cor)[names(CPFig8b_cor) == "mat_map"] <- "MAT/MAP"
-names(CPFig8b_cor)[names(CPFig8b_cor) == "soilP"] <- "Soil P"
-names(CPFig8b_cor)[names(CPFig8b_cor) == "Soil_ID"] <- "Soil order"
-names(CPFig8b_cor)[names(CPFig8b_cor) == "stormfreq"] <- "Storm frequency"
-names(CPFig8b_cor)[names(CPFig8b_cor) == "timesincestorm"] <- "Time since last storm"
-names(CPFig8b_cor)[names(CPFig8b_cor) == "distrain"] <- "Cyclone rainfall"
-names(CPFig8b_cor)[names(CPFig8b_cor) == "hurrwind"] <- "Wind speed"
-names(CPFig8b_cor)[names(CPFig8b_cor) == "windur"] <- "Wind duration"
-names(CPFig8b_cor)[names(CPFig8b_cor) == "Rocktype_ID"] <- "Geological group"
-names(CPFig8b_cor)[names(CPFig8b_cor) == "RockP_ID"] <- "Parent material P"
-names(CPFig8b_cor)[names(CPFig8b_cor) == "Par_Mat_ID"] <- "Parent material"
-names(CPFig8b_cor)[names(CPFig8b_cor) == "tsd"] <- "Time since cyclone"
-
-#Calculating correlation coefficients and p values
-corrf8b <- round(cor(CPFig8b_cor,method="pearson"),2)
-p.matf8b <- cor_pmat(CPFig8b_cor)
-
-#Figure
-Fig8b<-ggcorrplot(corrf8b, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
-                    outline.col = "white", p.mat = p.matf8b,method="square",ggtheme=ggplot2::theme_minimal(),show.legend=TRUE, 
-                    legend.title="Pearson's r", lab=TRUE, lab_size=5, tl.cex=28,
-                    colors = c("#ABA0A0", "white", "#ffa600",pch.cex=20,nbreaks = 8,legend.text.cex=26))+font("legend.text",size=16)+font("legend.title", size=18)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
-Fig8b
-
-#Saving figure in high res
-ggsave(filename = "Fig8b_Resilience_Correlations_TotLit.png",
-       plot = Fig8b, width = 16, height = 18, units = 'cm',
-       scale = 2, dpi = 800)
-
 ####META FOREST Leaf fall####
 
 str(leaf_amb_1to21)
@@ -241,7 +201,7 @@ Data_leaf_amb_1to21$windur<-z.trans(Data_leaf_amb_1to21$Gale_wind_duration_minut
 
 names(Data_leaf_amb_1to21)
 
-datametaforest_reslf<-Data_leaf_amb_1to21[,c(3,15,23,25,27,29,79:80,81:90)]%>% filter(hurrwind!="NA")
+datametaforest_reslf<-Data_leaf_amb_1to21[,c(3,15,23,25,27,29,79:84,91:96)]%>% filter(hurrwind!="NA")
 str(datametaforest_reslf)#198 obs of 18 variables
 
 # Run model with many trees to check convergence
@@ -351,50 +311,6 @@ Fig8ac<-Fig8a+Fig8c
 Fig8ac
 ggsave(filename = "Fig8ac_VarImp_TotLeaf_Resilience.png",
        plot = Fig8ac, width = 24, height = 12, units = 'cm',
-       scale = 2, dpi = 800)
-
-
-#Correlation among leaf fall resilience predictors####
-
-#Selecting columns
-names(datametaforest_reslf)
-CPFig8d_cor<-datametaforest_reslf[,c(2:6,9:18)]
-names(CPFig8d_cor)
-#Changing column names
-names(CPFig8d_cor)[names(CPFig8d_cor) == "Holdridge_ID"] <- "Holdridge zone"
-names(CPFig8d_cor)[names(CPFig8d_cor) == "long"] <- "Longitude"
-names(CPFig8d_cor)[names(CPFig8d_cor) == "tsd"] <- "Time since cyclone"
-names(CPFig8d_cor)[names(CPFig8d_cor) == "elev"] <- "Elevation"
-names(CPFig8d_cor)[names(CPFig8d_cor) == "mat_map"] <- "MAT/MAP"
-names(CPFig8d_cor)[names(CPFig8d_cor) == "soilP"] <- "Soil P"
-names(CPFig8d_cor)[names(CPFig8d_cor) == "Soil_ID"] <- "Soil order"
-names(CPFig8d_cor)[names(CPFig8d_cor) == "stormfreq"] <- "Storm frequency"
-names(CPFig8d_cor)[names(CPFig8d_cor) == "timesincestorm"] <- "Time since last storm"
-names(CPFig8d_cor)[names(CPFig8d_cor) == "distrain"] <- "Cyclone rainfall"
-names(CPFig8d_cor)[names(CPFig8d_cor) == "hurrwind"] <- "Wind speed"
-#names(CPFig8d_cor)[names(CPFig8d_cor) == "Fujita_scale"] <- "Fujita scale"
-names(CPFig8d_cor)[names(CPFig8d_cor) == "windur"] <- "Wind duration"
-names(CPFig8d_cor)[names(CPFig8d_cor) == "Rocktype_ID"] <- "Geological group"
-names(CPFig8d_cor)[names(CPFig8d_cor) == "RockP_ID"] <- "Parent material P"
-names(CPFig8d_cor)[names(CPFig8d_cor) == "Par_Mat_ID"] <- "Parent material"
-
-#Checking if names are correct
-names(CPFig8d_cor)
-
-#Calculating correlation coefficients and p values
-corrf8d <- round(cor(CPFig8d_cor,method="pearson"),2)
-p.matf8d <- cor_pmat(CPFig8d_cor)
-
-#Figure
-Fig8d<-ggcorrplot(corrf8d, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
-                    outline.col = "white", p.mat = p.matf8d,method="square",ggtheme=ggplot2::theme_minimal(),show.legend=TRUE, 
-                    legend.title="Pearson's r", lab=TRUE, lab_size=5, tl.cex=28,
-                    colors = c("#46A332", "white", "#ffa600",pch.cex=20,nbreaks = 8,legend.text.cex=26))+font("legend.text",size=16)+font("legend.title", size=18)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
-Fig8d
-
-#Saving in high res
-ggsave(filename = "Fig8d_Resilience_Corr_Leaf.png",
-       plot = Fig8d, width = 16, height = 18, units = 'cm',
        scale = 2, dpi = 800)
 
 ###END###
