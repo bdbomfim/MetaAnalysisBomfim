@@ -1,5 +1,6 @@
-##Response Meta Forest code
+##Randon Forest analysis for meta-analysis of forest response to cyclone disturbance
 
+#needed packages
 library(forestmodel)
 library(metaforest)
 library(caret)
@@ -9,12 +10,26 @@ library(MuMIn)
 library(rJava)
 library(leaps)
 
-###META FOREST Total Litterfall####
+####Uploading data####
+metadat<-read.csv(file.choose())#20210520_Litterfall_Mass
+attach(metadat)
 str(data_es0ia)
+#transforming variables to numeric
+metadat$HURRECON_wind_ms=as.numeric(metadat$HURRECON_wind_ms)
+metadat$Gale_wind_duration_minutes=as.numeric(metadat$Gale_wind_duration_minutes)
+
+#Data wrangling####
+#Filtering data to include only total litterfall fraction, 0-05 data points, ambient conditions
+data0a<-metadat %>% filter(Fraction=="TotLitfall")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")#%>%filter(Treatment!="P+")#|Treatment!="N+"|Treatment!="NP+")
+str(data0a)#48 observations
+
+#Effect size calculation####
+data_es0ia <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
+                     sd1i = Post_SD, sd2i = Pre_SD, data = data0a, measure = "ROM") # ROM =  log transformed ratio of means (Hedges et al., 1999; Lajeunesse, 2011).
 
 #Standardizing variables 2x sd per Gelman reccomendation 
 z.trans<-function(x) {(x - mean(x, na.rm=T))/(2*sd(x, na.rm=T))}
-data_es0ia$long<-z.trans(data_es0ia$Longitude)
+data_es0ia$long<-z.trans(data_es0ia$Longitude)#create new variable 'long' which is the standardized version of 'Longitude'
 data_es0ia$elev<-z.trans(data_es0ia$Elevation_m)
 data_es0ia$mat_map<-z.trans(data_es0ia$MAT_MAP_x100)
 data_es0ia$soilP<-z.trans(data_es0ia$Other_soil_P)
@@ -24,14 +39,15 @@ data_es0ia$distrain<-z.trans(data_es0ia$Disturb_Rainfall_mm)
 data_es0ia$hurrwind<-z.trans(data_es0ia$HURRECON_wind_ms)
 data_es0ia$windur<-z.trans(data_es0ia$Gale_wind_duration_minutes)
 
+#checking data
 names(data_es0ia)
 
-#Data frame
-datametaforest<-data_es0ia[,c(3,15,23,25,27,29,79:89)]%>% filter(hurrwind!="NA")
+#New Data frame
+datametaforest<-data_es0ia[,c(3,15,23,25,27,29,79:89)]%>% filter(hurrwind!="NA")#filtering NAs
 str(datametaforest)#46obs 17 variables
 
 # Run model with many trees to check convergence
-#MetaForest uses a weighted random forest to explore heterogeneity in meta-analytic data
+#MetaForest function uses a weighted random forest to explore heterogeneity in meta-analytic data
 check_conv <- MetaForest(yi~.,
                          data = datametaforest,
                          study = "Effectsize_ID",
