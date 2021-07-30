@@ -11,6 +11,8 @@ library(rJava)
 library(leaps)
 
 ####Uploading data####bbbbb
+
+##chatting with Micah
 metadat<-read.csv(file.choose())#20210520_Litterfall_Mass
 attach(metadat)
 str(data_es0ia)
@@ -42,7 +44,7 @@ data_es0ia$windur<-z.trans(data_es0ia$Gale_wind_duration_minutes)
 #checking data
 names(data_es0ia)
 
-#New Data frame
+#Tota litterfall random forest####
 datametaforest<-data_es0ia[,c(3,15,23,25,27,29,79:89)]%>% filter(hurrwind!="NA")#filtering NAs
 str(datametaforest)#46obs 17 variables
 
@@ -235,7 +237,7 @@ ggsave(filename = "Fig4b_Final.png",
 
 Fig4a+Fig4b
 
-####META FOREST Leaf fall####
+####Leaf fall random forest####
 
 #Data
 str(data_es0ilf)
@@ -318,7 +320,7 @@ r2_oob2lf #predictive performance of 61%
 #Plotting relative importance of predictors on package default
 VarImpPlot(final2lf)
 
-#### Figure 4c RESPONSE META FOREST Leaf fall####
+#### Figure 4c Relative importance of predictors - Response of Leaf Litterfall####
 
 #Data frame variables
 Vimp2lf <- data.frame(final2lf$forest$variable.importance)
