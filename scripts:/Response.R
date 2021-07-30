@@ -38,7 +38,7 @@ library(fs)
 library(plot3D)
 library(forcats)
 library(ggridges)
-library("broom")
+library(broom)
 library(lmerTest)
 library(metafor)
 library(forestmodel)
@@ -158,7 +158,7 @@ data0amfS$Effectsize_ID
 data0amfSS<-data0amf %>% filter(Effectsize_ID == "43"|Effectsize_ID == "46"|Effectsize_ID == "1823"|Effectsize_ID == "1933")
 str(data0amfSS)#4 obs
 
-####Nutrient flux####
+####Nutrients####
 
 ####P flux####
 str(nutmeta)
@@ -268,9 +268,7 @@ data_es0imfS <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Me
 data_es0imfSS <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
                         sd1i = Post_SD, sd2i = Pre_SD, data = data0amfSS, measure = "ROM")
 
-##P flux####
-
-#Total and fractions
+#Total P flux and fractions####
 data_es0itpf <- escalc(n1i = Post_n, n2i = Pre_n, m1i = Post_Mean, m2i = Pre_Mean, 
                        sd1i = Post_SD, sd2i = Pre_SD, data = data0tpf, measure = "ROM")
 data_es0ilpf <- escalc(n1i = Post_n, n2i = Pre_n, m1i = Post_Mean, m2i = Pre_Mean, 
@@ -283,10 +281,10 @@ data_es0impf <- escalc(n1i = Post_n, n2i = Pre_n, m1i = Post_Mean, m2i = Pre_Mea
                        sd1i = Post_SD, sd2i = Pre_SD, data = data0mpf, measure = "ROM")
 
 ##P concentration####
-#Leaf fall
+#Leaf litterfall
 data_es0ilpc <- escalc(n1i = Post_n, n2i = Pre_n, m1i = Post_Mean, m2i = Pre_Mean, 
                        sd1i = Post_SD, sd2i = Pre_SD, data = data0lpc, measure = "ROM")
-#Wood fall
+#Wood litterfall
 data_es0iwpc <- escalc(n1i = Post_n, n2i = Pre_n, m1i = Post_Mean, m2i = Pre_Mean, 
                        sd1i = Post_SD, sd2i = Pre_SD, data = data0wpc, measure = "ROM")
 
