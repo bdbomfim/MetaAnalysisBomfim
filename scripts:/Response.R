@@ -1,5 +1,6 @@
 ###Meta-Analysis of cyclone response of forest litterfall across the tropics###
 
+library(packrat)
 library(styler)
 library(lintr)
 library(magrittr)
@@ -62,7 +63,6 @@ library(AICcmodavg)
 
 #Litterfall mass flux data
 metadat<-read.csv(file.choose())#20210520_Litterfall_Mass
-attach(metadat)
 str(metadat)#2367 obs of 77 variables
 summary(metadat)
 
