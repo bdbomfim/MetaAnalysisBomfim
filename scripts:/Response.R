@@ -5,10 +5,8 @@ library(styler)
 library(lintr)
 library(magrittr)
 library(ggcorrplot)
-library(tidymv)
 library(LMERConvenienceFunctions)
 library(relaimpo)
-library(eqs2lavaan)
 library(ggplot2)
 library(ggstatsplot)
 library(nlme)
@@ -27,10 +25,6 @@ library(lme4)
 library(sjPlot)
 library(sjmisc)
 library(sjlabelled)
-library(lattice)
-library(lmerTest)
-library(aod)
-library(corrplot)
 library(modelsummary)
 library(tidyr)
 library(plyr)
@@ -74,7 +68,6 @@ unique(levels(as.factor(metadat$Treatment)))#check number of unique factor level
 
 #Nutrient flux and concentration data
 nutmeta<-read.csv(file.choose())#20210520_Litterfall_Nutrients
-attach(nutmeta)
 str(nutmeta) #2551 obs. of  80 variables
 
 #create Case study column
