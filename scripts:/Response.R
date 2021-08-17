@@ -556,7 +556,6 @@ full.model3lpc <- rma.mv(yi,vi,#random = ~ 1 | Site_ID, #individual effect size 
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
                          data = data_es0ilpc,method = "REML")
 summary(full.model3lpc)
-tab_model(full.model3lpc)
 (exp(full.model3lpc$b)-1)*100
 (exp(full.model3lpc$se)-1)*100
 
@@ -613,26 +612,37 @@ str(red_tpf)
 data_es0itnf$Case_study
 data_es0itnf$Study_ID
 
-#Calculating overall responses for both reduced datasets
+#Calculating overall responses for both reduced datasets####
 
 full.model_red_tpf <- rma.mv(yi,vi,random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
                          data = red_tpf,method = "REML")
 summary(full.model_red_tpf)
-(exp(full.model_red_tpf$b)-1)*100
+tpf_res<-(exp(full.model_red_tpf$b)-1)*100
+tpf_res
 (exp(full.model_red_tpf$se)-1)*100
 
 full.model_red_mass <- rma.mv(yi,vi,random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                              tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
                              data = red_resp_mass,method = "REML")
 summary(full.model_red_mass)
-(exp(full.model_red_mass$b)-1)*100
+tm_res<-(exp(full.model_red_mass$b)-1)*100
+tm_res
 (exp(full.model_red_mass$se)-1)*100
+
+tnf_res<-(exp(full.model3tnf$b)-1)*100
+tnf_res
+
+#Comparing resistance of total P flux to that of total mass flux
+tpf_res/tm_res#P flux 1.31 times the 3mass flux
+
+tnf_res/tm_res#N flux 1.1 times the mass flux
+
 
 ## Table 2 - Total Litterfall Response as a function of soil P####
 
 #Table2 - Model1a####
-
+#Multiplying by -1 to represent the resistance
 model.mods3full<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), 
                         tdist = TRUE,data = data_es0ia,
                         method = "REML",mods = ~soilP)#using z transformed soil P
@@ -670,7 +680,8 @@ summary(model.mods3full.2)
 BIC(model.mods3full,model.mods3full.1,model.mods3full.2)
 
 #Sensitivity analysis - testing the effect of soil P when 5 sites are removed####
-model.mods3full_red<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), 
+#Table S8 - Model 1a
+model.mods3full_red<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), 
                         tdist = TRUE,data = red_sites,
                         method = "REML",mods = ~soilP)#using z transformed soil P
 summary(model.mods3full_red)
@@ -688,11 +699,6 @@ model_a<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist = TRU
                 data = hurr_sites,method = "REML",
                 mods = ~hurrwind)#standardized HURRECON site-level wind speed
 summary(model_a)#Hurrecon wind speed has a positive significant effect on litterfall response
-
-model_b<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist = TRUE, 
-                data = hurr_sites,method = "REML",
-                mods = ~predwind)#not great
-summary(model_b)#not so great
 
 #Table 2 - Model2a####
 model_tab2<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist = TRUE, 
@@ -757,17 +763,17 @@ levels(data_es0ia$Site)
 red_sites <- data_es0ia %>% filter(Site!="Grande-Terre")%>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")#%>% filter(Site!="Grande-Terre")
 
 red_sites_hurr <- hurr_sites %>% filter(Site!="Grande-Terre")%>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")#%>% filter(Site!="Grande-Terre")
-str(red_sites_hurr)
+str(red_sites_hurr)#includes only data points with measured total soil P and HURRECON wind speed
 
 #Table S8 Model 2a####
-model_a2_red<-rma.mv(yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), 
-                tdist = TRUE,data = red_sites_hurr,# n = 41
+model_a2_red<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), 
+                tdist = TRUE,data = red_sites_hurr,
                 method = "REML",
                 mods = ~soilP*hurrwind)
 summary(model_a2_red)#40 case studies - when the 5 sites are removed, there is a significant positive interaction betwen soil P and wind speed
 
 model_a2_red_b<-rma.mv(yi,vi,random = ~ 1 | Region/DisturbanceName, 
-                     tdist = TRUE,data = red_sites_hurr,# n = 41
+                     tdist = TRUE,data = red_sites_hurr,
                      method = "REML",
                      mods = ~soilP*hurrwind)
 summary(model_a2_red_b)
@@ -776,7 +782,6 @@ summary(model_a2_red_b)
 
 #standardizing variables 2x sd per Gelman's reccomendation 
 z.trans<-function(x) {(x - mean(x, na.rm=T))/(2*sd(x, na.rm=T))}
-
 data_es0ilf$soilP=z.trans(data_es0ilf$Other_soil_P)
 data_es0ilf$hurrwind=z.trans(data_es0ilf$HURRECON_wind_ms)
 data_es0ilf$stormfreq=z.trans(data_es0ilf$StormFrequencyNorm)
@@ -793,7 +798,6 @@ mixed_lf_tab2_1b<-rma.mv(yi,vi,random = list(~ 1|Site,~1|DisturbanceName),
                method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab2_1b)
 
-#Table 2 model 1b####
 mixed_lf_tab2_1b.1<-rma.mv(-1*yi,vi,random = ~ 1|Site/DisturbanceName, 
                          tdist = TRUE,data = data_es0ilf,
                          method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
@@ -806,33 +810,34 @@ summary(mixed_lf_tab2_1b.2)
 
 #Leaf fall Alternative random effects#
 
-mixed_lf_tab4a<-rma.mv(yi,vi,random = ~ 1 | DisturbanceName, 
+mixed_lf_tab4a<-rma.mv(-1*yi,vi,random = ~ 1 | DisturbanceName, 
                   tdist = TRUE,data = data_es0ilf,
                   method = "ML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab4a)
 
-mixed_lf_tab4b<-rma.mv(yi,vi,random = list(~ 1|Country, ~1|DisturbanceName), 
+mixed_lf_tab4b<-rma.mv(-1*yi,vi,random = list(~ 1|Country, ~1|DisturbanceName), 
                  tdist = TRUE,data = data_es0ilf,
                  method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab4b)#second best option
 
-mixed_lf_tab4c<-rma.mv(yi,vi,random = list(~ 1|Region, ~1|DisturbanceName), 
+mixed_lf_tab4c<-rma.mv(-1*yi,vi,random = list(~ 1|Region, ~1|DisturbanceName), 
                        tdist = TRUE,data = data_es0ilf,
                        method = "ML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab4c)
 
-mixed_lf_tab4d<-rma.mv(yi,vi,random = ~1|Region, 
+mixed_lf_tab4d<-rma.mv(-1*yi,vi,random = ~1|Region, 
                        tdist = TRUE,data = data_es0ilf,
                        method = "ML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab4d)#BIC is highest
 
-mixed_lf_tab4e<-rma.mv(yi,vi,random = ~1|Site, 
+#Table 2 model 1b####
+mixed_lf_tab4e<-rma.mv(-1*yi,vi,random = list(~1|Site, ~1|DisturbanceName),
                        tdist = TRUE,data = data_es0ilf,
                        method = "ML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab4e)#BIC is highest
 
 #comparing leaf fall models based on BIC
-BIC(mixed_lf_tab2,mixed_lf_tab4a,mixed_lf_tab4b,mixed_lf_tab4c,mixed_lf_tab4d,mixed_lf_tab4e)
+BIC(mixed_lf_tab2_1b,mixed_lf_tab2_1b.1,mixed_lf_tab2_1b.2,mixed_lf_tab4a,mixed_lf_tab4b,mixed_lf_tab4c,mixed_lf_tab4d,mixed_lf_tab4e)
 
 #Sensitivity analysis - removing sites where total soil P was estimated from available soil P
 red_siteslf <- data_es0ilf %>% filter(Site!="Grande-Terre")%>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")#%>% filter(Site!="Grande-Terre")
@@ -843,15 +848,10 @@ hurr_red_siteslf <- hurr_siteslf %>% filter(Site!="Grande-Terre")%>% filter(Site
 str(red_siteslf)#25 same as red_siteslf 
 
 #Table S8 model 1b####
-mixed_lf_S8_1b<-rma.mv(-1*yi,vi,random = ~ 1 | Site, 
+mixed_lf_S8_1b<-rma.mv(-1*yi,vi,random = list(~1|Site, ~1|DisturbanceName), 
                      tdist = TRUE,data = red_siteslf,
                      method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_S8_1b)#N = 25
-
-mixed_lf_S8_1b.1<-rma.mv(yi,vi,random = ~ 1 | Region/DisturbanceName, 
-                       tdist = TRUE,data = red_siteslf,
-                       method = "REML",mods = ~soilP)#+WMO_wind_kts+Distance_to_Disturb_km)
-summary(mixed_lf_S8_1b.1)#N = 25
 
 #Adding Cyclone metrics
 
@@ -860,6 +860,11 @@ mixed_lf_tab2_2b<-rma.mv(-1*yi,vi,random = ~ 1|Site,
                       tdist = TRUE,data = data_es0ilf,
                       method = "REML",mods = ~soilP*hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
 summary(mixed_lf_tab2_2b) 
+
+mixed_lf_tab2_2b.1<-rma.mv(-1*yi,vi,random = list(~ 1|Site, ~1|DisturbanceName), 
+                         tdist = TRUE,data = data_es0ilf,
+                         method = "REML",mods = ~soilP*hurrwind)#+WMO_wind_kts+Distance_to_Disturb_km)
+summary(mixed_lf_tab2_2b.1)
 
 #Table S8 model 2b####
 mixed_lf_tabS8_2b<-rma.mv(-1*yi,vi,random = list(~ 1|Site, ~1|DisturbanceName), 
@@ -942,29 +947,27 @@ ggsave(filename = "Fig5a.png",
 ##Leaf fall response to cyclone####
 
 #Predictions
-preds_x_leaf<-predict(mixed_lf_tabS8_2b,levels=0, addx=TRUE) # let's transfer LRR to RR
+preds_x_leaf<-predict(mixed_lf_tab2_2b.1,levels=0, addx=TRUE) # let's transfer LRR to RR
 preds_x_leaf<-data.frame(preds_x_leaf)
 str(preds_x_leaf)
 
 #Data frame
-metaregplot.1_x_leaf<- cbind(data.frame(red_siteslf$Site, red_siteslf$yi, preds_x_leaf$pred,preds_x_leaf$se,red_siteslf$soilP,fac_soilP=factor(red_siteslf$Other_soil_P),red_siteslf$hurrwind,red_siteslf$Other_soil_P,red_siteslf$HURRECON_wind_ms))
+metaregplot.1_x_leaf<- cbind(data.frame(data_es0ilf$Site, data_es0ilf$yi, preds_x_leaf$pred,preds_x_leaf$se,data_es0ilf$soilP,fac_soilP=factor(data_es0ilf$Other_soil_P),data_es0ilf$hurrwind,data_es0ilf$Other_soil_P,data_es0ilf$HURRECON_wind_ms))
 names(metaregplot.1_x_leaf)
 
 #Figure 5b
-
-#Changing color scheme to include unidirectional and log soil P
-preg_lf2<-ggplot(metaregplot.1_x_leaf, aes(x=red_siteslf.HURRECON_wind_ms, y=preds_x_leaf.pred))+geom_point(shape=21,aes(col=log(red_siteslf.Other_soil_P),size=preds_x_leaf.se),stroke=1.6)
+preg_lf2<-ggplot(metaregplot.1_x_leaf, aes(x=data_es0ilf.HURRECON_wind_ms, y=preds_x_leaf.pred))+geom_point(shape=21,aes(col=log(data_es0ilf.Other_soil_P),size=preds_x_leaf.se),stroke=1.6)
 preg_lf2<-preg_lf2+ scale_size_continuous(range = c(2, 10))#+ scale_fill_fermenter(n.breaks = 12, palette = "Paired")#scale_fill_manual(values = c("#A38D8D","#F0A13C", "#B77878", "#C44474","#DE2BCF", "#CF1A33")) #+scale_fill_viridis_c(guide="legend")  #scale_fill_gradient2(low="black", mid = "white", high="red")+theme_pubr()#scale_size_area(max_size = 10)
 preg_lf2<-preg_lf2+scale_color_gradient(low="#FFFD7D",high="#D8001F")#scale_color_continuous(type="viridis")
 preg_lf2
 preg_lf2<-preg_lf2+ labs(x="Wind speed (m/s)", y="Predicted resistance")+
   stat_smooth(method="glm",formula=y~x,fullrange=T,se=FALSE,size=1,colour="#9f8a89")+
-  stat_smooth(method="glm",aes(x=red_siteslf.HURRECON_wind_ms,y=preds_x_leaf$ci.lb),formula=y~x,fullrange=T,se=FALSE,size=1,colour="#9f8a89",linetype=3)+
-  stat_smooth(method="glm",aes(x=red_siteslf.HURRECON_wind_ms,y=preds_x_leaf$ci.ub),formula=y~x,fullrange=T,se=FALSE,size=1,colour="#9f8a89",linetype=3)
+  stat_smooth(method="glm",aes(x=data_es0ilf.HURRECON_wind_ms,y=preds_x_leaf$ci.lb),formula=y~x,fullrange=T,se=FALSE,size=1,colour="#9f8a89",linetype=3)+
+  stat_smooth(method="glm",aes(x=data_es0ilf.HURRECON_wind_ms,y=preds_x_leaf$ci.ub),formula=y~x,fullrange=T,se=FALSE,size=1,colour="#9f8a89",linetype=3)
 preg_lf2<-preg_lf2+guides(size = guide_legend(override.aes = list(col = "black",shape=21)))#,color = guide_legend(override.aes = list(size = 8)))
 Fig5b_new2<-preg_lf2+theme_pubr()+guides(color = guide_colourbar(barwidth = 15, barheight = 1.5,nbin=30,ticks.colour="black",ticks.linewidth = 2.5))+
   theme(legend.position = "top",legend.justification = "center",legend.title = element_text (size = 19), legend.text = element_text (size = 20),axis.title=element_text(size=26),axis.text=element_text(size=24))+
-  labs(size="",color="Soil P \n(ln mg/kg)")+guides(size=FALSE)+ annotate("text", x = 5, y = 2.5, label = "b Leaf litterfall", size=8,hjust=0,colour="black",fontface="bold") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
+  labs(size="",color="Soil P \n(ln mg/kg)")+guides(size=FALSE)+ annotate("text", x = 5, y = 1, label = "b Leaf litterfall", size=8,hjust=0,colour="black",fontface="bold") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
 
 #Fig5b_new2####
 Fig5b_new2
@@ -975,69 +978,9 @@ Fig5_Response2
 
 #Saving in High Res
 ggsave(filename = "Fig5ab_resistance.png",
-       plot = Fig5_Response2, width = 16, height = 12, units = 'cm',
+       plot = Fig5_Response2, width = 18, height = 10, units = 'cm',
        scale = 2, dpi = 1200)
 
-#Supplements Pre Total Literfall vs Soil P####
-data_resp_tot<-data_es0ia %>% filter(Treatment=="Ambient") %>% filter(Site!="Gadgarra")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")
-str(data_resp_tot) #42 Obs Ambient only
-unique(levels(data_resp_tot$Site))#26 sites
-
-pre_tot_gam<-gam(Pre_Mean~s(log(Other_soil_P),k=6), data=data_resp_tot)
-summary(pre_tot_gam)
-tab_model(pre_tot_gam)
-plot.gam(pre_tot_gam)
-
-pre_tot<-lm(Pre_Mean~log(Other_soil_P), data=data_resp_tot)
-summary(pre_tot)
-tab_model(pre_tot)
-
-pre_tot_lmer<-lmer(Pre_Mean~log(Other_soil_P)+(1|Country), data=data_resp_tot)
-summary(pre_tot_lmer)
-tab_model(pre_tot_lmer)
-
-Fig5.2<-ggplot(data_resp_tot, aes(x=log(Other_soil_P), y=Pre_Mean))+geom_point(aes(color=log(Other_soil_P)),size=6,alpha=0.9,shape=21,stroke=2)+geom_smooth(method = 'glm', col="#9f8a89", alpha=0.1)+
-  theme_pubr()+ # ggplot2 has a few theme options, I like minimal and classic
-  theme(axis.title=element_text(size=24),
-        axis.text=element_text(size=20))+ labs(y = bquote('Total litterfall'~(g/m^2/day)),x = "")
-rsq_label.a <- paste('R^2 == 0.16')
-Fig5.2<-Fig5.2+scale_color_gradient(low="#FCFF00", high="#D8001F")+#breaks=c(400,800,1200,1600,2000))+#scale_color_gradientn(colours = rainbow(5))+#+scale_color_gradient(low="blue", high="red")
-  theme(legend.title = element_text (size = 24), legend.text = element_text (size = 22),legend.position = "none",legend.justification = c("right"))+#+scale_size_continuous(range=c(1,20))+
-  labs(fill=NULL,color="Soil P")+ annotate("text", x = 3, y = 6.5, label = rsq_label.a, size=6,hjust=0,colour="black",parse=TRUE) #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
-FigS3a<-Fig5.2+ annotate("text", x = 3, y = 6, label = "p=0.009 N=42", size=6,hjust=0,colour="black") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
-#FigS3a<-FigS3a+ annotate("text", x = 3, y = 5.6, label = "y = -1.216 + 0.686*log soil P", size=5,hjust=0,colour="black") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
-FigS3a<-FigS3a+ annotate("text", x = 3, y = 7, label = "a", size=8,hjust=0,fontface="bold",colour="black") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
-FigS3a
-
-##Leaf fall Sup Figure Pre vs Soil P####
-data_resp_leaf<-data_es0ilf %>% filter(Treatment=="Ambient")%>% filter(Site!="Gadgarra")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")
-str(data_resp_leaf) #27 Obs Ambient only
-unique(levels(data_resp_leaf$Site))#26 sites
-
-prelf<-lm(Pre_Mean~log(Other_soil_P), data=data_resp_leaf)
-summary(prelf)
-
-#Leaf fall
-Fig5.2lf<-ggplot(data_resp_leaf, aes(x=log(Other_soil_P), y=Pre_Mean))+geom_point(aes(color=log(Other_soil_P)),size=6,alpha=0.9,shape=21,stroke=2)+geom_smooth(method = 'glm', col="#9f8a89", alpha=0.1)+
-  theme_pubr()+ # ggplot2 has a few theme options, I like minimal and classic
-  theme(axis.title=element_text(size=24),
-        axis.text=element_text(size=20))+ labs(y = bquote('Leaf fall'~(g/m^2/day)),x = "")
-rsq_label.b <- paste('R^2 == 0.15')
-Fig5.2lf<-Fig5.2lf+scale_color_gradient(low="#FCFF00", high="#D8001F")+#breaks=c(400,800,1200,1600,2000))+#scale_color_gradientn(colours = rainbow(5))+#+scale_color_gradient(low="blue", high="red")
-  theme(legend.title = element_text (size = 24), legend.text = element_text (size = 22),legend.position = "none",legend.justification = c("right"))+#+scale_size_continuous(range=c(1,20))+
-  labs(fill=NULL,color="Soil P")+ annotate("text", x = 3, y = 4, label = rsq_label.b, size=6,hjust=0,colour="black",parse=TRUE) #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
-FigS3b<-Fig5.2lf+ annotate("text", x = 3, y = 3.5, label = "p=0.04 N=27", size=6,hjust=0,colour="black") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
-#FigS3b<-FigS3b+ annotate("text", x = 3, y = 5.6, label = "y = -1.411 + 0.571*log soil P", size=5,hjust=0,colour="black") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
-FigS3b<-FigS3b+ annotate("text", x = 3, y = 4.5, label = "b", size=8,hjust=0,fontface="bold",colour="black") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
-FigS3b
-
-FinalFigS3<-FigS3a+FigS3b+ plot_layout(ncol=2)
-FinalFigS3
-
-#FigS3####
-ggsave(filename = "Final_Fig_S3.png",
-       plot = FinalFigS3, width = 8, height = 15, units = 'cm',
-       scale = 2, dpi = 600)
 
 Fig5.2lf_b<-ggplot(data_es0ilf, aes(x=Other_soil_P, y=data_es0ilf$Pre_Mean))+geom_point(aes(color=Other_soil_P),size=6,alpha=0.9)+geom_smooth(method = 'gam', col="#9f8a89", alpha=0.1)+
   theme_pubr()+ # ggplot2 has a few theme options, I like minimal and classic
@@ -1235,7 +1178,7 @@ b1
 plot1D<-ggplot(data=forrest_data_C,aes(x=reorder(Case2,ES),y=ES,ymax=ES+(1.96*SE),ymin=ES-(1.96*SE),color=Region))+geom_pointrange(alpha=0.9,size=1.2)+guides(title="Region")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
 plot2D<-plot1D+coord_flip()+geom_hline(aes(yintercept=0), lty=2, color = "magenta", cex=1.2, alpha = 0.6)#+geom_hline(aes(yintercept=3.64), lty=2, colour = "#003f5c", cex=0.9, alpha = 0.4)
 plot3D<-plot2D+xlab("Case study")+theme_bw()+ylab("Resistance")#ylab(expression(Response~ln~(litterfall[ti]/litterfall[t0]))) #ylab(expression(Response~(ln~Total~litterfall~t[i]~t[0]^-1)))
-finalFig3a<-plot3D+theme(axis.title=element_text(size=28),axis.text.x=element_text(size=22,angle=0, hjust=0.5),axis.text.y=element_text(size=17,angle=0, hjust=1))+theme(legend.title = element_blank(), legend.text = element_text (size = 24),legend.position=c(0.3,0.92),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),                                                                                                                                                                        legend.box.background = element_rect(colour = "grey"))+b1+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 1.5)))
+finalFig3a<-plot3D+theme(axis.title=element_text(size=28),axis.text.x=element_text(size=22,angle=0, hjust=0.5),axis.text.y=element_text(size=17,angle=0, hjust=1))+theme(legend.title = element_blank(), legend.text = element_text (size = 24),legend.position=c(0.3,0.92),legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)))                                                                                                                                                                        legend.box.background = element_rect(colour = "grey"))+b1+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 1.5)))
 finalFig3a<-finalFig3a+ annotate("text", y = -7, x = 46, fontface="bold",label = "a", size=8,colour="black")
 finalFig3a
 
@@ -1420,7 +1363,7 @@ names(nutmeta)
 
 data_es0ilpc$yi
 
-forrest_data_D<-rbind(data.frame(ES=full.model3lpc$yi,SE=sqrt(full.model3lpc$vi),Type="Case",Element="P",Fraction="Leaf",Site=data_es0ilpc$Site, Case_study=data_es0ilpc$Effectsize_ID, Cyclone=data_es0ilpc$Disturbance, Region=data_es0ilpc$Area),
+forrest_data_D<-rbind(data.frame(ES=full.model3$yi,SE=sqrt(full.model3$vi),Type="Case",Element="P",Fraction="Leaf",Site=data_es0ilpc$Site, Case_study=data_es0ilpc$Effectsize_ID, Cyclone=data_es0ilpc$Disturbance, Region=data_es0ilpc$Area),
                       data.frame(ES=full.model3lnc$yi,SE=sqrt(full.model3lnc$vi),Type="Case",Element="N",Fraction="Leaf",Site=data_es0ilnc$Site, Case_study=data_es0ilnc$Effectsize_ID, Cyclone=data_es0ilnc$Disturbance, Region=data_es0ilnc$Area),
                       data.frame(ES=full.model3wpc$yi,SE=sqrt(full.model3wpc$vi),Type="Case",Element="P",Fraction="Wood",Site=data_es0iwpc$Site, Case_study=data_es0iwpc$Effectsize_ID, Cyclone=data_es0iwpc$Disturbance, Region=data_es0iwpc$Area),
                       data.frame(ES=full.model3wnc$yi,SE=sqrt(full.model3wnc$vi),Type="Case",Element="N",Fraction="Wood",Site=data_es0iwnc$Site, Case_study=data_es0iwnc$Effectsize_ID, Cyclone=data_es0iwnc$Disturbance, Region=data_es0iwnc$Area))
@@ -1457,58 +1400,5 @@ b <- list(geom_vline(xintercept = 3.85, color = 'black'),
                      size = 10, color = 'red', shape = 'square'))
 
 modelplot(mod, background = b)
-
-
-####Supplementary Figure S1 Litterfall mass fractions with seasonality ####
-
-#Data frame
-data_frac_S1 <- rbind(data.frame(group="Total", variable="Annual (all)",estimate=full.model3$b, 
-                               ci_low=full.model3$ci.lb, ci_up=full.model3$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE),
-                    data.frame(group="Wood", variable="Annual (all)",estimate=full.model3wf$b, 
-                               ci_low=full.model3wf$ci.lb, ci_up=full.model3wf$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE),
-                    data.frame(group="Leaf", variable="Annual (all)",estimate=full.model3lf$b, 
-                               ci_low=full.model3lf$ci.lb, ci_up=full.model3lf$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE),
-                    data.frame(group="Misc.", variable="Annual (all)",estimate=full.model3mf$b, 
-                               ci_low=full.model3mf$ci.lb, ci_up=full.model3mf$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE),
-                    data.frame(group="FFS", variable="Annual (all)", estimate=full.model3ff$b, 
-                               ci_low=full.model3ff$ci.lb, ci_up=full.model3ff$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE),
-                    data.frame(group="Total", variable="Subannual (red.)",estimate=full.model3S$b, 
-                               ci_low=full.model3S$ci.lb, ci_up=full.model3S$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE),
-                    data.frame(group="Wood", variable="Subannual (red.)",estimate=full.model3wfS$b,
-                               ci_low=full.model3wfS$ci.lb, ci_up=full.model3wfS$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE),
-                    data.frame(group="Leaf", variable="Subannual (red.)",estimate=full.model3lfS$b, 
-                               ci_low=full.model3lfS$ci.lb, ci_up=full.model3lfS$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE),
-                    data.frame(group="Misc.", variable="Subannual (red.)",estimate=full.model3mfS$b, 
-                               ci_low=full.model3mfS$ci.lb, ci_up=full.model3mfS$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE),
-                    data.frame(group="FFS", variable="Subannual (red.)",estimate=full.model3ffS$b,
-                               ci_low=full.model3ffS$ci.lb, ci_up=full.model3ffS$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE),
-                    data.frame(group="Total", variable="Annual (red.)",estimate=full.model3SS$b,
-                               ci_low=full.model3SS$ci.lb, ci_up=full.model3SS$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE),
-                    data.frame(group="Wood", variable="Annual (red.)",estimate=full.model3wfSS$b,
-                               ci_low=full.model3wfSS$ci.lb, ci_up=full.model3wfSS$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE),
-                    data.frame(group="Leaf", variable="Annual (red.)",estimate=full.model3lfSS$b, 
-                               ci_low=full.model3lfSS$ci.lb, ci_up=full.model3lfSS$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE),
-                    data.frame(group="Misc.", variable="Annual (red.)",estimate=full.model3mfSS$b, 
-                               ci_low=full.model3mfSS$ci.lb, ci_up=full.model3mfSS$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE),
-                    data.frame(group="FFS", variable="Annual (red.)",estimate=full.model3ffSS$b,
-                               ci_low=full.model3ffSS$ci.lb, ci_up=full.model3ffSS$ci.ub,
-                               row.names=FALSE, stringsAsFactors=TRUE))
-data_frac_S1
-
-
 
 ##END##

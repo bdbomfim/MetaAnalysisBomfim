@@ -626,19 +626,60 @@ ggsave(filename = "FigS3b_Resilience_Corr_Leaf.png",
 
 ##Mass flux change with P concentration change####
 
-str(data_es0ia)
-data_es0ia$Author
-names(data_es0ilf)
-str(data_es0ilpc)
-str(data_es0ilnc)
-data_es0ilpc$Case.ID
-head(data_es0ilpc)
+#Figure S5a Pre Total Literfall vs Soil P####
+data_resp_tot<-data_es0ia %>% filter(Treatment=="Ambient") %>% filter(Site!="Gadgarra")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")
+str(data_resp_tot) #42 observations
+unique(levels(data_resp_tot$Site))#26 sites
 
-data_frac4 <- rbind(data.frame(group="FFS", variable="Annual", estimate=full.model3ff$b, var="Mass flux",
-                               ci_low=(full.model3ff$b-(1.96*full.model3ff$se)),ci_up=(full.model3ff$b+(1.96*full.model3ff$se)),
-                               row.names=FALSE, stringsAsFactors=TRUE)
-dat_nut<-rbind(data.frame(group="Leaf P",Pre_Mean=data_es0ilpc$Pre_Mean, ES=data_es0ilpc$yi,SE=sqrt(data_es0ilpc$vi),Case_study=data_es0ilpc$Case_study, SoilP=data_es0ilpc$Other_soil_P,stringsAsFactors=TRUE),
-               data.frame(group="Leaf N",Pre_Mean=data_es0ilnc$Pre_Mean,ES=data_es0ilnc$yi,SE=sqrt(data_es0ilnc$vi),Case_study=data_es0ilnc$Case_study,SoilP=data_es0ilnc$Other_soil_P,stringsAsFactors=TRUE))
+pre_tot_gam<-gam(Pre_Mean~s(log(Other_soil_P),k=6), data=data_resp_tot)
+summary(pre_tot_gam)#36% ov the variance explained by log total soil P
+tab_model(pre_tot_gam)
+plot.gam(pre_tot_gam)
+
+pre_tot<-lm(Pre_Mean~log(Other_soil_P), data=data_resp_tot)
+summary(pre_tot)#R2=0.16
+tab_model(pre_tot)
+
+#Figure S5a
+FigS5a<-ggplot(data_resp_tot, aes(x=log(Other_soil_P), y=Pre_Mean))+geom_point(aes(color=Country),size=3,alpha=0.9,shape=21,stroke=1.2)+geom_smooth(method = 'glm', col="#9f8a89", alpha=0.1)+
+  theme_pubr()+ # ggplot2 has a few theme options, I like minimal and classic
+  theme(axis.title=element_text(size=24),
+        axis.text=element_text(size=20))+ labs(y = bquote('Total litterfall'~(g/m^2/day)),x = "")
+rsq_label.a <- paste('R^2 == 0.16')
+FigS5a<-FigS5a+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))+#scale_color_gradient(low="#FCFF00", high="#D8001F")+#breaks=c(400,800,1200,1600,2000))+#scale_color_gradientn(colours = rainbow(5))+#+scale_color_gradient(low="blue", high="red")
+  theme(legend.title = element_blank (), legend.text = element_text (size = 18),legend.position = "top",legend.justification = c("center"))+#+scale_size_continuous(range=c(1,20))+
+   annotate("text", x = 3, y = 6.5, label = rsq_label.a, size=6,hjust=0,colour="black",parse=TRUE) #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
+FigS5a<-FigS5a+ annotate("text", x = 3, y = 6, label = "p=0.009 N=42", size=6,hjust=0,colour="black") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
+#FigS3a<-FigS3a+ annotate("text", x = 3, y = 5.6, label = "y = -1.216 + 0.686*log soil P", size=5,hjust=0,colour="black") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
+FigS5a<-FigS5a+ annotate("text", x = 3, y = 7, label = "a", size=8,hjust=0,fontface="bold",colour="black") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
+FigS5a
+
+##Leaf fall Sup Figure Pre vs Soil P####
+data_resp_leaf<-data_es0ilf %>% filter(Treatment=="Ambient")%>% filter(Site!="Gadgarra")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")
+str(data_resp_leaf) #27 Obs Ambient only
+unique(levels(data_resp_leaf$Site))#26 sites
+
+prelf<-lm(Pre_Mean~log(Other_soil_P), data=data_resp_leaf)
+summary(prelf)
+
+#Leaf litterfall
+FigS5b<-ggplot(data_resp_leaf, aes(x=log(Other_soil_P), y=Pre_Mean))+geom_point(aes(color=Country),size=3,alpha=0.9,shape=21,stroke=1.2)+geom_smooth(method = 'glm', col="#9f8a89", alpha=0.1)+
+  theme_pubr()+ # ggplot2 has a few theme options, I like minimal and classic
+  theme(axis.title=element_text(size=24),
+        axis.text=element_text(size=20))+ labs(y = bquote('Leaf litterfall'~(g/m^2/day)),x = "")
+rsq_label.b <- paste('R^2 == 0.15')
+FigS5b<-FigS5b+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))+#scale_color_gradient(low="#FCFF00", high="#D8001F")+#breaks=c(400,800,1200,1600,2000))+#scale_color_gradientn(colours = rainbow(5))+#+scale_color_gradient(low="blue", high="red")
+  theme(legend.title = element_text (size = 24), legend.text = element_text (size = 22),legend.position = "none",legend.justification = c("right"))+#+scale_size_continuous(range=c(1,20))+
+  labs(fill=NULL,color="Soil P")+ annotate("text", x = 3, y = 4, label = rsq_label.b, size=6,hjust=0,colour="black",parse=TRUE) #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
+FigS5b<-FigS5b+ annotate("text", x = 3, y = 3.5, label = "p=0.04 N=27", size=6,hjust=0,colour="black") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
+#FigS3b<-FigS3b+ annotate("text", x = 3, y = 5.6, label = "y = -1.411 + 0.571*log soil P", size=5,hjust=0,colour="black") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
+FigS5b<-FigS5b+ annotate("text", x = 3, y = 4.5, label = "b", size=8,hjust=0,fontface="bold",colour="black") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
+FigS5b
+
+##Nutrient panels
+data_es0ilnc$Country
+dat_nut<-rbind(data.frame(group="Leaf P",Pre_Mean=data_es0ilpc$Pre_Mean, ES=data_es0ilpc$yi,SE=sqrt(data_es0ilpc$vi),Case_study=data_es0ilpc$Case_study, SoilP=data_es0ilpc$Other_soil_P,Region=data_es0ilpc$Country,stringsAsFactors=TRUE),
+               data.frame(group="Leaf N",Pre_Mean=data_es0ilnc$Pre_Mean,ES=data_es0ilnc$yi,SE=sqrt(data_es0ilnc$vi),Case_study=data_es0ilnc$Case_study,SoilP=data_es0ilnc$Other_soil_P,Region=data_es0ilnc$Country,stringsAsFactors=TRUE))
 dat_nut
 
 ##Looking at change in Leaf P concentration by Soil P
@@ -654,50 +695,39 @@ pre_lpc<-lm(Pre_Mean~log(Other_soil_P), data=data_es0ilpc)
 summary(pre_lpc)
 tab_model(pre_lpc)
 
-##Data viz
 #Leaf P
-FigS_lpc<-ggplot(data_es0ilpc, aes(x=log(Other_soil_P), y=Pre_Mean))+geom_point(aes(color=log(Other_soil_P)),size=6,alpha=0.9,shape=21,stroke=2)+geom_smooth(method = 'glm', col="#9f8a89", alpha=0.1)+
-  theme_pubr()+ # ggplot2 has a few theme options, I like minimal and classic
+FigS5c<-ggplot(data_es0ilpc, aes(x=log(Other_soil_P), y=Pre_Mean))+geom_point(aes(color=Country),size=3,alpha=0.9,shape=21,stroke=1.2)+geom_smooth(method = 'glm', col="#9f8a89", alpha=0.1)+
+  theme_pubr()+scale_color_manual(values=c("#c3ced0","#665191","#af060f"))+# ggplot2 has a few theme options, I like minimal and classic
   theme(axis.title=element_text(size=24),
-        axis.text=element_text(size=20))+ labs(y = bquote('Leaf fall P'~(mg/g)),x = "Total soil P (ln mg/kg)")
+        axis.text=element_text(size=20))+ labs(y = bquote('Leaf litterfall P'~(mg/g)),x = "Total soil P (ln mg/kg)")
 rsq_label.a <- paste('R^2 == 0.54')
-FigS_lpc<-FigS_lpc+scale_color_gradient(low="#FCFF00", high="#D8001F")+#breaks=c(400,800,1200,1600,2000))+#scale_color_gradientn(colours = rainbow(5))+#+scale_color_gradient(low="blue", high="red")
+FigS5c<-FigS5c+#scale_color_gradient(low="#FCFF00", high="#D8001F")+#breaks=c(400,800,1200,1600,2000))+#scale_color_gradientn(colours = rainbow(5))+#+scale_color_gradient(low="blue", high="red")
   theme(legend.title = element_text (size = 24), legend.text = element_text (size = 22),legend.position = "none",legend.justification = c("right"))+#+scale_size_continuous(range=c(1,20))+
-  labs(fill=NULL,color="Soil P")+ annotate("text", x = 5.4, y = 0.75, label = rsq_label.a, size=6,hjust=0,colour="black",parse=TRUE) #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
-FigS_lpc<-FigS_lpc+ annotate("text", x = 5.4, y = 0.8, label = "c", size=8,hjust=0,colour="black",fontface="bold") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
+  annotate("text", x = 5.4, y = 0.75, label = rsq_label.a, size=6,hjust=0,colour="black",parse=TRUE) #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
+FigS5c<-FigS5c+ annotate("text", x = 5.4, y = 0.8, label = "c", size=8,hjust=0,colour="black",fontface="bold") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
 #FigS_lnc<-FigS_lnc+ annotate("text", x = 5.4, y = 18, label = "N = 10", size=5,hjust=0,colour="black") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
 #FigS_lnc<-FigS_lnc+ annotate("text", x = 3, y = 7.5, label = "a", size=8,hjust=0,fontface="bold",colour="black") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
-FigS_lpc
+FigS5c
 
 #Leaf N
-FigS_lnc<-ggplot(data_es0ilnc, aes(x=log(Other_soil_P), y=Pre_Mean))+geom_point(aes(color=log(Other_soil_P)),size=6,alpha=0.9,shape=21,stroke=2)+geom_smooth(method = 'glm', col="#9f8a89", alpha=0.1)+
-  theme_pubr()+ # ggplot2 has a few theme options, I like minimal and classic
+FigS5d<-ggplot(data_es0ilnc, aes(x=log(Other_soil_P), y=Pre_Mean))+geom_point(aes(color=Country),size=3,alpha=0.9,shape=21,stroke=1.2)+geom_smooth(method = 'glm', col="#9f8a89", alpha=0.1)+
+  theme_pubr()+scale_color_manual(values=c("#c3ced0","#665191","#af060f"))+ # ggplot2 has a few theme options, I like minimal and classic
   theme(axis.title=element_text(size=24),
-        axis.text=element_text(size=20))+ labs(y = bquote('Leaf fall N'~(mg/g)),x = "Total soil P (ln mg/kg)")
+        axis.text=element_text(size=20))+ labs(y = bquote('Leaf litterfall N'~(mg/g)),x = "Total soil P (ln mg/kg)")
 rsq_label.b <- paste('R^2 == 0.73')
-FigS_lnc<-FigS_lnc+scale_color_gradient(low="#FCFF00", high="#D8001F")+#breaks=c(400,800,1200,1600,2000))+#scale_color_gradientn(colours = rainbow(5))+#+scale_color_gradient(low="blue", high="red")
+FigS5d
+FigS5d<-FigS5d+#scale_color_gradient(low="#FCFF00", high="#D8001F")+#breaks=c(400,800,1200,1600,2000))+#scale_color_gradientn(colours = rainbow(5))+#+scale_color_gradient(low="blue", high="red")
   theme(legend.title = element_text (size = 24), legend.text = element_text (size = 22),legend.position = "none",legend.justification = c("right"))+#+scale_size_continuous(range=c(1,20))+
-  labs(fill=NULL,color="Soil P")+ annotate("text", x = 5.4, y = 19, label = rsq_label.b, size=6,hjust=0,colour="black",parse=TRUE) #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
-FigS_lnc<-FigS_lnc+ annotate("text", x = 5.4, y = 20, label = "d", size=8,hjust=0,colour="black",fontface="bold") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
-#FigS_lnc<-FigS_lnc+ annotate("text", x = 5.4, y = 17.5, label = "N = 10", size=5,hjust=0,colour="black") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
-#FigS_lnc<-FigS_lnc+ annotate("text", x = 3, y = 7.5, label = "a", size=8,hjust=0,fontface="bold",colour="black") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
-FigS_lnc
+  annotate("text", x = 5.4, y = 19, label = rsq_label.b, size=6,hjust=0,colour="black",parse=TRUE) #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
+FigS5d<-FigS5d+ annotate("text", x = 5.4, y = 20, label = "d", size=8,hjust=0,colour="black",fontface="bold") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
+FigS5d
 
-Leaf_nut<-FigS_lpc+FigS_lnc+plot_layout(ncol=2)
-Leaf_nut
-rlang::last_error()
-ggsave(filename = "SupFig_Leaf_Nut_Conc.png",
-       plot = Leaf_nut, width = 15, height = 8, units = 'cm',
-       scale = 2, dpi = 1000)
-
-FinalFigS3<-FigS3a+FigS3b+ plot_layout(ncol=2)
-FinalFigS3
-
-Final_Pre_Sup<-(FigS3a | FigS3b)/(FigS_lpc | FigS_lnc)
-Final_Pre_Sup
-
-ggsave(filename = "SupFig_Pre_Mass_Leaf_Nut_SoilP_v3.png",
-       plot = Final_Pre_Sup, width = 16, height = 14, units = 'cm',
+##Figure S5####
+Final_FigS5<-(FigS5a | FigS5b)/(FigS5c | FigS5d)
+Final_FigS5
+#Saving high-res
+ggsave(filename = "Fig_S5ad.png",
+       plot = Final_FigS5, width = 16, height = 14, units = 'cm',
        scale = 2, dpi = 1000)
 
 #Data wrangliing
