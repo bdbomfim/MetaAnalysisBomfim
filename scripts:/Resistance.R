@@ -1,4 +1,4 @@
-###Meta-Analysis of cyclone response of forest litterfall across the tropics###
+###Meta-Analysis of cyclone resistance of forest litterfall across the tropics###
 
 library(packrat)
 library(styler)
@@ -54,7 +54,7 @@ library(AICcmodavg)
 ####STEP 0 uploading data####
 
 #Litterfall mass flux data
-metadat<-read.csv(file.choose())#20210520_Litterfall_Mass
+metadat<-read.csv(file.choose())#Litterfall_Mass
 str(metadat)#2367 obs of 77 variables
 summary(metadat)
 
@@ -67,7 +67,7 @@ metadat$Case_study= paste(metadat$Site, metadat$DisturbanceName,sep="| ")
 unique(levels(as.factor(metadat$Treatment)))#check number of unique factor levels
 
 #Nutrient flux and concentration data
-nutmeta<-read.csv(file.choose())#20210520_Litterfall_Nutrients
+nutmeta<-read.csv(file.choose())#Litterfall_Nutrients
 str(nutmeta) #2551 obs. of  80 variables
 
 #create Case study column
@@ -82,8 +82,8 @@ unique(levels(as.factor(nutmeta$Case_study)))
 #Annual-based, excluding CTE
 data0a<-metadat %>% filter(Fraction=="TotLitfall")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")#%>%filter(Treatment!="P+")#|Treatment!="N+"|Treatment!="NP+")
 str(data0a)#48 observations
-data0a$Treatment
-unique(levels(as.factor(data0a$Treatment)))
+summary(data0a)
+unique(levels(as.factor(data0a$Other_soil_P)))
 #Sub-annual
 data0aS<- data0a%>% filter(Pre_Mean_MonthSpecific!="NA")#to exclude a factor level
 str(data0aS)#23observations
