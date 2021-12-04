@@ -1,10 +1,10 @@
 ##Figure Resilience Observations All Fractions
 library(metafor)
 library(tidyverse)
+library(ggplot2)
 
 ####STEP 0 Upload Litterfall mass data####
-metadat<-read.csv(file.choose())#20210415_Litterfall_Mass_Flux
-attach(metadat)
+metadat<-read.csv(file.choose())#Litterfall_Mass
 
 ##Mass
 rec <- metadat %>% filter(Cat_TSD_months == "Rec")
@@ -34,7 +34,7 @@ str(data_esall_amb2)#1128
 
 ##Total Litterfall mass resilience [ln(post/pre)] including all Treatments####
 
-#1 to 36 months
+#Months 1 to 36 post-disturbance
 tot_amb<-data_esall_amb %>% filter(Fraction=="TotLitfall")
 str(tot_amb)#250 obs
 levels(tot_amb$Treatment)
@@ -73,11 +73,13 @@ data_esall_amb_final2$TSD_months
 str(data_esall_amb_final2)
 data_esall_amb_final2$Case_study= paste(data_esall_amb_final2$Site, data_esall_amb_final2$DisturbanceName, sep="|")
 
-##Calculating Overall Resilience for certain points in time since disturbance
+##Calculating Overall Resilience for certain months post-disturbance
+
+#dataframe
 data_es_tot_amb<-data_esall_amb_final2 %>% filter(Fraction=="TotLitfall")
 str(data_es_tot_amb)#286
 
-#1 month
+#1 month post-disturbance
 data_es_tot_amb_1<-data_es_tot_amb %>% filter(TSD_months==1)
 str(data_es_tot_amb_1)
 unique(levels(as.factor(data_es_tot_amb_1$Case_study)))
