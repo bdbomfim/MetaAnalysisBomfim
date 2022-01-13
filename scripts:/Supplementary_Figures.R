@@ -1,8 +1,12 @@
-##Discussion Figures####
+##Discussion Figures###
+
+##Packages####
 library(metafor)
 library(ggplot2)
 library(patchwork)
 library(tidyverse)
+library(ggcorrplot)
+library(ggpubr)
 
 ##Upload data####
 metadat<-read.csv(file.choose())#20210520_Litterfall_Mass
@@ -739,5 +743,83 @@ dat_mass_lpc<-data_es0ia %>% filter(Treatment=="Ambient")%>%
   filter(Case_study2=="El Verde| Hugo| Ambient")%>%filter(Case_study2=="Kokee| Iniki| Ambient")%>%
   filter(Case_study2=="Lienhuachi| Fungwong| Ambient")%>%filter(Case_study2=="Lienhuachi| Jangmi| Ambient")%>%
   filter(Case_study2=="Lienhuachi| Kalmaegi| Ambient")%>%filter(Case_study2=="Lienhuachi| Sinlaku| Ambient")%>%
-  filter(Case_study2=="Bisley| Hugo| Ambient")%>%filter(Case_study2=="East Peak| Hugo| Ambient")%>%
+  filter(Case_study2=="Bisley| Hugo| Ambient")%>%filter(Case_study2=="East Peak| Hugo| Ambient")
   
+####Figure Sx Random Forest Var Importance Resistance with alternate Moderators####
+
+Vimp <- data.frame(final$forest$variable.importance)
+str(Vimp)
+final$forest$variable.importance
+
+Vimp3 <- cbind(data.frame(varimp=final$forest$variable.importance,predictors=retain_mods))
+Vimp3
+str(Vimp3)
+head(Vimp3)
+Vimp3
+
+#### Relative importance of predictors - Resistance of Total Litterfall####
+
+#Data frame
+var_importance <- data.frame(variable=setdiff(colnames(Vimp3), "Predictors"),
+                             importance=as.vector(final$forest$variable.importance))
+var_importance
+names(datametaforest)
+predictor_names<-c("Holdridge zone","Geological group","Parent material P","Parent material","Soil order","Longitude","Elevation","MAT/MAP","Soil P","Storm frequency","Time since last storm","Cyclone rainfall","Wind speed","Wind duration")
+predictor_names
+Vimp3 <- cbind(data.frame(varimp=final$forest$variable.importance,predictors=predictor_names))
+str(Vimp3)
+
+Vimp3$predictors<- factor(Vimp3$predictors, levels=Vimp3$predictors)
+
+#Figure4a
+Fig4a <- ggplot(Vimp3, aes(x=reorder(predictors,varimp), weight=varimp, fill=varimp))
+Fig4a <- Fig4a + geom_bar(col="black",fill="darkgray")+coord_flip()+theme_pubr()
+Fig4a <- Fig4a + ylab("Relative importance of predictors") + xlab("")+ theme(
+  axis.text.y=element_text(size=26),
+  axis.text.x=element_text(size=26),
+  axis.title.x=element_text(size=28),
+  legend.title=element_blank(),
+  legend.text=element_blank(),
+  legend.key = element_blank())+guides(fill=FALSE)#+ annotate("text", y = 1.1, x = 1, label = "a", size=12,hjust=0,fontface="bold",colour="black")#+annotate INCLUDE ANNOTATION letter and Total litterfall mass
+Fig4a
+
+#Saving dufyew in high resiurion
+ggsave(filename = "Fig4a_RF-Response-Tot.png",
+       plot = Fig4a, width = 14, height = 12, units = 'cm',
+       scale = 2, dpi = 1000)
+
+#Renaming data for correlation plot
+names(datametaforest_2)
+CPFigS_cor<-datametaforest_2[,c(2:7,10:17)]
+names(CPFigS_cor)## Final!
+names(CPFigS_cor)[names(CPFigS_cor) == "Holdridge_ID"] <- "Holdridge zone"
+names(CPFigS_cor)[names(CPFigS_cor) == "Region_ID"] <- "Region"
+names(CPFigS_cor)[names(CPFigS_cor) == "elev"] <- "Elevation"
+names(CPFigS_cor)[names(CPFigS_cor) == "mat_map"] <- "MAT/MAP"
+names(CPFigS_cor)[names(CPFigS_cor) == "soilP"] <- "Soil P"
+names(CPFigS_cor)[names(CPFigS_cor) == "stormfreq"] <- "Storm frequency"
+names(CPFigS_cor)[names(CPFigS_cor) == "timesincestorm"] <- "Time since last storm"
+names(CPFigS_cor)[names(CPFigS_cor) == "distrain"] <- "Cyclone rainfall"
+names(CPFigS_cor)[names(CPFigS_cor) == "hurrwind"] <- "Wind speed"
+names(CPFigS_cor)[names(CPFigS_cor) == "windur"] <- "Wind duration"
+names(CPFigS_cor)[names(CPFigS_cor) == "Rock_type_ID"] <- "Geological group"
+names(CPFigS_cor)[names(CPFigS_cor) == "RockP_ID"] <- "Parent material P"
+names(CPFigS_cor)[names(CPFigS_cor) == "Par_Mat_ID"] <- "Parent material"
+names(CPFigS_cor)[names(CPFigS_cor) == "Soil_ID"] <- "Soil order"
+
+#Calculating correlations and p values
+corrfS <- round(cor(CPFigS_cor,method="pearson"),2)
+p.matfS <- cor_pmat(CPFigS_cor)
+
+#Figure
+FigS<-ggcorrplot(corrfS, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
+                    outline.col = "white", p.mat = p.matfS,method="square",ggtheme=ggplot2::theme_classic(),show.legend=TRUE, 
+                    legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=28,insig="blank",
+                    colors = c("#ABA0A0", "white", "#ffa600",pch.cex=20,nbreaks = 8,legend.text.cex=26))+font("legend.text",size=18)+font("legend.title", size=22)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
+FigS
+
+#Saving figure in high res
+ggsave(filename = "FigS_Final.png",
+       plot = FigS, width = 16, height = 18, units = 'cm',
+       scale = 2, dpi = 1000)
+##END####
