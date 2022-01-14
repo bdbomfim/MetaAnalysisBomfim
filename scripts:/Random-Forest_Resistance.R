@@ -30,7 +30,8 @@ str(data0a)#48 observations
 data_es0ia <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
                      sd1i = Post_SD, sd2i = Pre_SD, data = data0a, measure = "ROM") # ROM =  log transformed ratio of means (Hedges et al., 1999; Lajeunesse, 2011).
 data_es0ia
-#Standardizing variables 2x sd per Gelman reccomendation 
+
+#Standardizing variables 2x sd per Gelman reccomendation#### 
 z.trans<-function(x) {(x - mean(x, na.rm=T))/(2*sd(x, na.rm=T))}
 data_es0ia$long<-z.trans(data_es0ia$Longitude)#create new variable 'long' which is the standardized version of 'Longitude'
 data_es0ia$elev<-z.trans(data_es0ia$Elevation_m)
@@ -45,7 +46,7 @@ data_es0ia$windur<-z.trans(data_es0ia$Gale_wind_duration_minutes)
 #checking data
 names(data_es0ia)
 
-#Tota litterfall random forest####
+#Data frame to run the random forest algorithm for total litterfall mass flux data containing HURRECON wind speed####
 datametaforest<-data_es0ia[,c(3,15,23,25,27,29,63:73)]%>% filter(hurrwind!="NA")#filtering NAs
 str(datametaforest)#45obs 17 variables
 
@@ -73,9 +74,7 @@ VarImpPlot(mf_rep)#can take a look at the importance value at this point, too
 #Applying recursive pre-selection using the preselect function. 
 # Run recursive preselection, store results in object 'preselect'
 #There are three possible algorithms for variable selection : replicate, recursive, and bootstrap (but latter does not work with this data)
-preselected <- preselect(mf_rep,
-                         replications = 100,
-                         algorithm = "recursive")
+preselected <- preselect(mf_rep,replications = 100,algorithm = "recursive")
 plot(preselected)# of variables
 
 #Alternative 'replicate' algorithm
@@ -104,7 +103,7 @@ tuning_grid <- expand.grid(whichweights = c("random", "fixed", "unif"),
 # X should contain only retained moderators, clustering variable, and vi
 X <- datametaforest[, c("Effectsize_ID", "vi", retain_mods)]
 
-# Train the random forest model
+# Train the random forest model####
 mf_cv <- train(y = datametaforest$yi,
                x = X,
                study = "Effectsize_ID", # Name of the clustering variable
@@ -198,101 +197,7 @@ ggsave(filename = "Fig4a_RF-Response-Tot.png",
        plot = Fig4a, width = 14, height = 12, units = 'cm',
        scale = 2, dpi = 1000)
 
-####Same approach but substituting longitude by Region####
-
-#Tota litterfall random forest####
-names(data_es0ia)
-datametaforest_2<-data_es0ia[,c(3,8,15,23,25,27,29,63:64,66:73)]%>% filter(hurrwind!="NA")#filtering NAs
-str(datametaforest_2)#45obs 17 variables
-
-# Run model with many trees to check convergence
-check_conv_2 <- MetaForest(yi~.,
-                         data = datametaforest_2,
-                         study = "Effectsize_ID",
-                         whichweights = "random",
-                         num.trees = 20000)
-plot(check_conv_2) #model converged at about 5000 trees, which will be used in the next step
-
-#Model with 5000 trees for replication
-mf_rep_2 <- MetaForest(yi~.,
-                     data = datametaforest_2,
-                     study = "Effectsize_ID",
-                     whichweights = "random",#using random effects, as in classic meta-analysis
-                     num.trees = 5000)
-
-#Preselecting variables for MetaForest analysis
-#Applying recursive pre-selection using the preselect function. 
-# Run recursive preselection, store results in object 'preselect'
-preselected_2 <- preselect(mf_rep_2,
-                         replications = 100,
-                         algorithm = "recursive")#There are three possible algorithms for variable selection : replicate, recursive, and bootstrap (but latter does not work with this data)
-plot(preselected_2)# of variables
-
-#Alternative 'replicate' algorithm
-preselected2_2 <- preselect(mf_rep_2,
-                          replications = 100,
-                          algorithm = "replicate")
-plot(preselected2_2)
-#Both generated similar results
-
-#Using preselect_vars to retain only those moderators for which a 50% percentile interval 
-#of the variable importance metrics does not include zero
-#Retain only moderators with positive variable importance in more than 50% of replications
-retain_mods_2 <- preselect_vars(preselected_2, cutoff = .5)
-
-# Set up 3-fold grouped (=clustered) CV
-grouped_cv_2 <- trainControl(method = "cv", 
-                           index = groupKFold(datametaforest_2$Effectsize_ID, k = 3))
-grouped_boot_2 <- trainControl(method = "cboot", 
-                             index = groupKFold(datametaforest_2$Effectsize_ID, k = 3))
-
-# Set up a tuning grid for the three tuning parameters of MetaForest
-tuning_grid_2 <- expand.grid(whichweights = c("random", "fixed", "unif"),
-                           mtry = 2:6,
-                           min.node.size = 2:6)
-
-# X should contain only retained moderators, clustering variable, and vi
-X_2 <- datametaforest_2[, c("Effectsize_ID", "vi", retain_mods_2)]
-
-# Train the random forest model
-mf_cv_2 <- train(y = datametaforest_2$yi,
-               x = X_2,
-               study = "Effectsize_ID", # Name of the clustering variable
-               method = ModelInfo_mf(), 
-               trControl = grouped_cv_2,
-               tuneGrid = tuning_grid_2,
-               num.trees = 5000)
-
-#Examine optimal tuning parameters
-mf_cv_2$results[which.min(mf_cv_2$results$RMSE), ]
-#Based on the root mean squared error, the best combination of tuning parameters
-#were unif weights
-
-#R2 cv
-r2_cv_2<-mf_cv_2$results$Rsquared[which.min(mf_cv_2$results$RMSE)]
-r2_cv_2#0.61
-
-#The object returned by train already contains the final model, 
-#estimated with the best combination of tuning parameters
-
-#Inspecting the results
-# Extracting the final model
-final_2 <- mf_cv_2$finalModel
-final_2
-
-# Extracting the estimate of predictive performance R^2_{oob} from the final model
-#This is an estimate of how much variance the model would explain in a new data set 
-r2_oob_2 <- final_2$forest$r.squared
-r2_oob_2 #predictive performance of 45.7%
-
-#Residual heterogeneity
-Vimp_2 <- data.frame(final_2$forest$variable.importance)
-Vimp_2
-
-# Variable importance plot
-VarImpPlot(final_2)
-
-#Correlation plot of final variables in "final2"
+#Correlation plot of final variables
 
 #Renaming data for correlation plot
 names(datametaforest)
@@ -330,12 +235,22 @@ ggsave(filename = "Fig4b_Final.png",
        plot = Fig4b_2, width = 16, height = 18, units = 'cm',
        scale = 2, dpi = 1000)
 
-####Leaf fall random forest####
+####Leaf litterfall random forest for meta-analysis####
 
-#Data
-str(data_es0ilf)
+#Data wrangling
+#Filtering data to include only total litterfall fraction, 0-05 data points, ambient conditions
+data0alf<-metadat %>% filter(Fraction=="Leaf fall")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
+str(data0alf)#30 observations
+
+#Effect size calculation####
+data_es0ilf <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
+                      sd1i = Post_SD, sd2i = Pre_SD, data = data0alf, measure = "ROM")
+str(data_es0ilf)#30 observations
+
+#Data frame including data points with HURRECON wind speed
 Data_es0ilf<-data_es0ilf %>% filter(HURRECON_wind_ms!="NA")
-str(Data_es0ilf)
+str(Data_es0ilf)#30 observations
+
 #standardizing variables 2x sd per Gelman reccomendation 
 z.trans<-function(x) {(x - mean(x, na.rm=T))/(2*sd(x, na.rm=T))}
 Data_es0ilf$long<-z.trans(Data_es0ilf$Longitude)
@@ -350,7 +265,7 @@ Data_es0ilf$windur<-z.trans(Data_es0ilf$Gale_wind_duration_minutes)
 names(Data_es0ilf)
 
 #Final data for meta forest analysis
-datametaforestlf<-Data_es0ilf[,c(3,15,23,25,27,79:89)]%>% filter(hurrwind!="NA")
+datametaforestlf<-Data_es0ilf[,c(3,15,23,25,27,63:73)]%>% filter(hurrwind!="NA")
 str(datametaforestlf)#30 obs and 16 variables
 
 # Run model with many trees to check convergence
@@ -362,17 +277,23 @@ check_conv2lf <- MetaForest(yi~.,
 
 plot(check_conv2lf) #model converged at about 7500 trees, which will be used in the next step
 
-#Model with 7500 trees for replication
+#Model with 7500 trees
 mf_rep2lf<- MetaForest(yi~.,
                        data = datametaforestlf,
                        study = "Effectsize_ID",
                        whichweights = "random",
                        num.trees = 7500)
 
+#Pre-selecting variables for MetaForest analysis
+
+#Applying 'recursive' pre-selection using the preselect function. 
 preselected2lf <- preselect(mf_rep2lf,replications = 100,algorithm = "recursive")
 plot(preselected2lf)
 
+# Retain only moderators with positive variable importance in more than
+# 50% of replications
 retain_mods2lf <- preselect_vars(preselected2lf, cutoff = .5)
+retain_mods2lf
 
 #Control the computational nuances of the train function
 grouped_cv2lf <- trainControl(method = "cv", #resampling method
@@ -408,7 +329,7 @@ final2lf <- mf_cv2lf$finalModel
 final2lf
 
 r2_oob2lf <- final2lf$forest$r.squared
-r2_oob2lf #predictive performance of 61%
+r2_oob2lf #predictive performance
 
 #Plotting relative importance of predictors on package default
 VarImpPlot(final2lf)
@@ -437,7 +358,7 @@ str(Vimp3lf)
 
 Vimp3lf$predictors<- factor(Vimp3lf$predictors, levels=Vimp3lf$predictors)
 
-#Figure 4c Variable Importance
+#Figure 4c Variable Importance####
 Fig4c <- ggplot(Vimp3lf, aes(x=reorder(predictors,varimp), weight=varimp, fill=varimp))
 Fig4c <- Fig4c + geom_bar(col="black",fill="#197D32")+coord_flip()+theme_pubr()
 Fig4c
@@ -483,7 +404,7 @@ names(CPFig4d_cor)
 corrf4d <- round(cor(CPFig4d_cor,method="pearson"),2)
 p.matf4d <- cor_pmat(CPFig4d_cor)
 
-#Figure
+#Figure4d correlation plot####
 Fig4d_2<-ggcorrplot(corrf4d, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
                     outline.col = "white", p.mat = p.matf4d,method="square",ggtheme=ggplot2::theme_classic(),show.legend=TRUE, 
                     legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=28,insig="blank",
@@ -494,5 +415,72 @@ Fig4d_2
 ggsave(filename = "Fig4d_Final.png",
        plot = Fig4d_2, width = 16, height = 18, units = 'cm',
        scale = 2, dpi = 1000)
+
+#Same approach for leaf litterfall but substituting longitude by Region####
+names(Data_es0ilf)
+datametaforestlf_2<-Data_es0ilf[,c(3,8,15,23,25,27,63:64,66:73)]%>% filter(hurrwind!="NA")
+names(datametaforestlf_2)#30 obs and 16 variables
+
+# Run model with many trees to check convergence
+check_conv2lf_2 <- MetaForest(yi~.,
+                            data = datametaforestlf_2,
+                            study = "Effectsize_ID",
+                            whichweights = "random",
+                            num.trees = 20000)
+
+plot(check_conv2lf_2) #model converged at about 10000 trees, which will be used in the next step
+
+#Model with 10000 trees
+mf_rep2lf_2<- MetaForest(yi~.,
+                       data = datametaforestlf_2,
+                       study = "Effectsize_ID",
+                       whichweights = "random",
+                       num.trees = 10000)
+
+#Pre-selecting variables for MetaForest analysis
+#Applying recursive pre-selection using the preselect function. 
+preselected2lf_2 <- preselect(mf_rep2lf_2,replications = 100,algorithm = "recursive")
+plot(preselected2lf_2)
+
+retain_mods2lf_2 <- preselect_vars(preselected2lf_2, cutoff = .5)
+
+#Control the computational nuances of the train function
+grouped_cv2lf_2 <- trainControl(method = "cv", #resampling method
+                              index = groupKFold(datametaforestlf_2$Effectsize_ID, k = 3))
+grouped_boot2lf_2 <- trainControl(method = "cboot", 
+                                index = groupKFold(datametaforestlf_2$Effectsize_ID, k = 3))
+
+# Set up a tuning grid for the three tuning parameters of MetaForest
+tuning_grid2lf_2 <- expand.grid(whichweights = c("random", "fixed", "unif"),
+                              mtry = 2:6,
+                              min.node.size = 2:6)
+
+# X should contain only retained moderators, clustering variable, and vi
+X2lf_2 <- datametaforestlf_2[, c("Effectsize_ID", "vi", retain_mods2lf_2)]
+
+# Train the model
+mf_cv2lf_2 <- train(y = datametaforestlf_2$yi,
+                  x = X2lf_2,
+                  study = "Effectsize_ID", # Name of the clustering variable
+                  method = ModelInfo_mf(), 
+                  trControl = grouped_cv2lf_2,
+                  tuneGrid = tuning_grid2lf_2,
+                  num.trees = 10000)
+
+#Examine optimal tuning parameters
+mf_cv2lf_2$results[which.min(mf_cv2lf_2$results$RMSE), ]
+
+r2_cvlf_2<-mf_cv2lf_2$results$Rsquared[which.min(mf_cv2lf_2$results$RMSE)]
+r2_cvlf_2
+
+# For convenience, extract final model
+final2lf_2 <- mf_cv2lf_2$finalModel
+final2lf_2
+
+r2_oob2lf_2 <- final2lf_2$forest$r.squared
+r2_oob2lf_2 #predictive performance
+
+#Plotting relative importance of predictors on package default
+VarImpPlot(final2lf_2)
 
 ##END####
