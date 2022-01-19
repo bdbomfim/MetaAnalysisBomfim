@@ -10,35 +10,63 @@ metadat<-read.csv(file.choose())#Litterfall_Mass
 rec <- metadat %>% filter(Cat_TSD_months == "Rec")
 rec
 
-#1 to 36 months
+#Data wrangling to include litterfall data from 1 to 36 months post-disturbance
 res_all<- rec %>% filter(Case_ID!="25.2")%>% filter(Case_ID!="18.1")%>% filter (TSD_months < 37)
 str(res_all)
 
+#Filtering to include Ambient conditions only
 res_amb<-res_all %>% filter(Treatment=="Ambient")
 str(res_amb)#948
 
+#Ambient and TrimDeb treatment from CTE
 res_amb2<-res_all %>% filter(Treatment=="Ambient"|Treatment=="TrimDeb")
 str(res_amb2)#1128
 
+#Creating new column and naming it "Case_study"
 res_amb$Case_study= paste(res_amb$Site, res_amb$DisturbanceName, sep="|")
 res_amb2$Case_study= paste(res_amb2$Site, res_amb2$DisturbanceName, sep="|")
 
 #Calculating Effect sizes (i.e. the log transformed ratio of means, or Hedge's g) 1 to 36 Ambient ####
 data_esall_amb <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
                      sd1i = Post_SD, sd2i = Pre_SD, data = res_amb, measure = "ROM")
-str(data_esall_amb)#948 obs. including all litterfall mass fractions
+str(data_esall_amb)#945 observations including all litterfall mass fractions
+#Creating new columns yi_new as the result of yi divided by duration
+names(data_esall_amb)
+data_esall_amb$yi_new <- data_esall_amb$yi / data_esall_amb$TSD_months
+#checking new column yi_new
+summary(data_esall_amb$yi_new)
+#Same for the variance vi_new
+data_esall_amb$vi_new <- data_esall_amb$vi / data_esall_amb$TSD_months
+#checking new column vi_new
+summary(data_esall_amb$vi_new)
 
+#Including CTE TrimDeb
 data_esall_amb2 <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
                          sd1i = Post_SD, sd2i = Pre_SD, data = res_amb2, measure = "ROM")
-str(data_esall_amb2)#1128
+str(data_esall_amb2)#1125 observations
 
-##Total Litterfall mass resilience [ln(post/pre)] including all Treatments####
+#Creating new columns yi_new as the result of yi divided by duration
+names(data_esall_amb2)
+data_esall_amb2$yi_new <- data_esall_amb2$yi / data_esall_amb2$TSD_months
+
+#checking new column yi_new
+summary(data_esall_amb2$yi_new)
+
+#Same for the variance vi_new
+data_esall_amb2$vi_new <- data_esall_amb2$vi / data_esall_amb2$TSD_months
+
+#checking new column vi_new
+summary(data_esall_amb2$vi_new)
+
+##Total Litterfall mass resilience [ln(post/pre)]####
 
 #Months 1 to 36 post-disturbance
 tot_amb<-data_esall_amb %>% filter(Fraction=="TotLitfall")
-str(tot_amb)#250 obs
-levels(tot_amb$Treatment)
+str(tot_amb)#249 observations - ambient conditions only
+summary(tot_amb$Treatment)
+#Number of case studies in Puerto Rico is 108 out of 249 (43%) when CTE is not included
 
+#Data grouping and wrangling
 dres_amb_tot <- tot_amb %>%group_by(yi,vi,Case_study,Treatment,TSD_months)  #%>%dplyr::summarise(counts = dplyr::n())
 dres_amb_tot
 Obs_res_tot<- cbind(data.frame(Obs=tot_amb$yi,Se=sqrt(tot_amb$vi),Months=factor(tot_amb$TSD_months),
@@ -50,60 +78,65 @@ Obs_res_tot$Months<-factor(Obs_res_tot$Months, levels = c("1","2","3","4","5","6
                                                                 "18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36"))
 levels(Obs_res_tot$Months)
 
-##Including CTE TrimDeb
+##Data wrangling Including CTE TrimDeb
 data_esall_amb_final2<-data_esall_amb2 %>% filter(Fraction!="Misc fall")
 str(data_esall_amb_final2)
-unique(levels(as.factor(data_esall_amb_final2$Case_study)))
-Se=sqrt(data_esall_amb_final2$vi)
+
+Se=sqrt(data_esall_amb_final2$vi_new)
 Se
 data_esall_amb_final2$yi
-Obs=data_esall_amb_final2$yi
+Obs=data_esall_amb_final2$yi_new
 Obs
 data_esall_amb_final2$Months<-factor(data_esall_amb_final2$TSD_months, levels = c("1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17",
                                                                                   "18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36"))
-levels(data_esall_amb_final2$Months)
-
-
-Obs_res_all2<- cbind(data.frame(Obs=data_esall_amb_final2$yi,Se=sqrt(data_esall_amb_final2$vi),Months=factor(data_esall_amb_final2$TSD_months),
+Obs_res_all2<- cbind(data.frame(Obs=data_esall_amb_final2$yi_new,Se=sqrt(data_esall_amb_final2$vi_new),Months=factor(data_esall_amb_final2$TSD_months),
                                SoilP=data_esall_amb_final2$Other_soil_P,Fraction=data_esall_amb_final2$Fraction,fac_SoilP=factor(data_esall_amb_final2$Other_soil_P),
                                Case_study=data_esall_amb_final2$Case_study,Cyclone_freq=data_esall_amb_final2$StormFrequencyNorm,Country=data_esall_amb_final2$Country))
-str(Obs_res_all2)
-data_esall_amb_final2$TSD_months
-
-str(data_esall_amb_final2)
-data_esall_amb_final2$Case_study= paste(data_esall_amb_final2$Site, data_esall_amb_final2$DisturbanceName, sep="|")
 
 ##Calculating Overall Resilience for certain months post-disturbance
 
 #dataframe
 data_es_tot_amb<-data_esall_amb_final2 %>% filter(Fraction=="TotLitfall")
-str(data_es_tot_amb)#286
+str(data_es_tot_amb)#285 observations
+summary(data_es_tot_amb$Treatment)
+#Number of case studies in Puerto Rico is 144 out of 285 (50%) when CTE is included
 
-#1 month post-disturbance
+#1 month post-disturbance for ambient + TrimDeb CTE####
 data_es_tot_amb_1<-data_es_tot_amb %>% filter(TSD_months==1)
-str(data_es_tot_amb_1)
-unique(levels(as.factor(data_es_tot_amb_1$Case_study)))
+names(data_es_tot_amb_1)
 
+#running mixed-effects meta-analysis model for one month post-disturbance
 tot_meta_1<- rma.mv(yi,vi,random = ~(1|Site),
                     tdist = TRUE,
                     data = data_es_tot_amb_1,struct = "HAR",method = "REML")
 summary(tot_meta_1)
-coef(summary(tot_meta_1))
+tot_meta_1$b
+res_index_1<-tot_meta_1$b/1
+res_index_1
 
-#3 months
+#same for new resilience effect size and variance
+tot_meta_1_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
+                    tdist = TRUE,
+                    data = data_es_tot_amb_1,struct = "HAR",method = "REML")
+summary(tot_meta_1_new)
+tot_meta_1_new$b
+
+#3 months####
 data_es_tot_amb_3<-data_es_tot_amb %>% filter(TSD_months==3)
-str(data_es_tot_amb_3)
-
 tot_meta_3<- rma.mv(yi,vi,random = ~(1|Site),
                     tdist = TRUE,
                     data = data_es_tot_amb_3,struct = "HAR",method = "REML")
 summary(tot_meta_3)
 coef(summary(tot_meta_3))
 
-#5 months
-data_es_tot_amb_5<-data_es_tot_amb %>% filter(TSD_months==5)
-str(data_es_tot_amb_5)
+#same for new resilience effect size and variance
+tot_meta_3_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
+                    tdist = TRUE,
+                    data = data_es_tot_amb_3,struct = "HAR",method = "REML")
+summary(tot_meta_3_new)
 
+#5 months####
+data_es_tot_amb_5<-data_es_tot_amb %>% filter(TSD_months==5)
 tot_meta_5<- rma.mv(yi,vi,random = ~(1|Site),
                     tdist = TRUE,
                     data = data_es_tot_amb_5,struct = "HAR",method = "REML")
@@ -113,53 +146,78 @@ summary(tot_meta_5)
 coef(summary(tot_meta_5))
 summary(tot_meta_5)
 
-#8 months
-data_es_tot_amb_8<-data_es_tot_amb %>% filter(TSD_months==8)
-str(data_es_tot_amb_8)
+#same for new resilience effect size and variance
+tot_meta_5_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
+                    tdist = TRUE,
+                    data = data_es_tot_amb_5,struct = "HAR",method = "REML")
+#mods=~TSD_months)
+summary(tot_meta_5_new)
 
+#8 months####
+data_es_tot_amb_8<-data_es_tot_amb %>% filter(TSD_months==8)
 tot_meta_8<- rma.mv(yi,vi,random = ~(1|Site),
                     tdist = TRUE,
                     data = data_es_tot_amb_8,struct = "HAR",method = "REML")
 summary(tot_meta_8)
 coef(summary(tot_meta_8))
 
-#12 months
-data_es_tot_amb_12<-data_es_tot_amb %>% filter(TSD_months==12)
-str(data_es_tot_amb_12)
+#same for new resilience effect size and variance
+tot_meta_8_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
+                    tdist = TRUE,
+                    data = data_es_tot_amb_8,struct = "HAR",method = "REML")
+summary(tot_meta_8_new)
 
+#12 months####
+data_es_tot_amb_12<-data_es_tot_amb %>% filter(TSD_months==12)
 tot_meta_12<- rma.mv(yi,vi,random = ~(1|Site),
                     tdist = TRUE,
                     data = data_es_tot_amb_12,struct = "HAR",method = "REML")
 summary(tot_meta_12)
-coef(summary(tot_meta_12))
 
-#15 months
+#same for new resilience effect size and variance
+tot_meta_12_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
+                     tdist = TRUE,
+                     data = data_es_tot_amb_12,struct = "HAR",method = "REML")
+summary(tot_meta_12_new)
+
+#15 months####
 data_es_tot_amb_15<-data_es_tot_amb %>% filter(TSD_months==15)
-str(data_es_tot_amb_15)
-
 tot_meta_15<- rma.mv(yi,vi,random = ~(1|Site),
                      tdist = TRUE,
                      data = data_es_tot_amb_15,struct = "HAR",method = "REML")
 summary(tot_meta_15)
-coef(summary(tot_meta_15))
 
-#18 months
+#same for resilience effect size and variance
+tot_meta_15_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
+                     tdist = TRUE,
+                     data = data_es_tot_amb_15,struct = "HAR",method = "REML")
+summary(tot_meta_15_new)
+
+#18 months####
 data_es_tot_amb_18<-data_es_tot_amb %>% filter(TSD_months==18)
-str(data_es_tot_amb_18)
-
 tot_meta_18<- rma.mv(yi,vi,random = ~(1|Site),
                      tdist = TRUE,
                      data = data_es_tot_amb_18,struct = "HAR",method = "REML")
 summary(tot_meta_18)
 
-#21 months
-data_es_tot_amb_21<-data_es_tot_amb %>% filter(TSD_months==21)
-str(data_es_tot_amb_21)
+#same for new resilience effect size and variance
+tot_meta_18_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
+                     tdist = TRUE,
+                     data = data_es_tot_amb_18,struct = "HAR",method = "REML")
+summary(tot_meta_18_new)
 
+#21 months####
+data_es_tot_amb_21<-data_es_tot_amb %>% filter(TSD_months==21)
 tot_meta_21<- rma.mv(yi,vi,random = ~(1|Site),
                      tdist = TRUE,
                      data = data_es_tot_amb_21,struct = "HAR",method = "REML")
 summary(tot_meta_21)
+
+#same for new resilience effect size and variance
+tot_meta_21_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
+                     tdist = TRUE,
+                     data = data_es_tot_amb_21,struct = "HAR",method = "REML")
+summary(tot_meta_21_new)
 
 #data frame
 tot_pant_res<-rbind(data.frame(Months="1", estimate=tot_meta_1$b,se=tot_meta_1$se,row.names=FALSE, stringsAsFactors=TRUE),
@@ -174,6 +232,20 @@ tot_pant_res<-rbind(data.frame(Months="1", estimate=tot_meta_1$b,se=tot_meta_1$s
 
 tot_pant_res
 
+#data frame for new resilience metrics (ln(post/pre)/number of months)
+
+tot_pant_res_new<-rbind(data.frame(Months="1", estimate=tot_meta_1_new$b,se=tot_meta_1_new$se,row.names=FALSE, stringsAsFactors=TRUE),
+                    data.frame(Months="3", estimate=tot_meta_3_new$b,se=tot_meta_3_new$se,row.names=FALSE, stringsAsFactors=TRUE),
+                    data.frame(Months="5", estimate=tot_meta_5_new$b,se=tot_meta_5_new$se,row.names=FALSE, stringsAsFactors=TRUE),
+                    data.frame(Months="8", estimate=tot_meta_8_new$b,se=tot_meta_8_new$se,row.names=FALSE, stringsAsFactors=TRUE),
+                    data.frame(Months="12", estimate=tot_meta_12_new$b,se=tot_meta_12_new$se,row.names=FALSE, stringsAsFactors=TRUE),
+                    data.frame(Months="15", estimate=tot_meta_15_new$b,se=tot_meta_15_new$se,row.names=FALSE, stringsAsFactors=TRUE),
+                    data.frame(Months="18", estimate=tot_meta_18_new$b,se=tot_meta_18_new$se,row.names=FALSE, stringsAsFactors=TRUE),
+                    data.frame(Months="21", estimate=tot_meta_21_new$b,se=tot_meta_21_new$se,row.names=FALSE, stringsAsFactors=TRUE))
+
+
+tot_pant_res_new
+
 ##Plotting points and Pantropical effect sizes
 names(data_es_tot_amb)
 Fig_res_amb_tot <- ggplot(data_es_tot_amb, aes(y=yi, x=Months,group=Case_study))
@@ -185,8 +257,7 @@ Fig_res_amb_tot
 Fig_res_amb_tot<-Fig_res_amb_tot+theme_bw()+geom_segment(aes(x=1, y=0, xend=36, yend=0), lty=2, color = "magenta", cex=1.4)+
   scale_x_discrete(breaks = c(1, 3, 6, 9,12, 15, 18,21,24,27,30,33,36))+
   ylim(-3,2)+
-  #ylab(expression(Response~(ln~litterfall[ti]/litterfall[t0])))+xlab("Time since disturbance (Months)")+ #ylab(expression(Resilience~(ln~Litterfall~t[x]~t[0]^-1)))+
- theme(axis.title.x =element_text(vjust = 0.5,size=24),axis.text.x =element_text(vjust = 1,size=22),
+   theme(axis.title.x =element_text(vjust = 0.5,size=24),axis.text.x =element_text(vjust = 1,size=22),
         axis.title.y =element_text(vjust = 1,size=24),strip.background = element_rect(color="white", fill="white",linetype="solid"),
         axis.text.y=element_text(size=22),legend.text =  element_text(size=26),
         legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),
@@ -196,7 +267,27 @@ Fig_res_amb_tot<-Fig_res_amb_tot+annotate("text", x =7, y = 2, fontface="bold",l
 Fig_res_amb_tot<-Fig_res_amb_tot+ylab(expression(Resilience~(ln~litterfall[tx]/litterfall[t0])))
 Fig_res_amb_tot
 
-##Leaf fall####
+#New Figure 6a####
+Fig_res_tot_new <- ggplot(data_es_tot_amb, aes(y=yi_new, x=Months,group=Case_study))
+Fig_res_tot_new<-Fig_res_tot_new+geom_point(aes(group=Case_study,col=Country,size=vi_new),shape=21,stroke=1.3,alpha=0.5)
+Fig_res_tot_new<-Fig_res_tot_new+geom_pointrange(data=tot_pant_res_new,mapping=aes(group=Months,x=Months,y=estimate,ymax=estimate+(1.96*se),ymin=estimate-(1.96*se), col="Pantropical"),size=1, stroke=1,shape=21)+theme_bw()
+Fig_res_tot_new<-Fig_res_tot_new+guides(title="Region")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","black","#665191","#af060f"))
+Fig_res_tot_new<-Fig_res_tot_new+labs(color="")+guides(size=FALSE)+ylim(-1.5,1.5)
+Fig_res_tot_new
+Fig_res_tot_new<-Fig_res_tot_new+theme_bw()+geom_segment(aes(x=1, y=0, xend=36, yend=0), lty=2, color = "magenta", cex=1.4)+
+  scale_x_discrete(breaks = c(1, 3, 6, 9,12, 15, 18,21,24,27,30,33,36))+
+  ylim(-1.5,1.5)+
+  theme(axis.title.x =element_text(vjust = 0.5,size=24),axis.text.x =element_text(vjust = 1,size=22),
+        axis.title.y =element_text(vjust = 1,size=24),strip.background = element_rect(color="white", fill="white",linetype="solid"),
+        axis.text.y=element_text(size=22),legend.text =  element_text(size=26),
+        legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),
+        legend.title = element_text(size=22),legend.box="vertical",legend.position="right")+ 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 1.3)))
+Fig_res_tot_new<-Fig_res_tot_new+annotate("text", x =7, y = 1.5, fontface="bold",label = "a Total litterfall", size=8,colour="black")+labs(x="")
+Fig_res_tot_new<-Fig_res_tot_new+ylab("Resilience")#ylab(expression(Resilience~(ln~litterfall[tx]/litterfall[t0])))
+Fig_res_tot_new
+
+##Leaf litterfall####
 
 ##Calculating Overall Resilience for certain points in time since disturbance
 
@@ -213,17 +304,21 @@ mypreds_tot_meta_all<-predict(tot_meta_all,addx=TRUE)
 data_es_tot_amb$pred<-mypreds_tot_meta_all$pred
 data_es_tot_amb$se<-mypreds_tot_meta_all$se
 
-#1 month
+#1 month LF####
 data_es_leaf_amb_1<-data_es_leaf_amb %>% filter(TSD_months==1)
-str(data_es_leaf_amb_1)
-
 leaf_meta_1<- rma.mv(yi,vi,random = ~(1|Site),
                     tdist = TRUE,
                     data = data_es_leaf_amb_1,struct = "HAR",method = "REML")
 summary(leaf_meta_1)
--(1-exp(leaf_meta_1$b))*100
+-(1-exp(leaf_meta_1$b))*100 #value in %
 
-#3 months
+#same for new resilience effect size and variance
+leaf_meta_1_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
+                         tdist = TRUE,
+                         data = data_es_leaf_amb_1,struct = "HAR",method = "REML")
+summary(leaf_meta_1_new)
+
+#3 months LF####
 data_es_leaf_amb_3<-data_es_leaf_amb %>% filter(TSD_months==3)
 str(data_es_leaf_amb_3)
 

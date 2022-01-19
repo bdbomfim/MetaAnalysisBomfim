@@ -1,5 +1,6 @@
-##Response Meta Forest code
+##Random Forest Code for Litterfall Resilience
 
+#Required packages
 library(forestmodel)
 library(metaforest)
 library(caret)
