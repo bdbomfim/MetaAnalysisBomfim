@@ -9,10 +9,46 @@ library(dmetar)
 library(MuMIn)
 library(leaps)
 
-###META FOREST Total Litterfall Resilience 1 to 21 months Ambient####
+####Uploading and saving data in metadat dataframe####
+metadat<-read.csv(file.choose())#Litterfall_Mass.csv file
+str(metadat)
+#transforming variables to numeric
+metadat$HURRECON_wind_ms=as.numeric(metadat$HURRECON_wind_ms)
+metadat$Gale_wind_duration_minutes=as.numeric(metadat$Gale_wind_duration_minutes)
 
-str(tot_lit_amb_1to21_final)#213 obs of 87 variables - including CTE with Hugo data
+##Resilience Data wrangling####
+#subset including observations 1 month and on post-cyclone#
+rec <- metadat %>% filter(Cat_TSD_months == "Rec")
+#subset inculding 1 to 36 months post-cyclone and excluding duplicated studies and obs. in Bisley
+res_all<- rec %>% filter(Case_ID!="25.2")%>% filter(Case_ID!="18.1")%>% filter (TSD_months < 37)
+#subset including ambient conditions only
+res_amb<-res_all %>% filter(Treatment=="Ambient")
+str(res_amb)#945 obs with 417 from Puerto Rico (44%) #1125obs with TrimDeb and 597 from Puerto Rico(53%)
+summary(res_amb$Country)
+#Calculating Effect sizes (i.e. the log transformed ratio of means, or Hedge's g) 1 to 36####
+data_esall <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
+                     sd1i = Post_SD, sd2i = Pre_SD, data = res_amb, measure = "ROM")
+str(data_esall)#945 obs. including all litterfall mass fractions
 
+#Creating new columns yi_new as the result of yi divided by duration####
+names(data_esall)
+data_esall$yi_new <- data_esall$yi / data_esall$TSD_months
+#checking new column yi_new
+summary(data_esall$yi_new)
+summary(data_esall$yi)
+#Same for the variance vi_new
+data_esall$vi_new <- data_esall$vi / data_esall$TSD_months
+#checking new column vi_new
+summary(data_esall$vi_new)
+summary(data_esall$vi)
+
+#Filtering data frame to include only total litterfall mass flux between 1 and 21 months post-cyclone
+tot_lit_amb<-data_esall %>% filter(Fraction=="TotLitfall")
+#Data 1 to 21 months - Ambient only
+tot_lit_amb_1to21_final<-tot_lit_amb %>% filter(TSD_months<22)%>% filter(DisturbanceName!="Keith")%>% filter(Site!="San Felipe")%>% filter (Site!="Grande-Terre")%>% filter(DisturbanceName!="Ivor")
+str(tot_lit_amb_1to21_final)#192 obs of 66 variables
+
+###Random Forest Total litterfall mass flux Resilience 1 to 21 months Ambient####
 #standardizing variables 2x sd per Gelman reccomendation 
 z.trans<-function(x) {(x - mean(x, na.rm=T))/(2*sd(x, na.rm=T))}
 tot_lit_amb_1to21_final$tsd<-z.trans(tot_lit_amb_1to21_final$TSD_months)
@@ -28,8 +64,11 @@ tot_lit_amb_1to21_final$windur<-z.trans(tot_lit_amb_1to21_final$Gale_wind_durati
 
 names(tot_lit_amb_1to21_final)
 
-datametaforest_restot<-tot_lit_amb_1to21_final[,c(3,15,23,25,27,29,78:89)]%>% filter(hurrwind!="NA")
-str(datametaforest_restot)#213obs 18 variables
+datametaforest_restot<-tot_lit_amb_1to21_final[,c(3,8,15,23,25,27,29,65:66,68:75)]%>% filter(hurrwind!="NA")
+str(datametaforest_restot)#192 obs 17 variables
+# Rename column where name is "yi_new" and "vi_new" to allow the MetaForest function to run
+names(datametaforest_restot)[names(datametaforest_restot) == "yi_new"] <- "yi"
+names(datametaforest_restot)[names(datametaforest_restot) == "vi_new"] <- "vi"
 
 # Run model with many trees to check convergence
 check_conv_restot <- MetaForest(yi~.,
@@ -37,7 +76,6 @@ check_conv_restot <- MetaForest(yi~.,
                          study = "Effectsize_ID",
                          whichweights = "random",
                          num.trees = 20000)
-
 plot(check_conv_restot) #model converged at about 10000 trees, which will be used in the next step
 
 #Model with 10000 trees for replication
@@ -68,19 +106,15 @@ plot(preselected2_restot)
 
 #Using preselect_vars, we retain only those moderators for which a 50% percentile interval 
 #of the variable importance metrics does not include zero
-
 #Retain only moderators with positive variable importance
 #in more than 50% of replications
 retain_mods_restot <- preselect_vars(preselected_restot, cutoff = .5)
 
-plot(retain_mods_restot)#number of variables retained
-
-# Set up 3-fold grouped (=clustered) CV
-
+# Set up 5-fold grouped (=clustered) CV
 grouped_cv_restot <- trainControl(method = "cv", 
-                           index = groupKFold(datametaforest_restot$Effectsize_ID, k = 3))
+                           index = groupKFold(datametaforest_restot$Effectsize_ID, k = 5))
 grouped_boot_restot <- trainControl(method = "cboot", 
-                             index = groupKFold(datametaforest_restot$Effectsize_ID, k = 3))
+                             index = groupKFold(datametaforest_restot$Effectsize_ID, k = 5))
 
 # Set up a tuning grid for the three tuning parameters of MetaForest
 tuning_grid_restot <- expand.grid(whichweights = c("random", "fixed", "unif"),
@@ -101,7 +135,7 @@ mf_cv_restot <- train(y = datametaforest_restot$yi,
 #Examine optimal tuning parameters
 mf_cv_restot$results[which.min(mf_cv_restot$results$RMSE), ]
 #Based on the root mean squared error, the best combination of tuning parameters
-#were RANDOM weights
+#were fixed weights
 #The object returned by train already contains the final model, 
 #estimated with the best combination of tuning parameters
 

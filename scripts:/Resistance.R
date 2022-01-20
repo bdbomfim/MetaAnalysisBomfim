@@ -53,23 +53,20 @@ library(AICcmodavg)
 
 ####STEP 0 uploading data####
 
-#Litterfall mass flux data
+#Litterfall mass flux data####
 metadat<-read.csv(file.choose())#Litterfall_Mass
 str(metadat)#2367 obs of 77 variables
 summary(metadat)
-
 #transforming variables to numeric
 metadat$HURRECON_wind_ms=as.numeric(metadat$HURRECON_wind_ms)
 metadat$Gale_wind_duration_minutes=as.numeric(metadat$Gale_wind_duration_minutes)
-
 #Create Case study column
 metadat$Case_study= paste(metadat$Site, metadat$DisturbanceName,sep="| ")
 unique(levels(as.factor(metadat$Treatment)))#check number of unique factor levels
 
-#Nutrient flux and concentration data
+#Nutrient flux and concentration data####
 nutmeta<-read.csv(file.choose())#Litterfall_Nutrients
 str(nutmeta) #2551 obs. of  80 variables
-
 #create Case study column
 nutmeta$Case_study= paste(nutmeta$Site, nutmeta$DisturbanceName, sep="| ")
 unique(levels(as.factor(nutmeta$Case_study)))
