@@ -12,9 +12,7 @@ library(leaps)
 library(tidyverse)
 library(ggcorrplot)
 
-####Uploading data####bbbbb
-
-##Dataframe
+####Uploading and saving data in metadat dataframe####
 metadat<-read.csv(file.choose())#Litterfall_Mass.csv file
 str(metadat)
 #transforming variables to numeric
@@ -29,7 +27,6 @@ str(data0a)#48 observations
 #Effect size calculation####
 data_es0ia <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
                      sd1i = Post_SD, sd2i = Pre_SD, data = data0a, measure = "ROM") # ROM =  log transformed ratio of means (Hedges et al., 1999; Lajeunesse, 2011).
-data_es0ia
 
 #Standardizing variables 2x sd per Gelman reccomendation#### 
 z.trans<-function(x) {(x - mean(x, na.rm=T))/(2*sd(x, na.rm=T))}
@@ -43,7 +40,7 @@ data_es0ia$distrain<-z.trans(data_es0ia$Disturb_Rainfall_mm)
 data_es0ia$hurrwind<-z.trans(data_es0ia$HURRECON_wind_ms)
 data_es0ia$windur<-z.trans(data_es0ia$Gale_wind_duration_minutes)
 
-#checking data
+#Checking new columns
 names(data_es0ia)
 
 #Data frame to run the random forest algorithm for total litterfall mass flux data containing HURRECON wind speed####
@@ -75,9 +72,8 @@ VarImpPlot(mf_rep)#can take a look at the importance value at this point, too
 # Run recursive preselection, store results in object 'preselect'
 #There are three possible algorithms for variable selection : replicate, recursive, and bootstrap (but latter does not work with this data)
 preselected <- preselect(mf_rep,replications = 100,algorithm = "recursive")
-plot(preselected)# of variables
 
-#Alternative 'replicate' algorithm
+#Using the 'replicate' algorithm
 preselected2 <- preselect(mf_rep,
                           replications = 100,
                           algorithm = "replicate")
