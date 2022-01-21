@@ -26,7 +26,6 @@ library(lattice)
 library(RColorBrewer)
 
 ##Upload data####
-
 metadat<-read.csv(file.choose())#20210520_Litterfall_Mass
 attach(metadat)
 str(metadat)#2370 obs of 77 variables
@@ -34,7 +33,6 @@ names(metadat)
 metadat$Case_study= paste(metadat$Site, metadat$DisturbanceName,metadat$Treatment, sep=" | ")
 
 ##Data wrangling####
-
 #subset including observations 1 month and on post-cyclone#
 rec <- metadat %>% filter(Cat_TSD_months == "Rec")
 rec

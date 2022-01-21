@@ -1,9 +1,12 @@
-##Figure Resilience Observations All Fractions
+##Figure Resilience Observations All Fractions#
+
+#Packages####
 library(metafor)
 library(tidyverse)
 library(ggplot2)
+library(patchwork)
 
-####STEP 0 Upload Litterfall mass data####
+####Uploading Litterfall mass data####
 metadat<-read.csv(file.choose())#Litterfall_Mass
 
 ##Filtering data to retain only points used to calculate the resilience metric
@@ -446,8 +449,7 @@ Fig_res_amb_leaf_new<-Fig_res_amb_leaf_new+labs(color="")+guides(size=FALSE)
 Fig_res_amb_leaf_new<-Fig_res_amb_leaf_new+theme_bw()+geom_segment(aes(x=1, y=0, xend=36, yend=0), lty=2, color = "magenta", cex=1.4)+
   scale_x_discrete(breaks = c(1, 3, 6, 9,12, 15, 18,21,24,27,30,33,36))+
   ylim(-2.5,1)+
-  ylab(expression(Resilience~(ln~litterfall[tx]/litterfall[t0])))+
-  #ylab(expression(Resilience~(ln~Litterfall~t[x]~t[0]^-1)))+
+  ylab("Resilience")+#ylab(expression(Resilience~(ln~litterfall[tx]/litterfall[t0])))+
   theme(axis.title.x =element_text(vjust = 0.5,size=24),
         axis.text.x =element_text(vjust = 1,size=22),
         axis.title.y =element_text(vjust = 1,size=24),strip.background = element_rect(color="white", fill="white",linetype="solid"),
@@ -455,7 +457,7 @@ Fig_res_amb_leaf_new<-Fig_res_amb_leaf_new+theme_bw()+geom_segment(aes(x=1, y=0,
         legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),
         legend.title = element_text(size=22),legend.box="horizontal",legend.position="none")+ 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 1.5)))+
-  annotate("text", x =5, y = 1, fontface="bold",label = "b Leaf litterfall", size=8,colour="black")+labs(x="")
+  annotate("text", x =6.5, y = 1, fontface="bold",label = "b Leaf litterfall", size=8,colour="black")+labs(x="")
 Fig_res_amb_leaf_new<-Fig_res_amb_leaf_new+xlab("Time since disturbance (Months)")
 Fig_res_amb_leaf_new
 
@@ -654,68 +656,91 @@ ffs_meta_1_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
                     data = data_es_ffs_amb_1,struct = "HAR",method = "REML")
 summary(ffs_meta_1_new)
 
-#3 months FFS#### HERE
+#3 months FFS####
 data_es_ffs_amb_3<-data_es_ffs_amb %>% filter(TSD_months==3)
 ffs_meta_3<- rma.mv(yi,vi,random = ~(1|Site),
                      tdist = TRUE,
                      data = data_es_ffs_amb_3,struct = "HAR",method = "REML")
 summary(ffs_meta_3)
 
-#5 months
-data_es_ffs_amb_5<-data_es_ffs_amb %>% filter(TSD_months==5)
-str(data_es_ffs_amb_5)
+ffs_meta_3_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
+                    tdist = TRUE,
+                    data = data_es_ffs_amb_3,struct = "HAR",method = "REML")
+summary(ffs_meta_3_new)
 
+#5 months FFS####
+data_es_ffs_amb_5<-data_es_ffs_amb %>% filter(TSD_months==5)
 ffs_meta_5<- rma.mv(yi,vi,random = ~(1|Site),
                      tdist = TRUE,
                      data = data_es_ffs_amb_5,struct = "HAR",method = "REML")
 summary(ffs_meta_5)
--(1-exp(ffs_meta_5$b))*100
 
-#8 months
+ffs_meta_5_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
+                    tdist = TRUE,
+                    data = data_es_ffs_amb_5,struct = "HAR",method = "REML")
+summary(ffs_meta_5_new)
+
+#8 months FFS####
 data_es_ffs_amb_8<-data_es_ffs_amb %>% filter(TSD_months==8)
-str(data_es_ffs_amb_8)
-
 ffs_meta_8<- rma.mv(yi,vi,random = ~(1|Site),
                      tdist = TRUE,
                      data = data_es_ffs_amb_8,struct = "HAR",method = "REML")
 summary(ffs_meta_8)
 
-#12 months
-data_es_ffs_amb_12<-data_es_ffs_amb %>% filter(TSD_months==12)
-str(data_es_ffs_amb_12)
+ffs_meta_8_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
+                    tdist = TRUE,
+                    data = data_es_ffs_amb_8,struct = "HAR",method = "REML")
+summary(ffs_meta_8_new)
 
+#12 months FFS####
+data_es_ffs_amb_12<-data_es_ffs_amb %>% filter(TSD_months==12)
 ffs_meta_12<- rma.mv(yi,vi,random = ~(1|Site),
                       tdist = TRUE,
                       data = data_es_ffs_amb_12,struct = "HAR",method = "REML")
 summary(ffs_meta_12)
 
-#15 months
-data_es_ffs_amb_15<-data_es_ffs_amb %>% filter(TSD_months==15)
-str(data_es_ffs_amb_15)
+ffs_meta_12_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
+                     tdist = TRUE,
+                     data = data_es_ffs_amb_12,struct = "HAR",method = "REML")
+summary(ffs_meta_12_new)
 
+#15 months FFS####
+data_es_ffs_amb_15<-data_es_ffs_amb %>% filter(TSD_months==15)
 ffs_meta_15<- rma.mv(yi,vi,random = ~(1|Site),
                       tdist = TRUE,
                       data = data_es_ffs_amb_15,struct = "HAR",method = "REML")
 summary(ffs_meta_15)
 
-#18 months
+ffs_meta_15_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
+                     tdist = TRUE,
+                     data = data_es_ffs_amb_15,struct = "HAR",method = "REML")
+summary(ffs_meta_15_new)
+
+#18 months FFS####
 data_es_ffs_amb_18<-data_es_ffs_amb %>% filter(TSD_months==18)
-str(data_es_ffs_amb_18)
 ffs_meta_18<- rma.mv(yi,vi,random = ~(1|Site),
                       tdist = TRUE,
                       data = data_es_ffs_amb_18,struct = "HAR",method = "REML")
 summary(ffs_meta_18)
 
-#21 months
-data_es_ffs_amb_21<-data_es_ffs_amb %>% filter(TSD_months==21)
-str(data_es_ffs_amb_21)
+ffs_meta_18_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
+                     tdist = TRUE,
+                     data = data_es_ffs_amb_18,struct = "HAR",method = "REML")
+summary(ffs_meta_18_new)
 
+#21 months FFS####
+data_es_ffs_amb_21<-data_es_ffs_amb %>% filter(TSD_months==21)
 ffs_meta_21<- rma.mv(yi,vi,random = ~(1|Site),
                       tdist = TRUE,
                       data = data_es_ffs_amb_21,struct = "HAR",method = "REML")
 summary(ffs_meta_21)
 
-#data frame
+ffs_meta_21_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
+                     tdist = TRUE,
+                     data = data_es_ffs_amb_21,struct = "HAR",method = "REML")
+summary(ffs_meta_21_new)
+
+#Data frame for figures
 ffs_pant_res<-rbind(data.frame(Months="1", estimate=ffs_meta_1$b,se=ffs_meta_1$se,row.names=FALSE, stringsAsFactors=TRUE),
                      data.frame(Months="3", estimate=ffs_meta_3$b,se=ffs_meta_3$se,row.names=FALSE, stringsAsFactors=TRUE),
                      data.frame(Months="5", estimate=ffs_meta_5$b,se=ffs_meta_5$se,row.names=FALSE, stringsAsFactors=TRUE),
@@ -727,6 +752,18 @@ ffs_pant_res<-rbind(data.frame(Months="1", estimate=ffs_meta_1$b,se=ffs_meta_1$s
 
 
 ffs_pant_res
+#data frame for figure with new resilience metric
+ffs_pant_res_new<-rbind(data.frame(Months="1", estimate=ffs_meta_1_new$b,se=ffs_meta_1_new$se,row.names=FALSE, stringsAsFactors=TRUE),
+                    data.frame(Months="3", estimate=ffs_meta_3_new$b,se=ffs_meta_3_new$se,row.names=FALSE, stringsAsFactors=TRUE),
+                    data.frame(Months="5", estimate=ffs_meta_5_new$b,se=ffs_meta_5_new$se,row.names=FALSE, stringsAsFactors=TRUE),
+                    data.frame(Months="8", estimate=ffs_meta_8_new$b,se=ffs_meta_8_new$se,row.names=FALSE, stringsAsFactors=TRUE),
+                    data.frame(Months="12", estimate=ffs_meta_12_new$b,se=ffs_meta_12_new$se,row.names=FALSE, stringsAsFactors=TRUE),
+                    data.frame(Months="15", estimate=ffs_meta_15_new$b,se=ffs_meta_15_new$se,row.names=FALSE, stringsAsFactors=TRUE),
+                    data.frame(Months="18", estimate=ffs_meta_18_new$b,se=ffs_meta_18_new$se,row.names=FALSE, stringsAsFactors=TRUE),
+                    data.frame(Months="21", estimate=ffs_meta_21_new$b,se=ffs_meta_21_new$se,row.names=FALSE, stringsAsFactors=TRUE))
+
+
+ffs_pant_res_new
 
 ##Plotting points and Pantropical effect sizes
 Fig_res_amb_ffs <- ggplot(data_es_ffs_amb, aes(y=yi, x=Months,group=Case_study))
@@ -751,13 +788,35 @@ Fig_res_amb_ffs<-Fig_res_amb_ffs+theme_bw()+geom_segment(aes(x=1, y=0, xend=36, 
 Fig_res_amb_ffs<-Fig_res_amb_ffs+xlab("Time since disturbance (Months)")
 Fig_res_amb_ffs
 
-#Final Figure 6####
-Fig6v2<-Fig_res_amb_tot+Fig_res_amb_wood+Fig_res_amb_leaf+Fig_res_amb_ffs+plot_layout(ncol=2,heights=c(1,1))+ plot_layout(guides = 'collect')& theme(legend.justification = "left")
-Fig6v2
+#New Figure6d FFS####
+Fig_res_amb_ffs_new <- ggplot(data_es_ffs_amb, aes(y=yi_new, x=Months,group=Case_study))
+Fig_res_amb_ffs_new<-Fig_res_amb_ffs_new+geom_point(aes(group=Case_study,col=Country,size=vi_new),shape=21,stroke=1.3,alpha=0.5)
+Fig_res_amb_ffs_new<-Fig_res_amb_ffs_new+geom_pointrange(data=ffs_pant_res_new,mapping=aes(group=Months,x=Months,y=estimate,ymax=estimate+(1.96*se),ymin=estimate-(1.96*se), col="Pantropical"),size=1, stroke=1,shape=21)+theme_bw()
+Fig_res_amb_ffs_new<-Fig_res_amb_ffs_new+guides(title="Region")+scale_color_manual(values=c("#1dabe6","#b35a2d","black","#665191"))
+Fig_res_amb_ffs_new<-Fig_res_amb_ffs_new+labs(color="")+guides(size=FALSE)
+Fig_res_amb_ffs_new
+Fig_res_amb_ffs_new<-Fig_res_amb_ffs_new+theme_bw()+geom_segment(aes(x=1, y=0, xend=36, yend=0), lty=2, color = "magenta", cex=1.4)+
+  scale_x_discrete(breaks = c(1, 3, 6, 9,12, 15, 18,21,24,27,30,33,36))+
+  ylim(-3,2)+
+  ylab("Resilience")+#ylab(expression(Resilience~(ln~litterfall[tx]/litterfall[t0])))+
+  theme(axis.title.x =element_text(vjust = 0.5,size=24),
+        axis.text.x =element_text(vjust = 1,size=22),
+        axis.title.y =element_text(vjust = 1,size=24),strip.background = element_rect(color="white", fill="white",linetype="solid"),
+        axis.text.y=element_text(size=22),legend.text =  element_text(size=26),
+        legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),
+        legend.title = element_text(size=22),legend.box="horizontal",legend.position="none")+ 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 1.5)))+
+  annotate("text", x =5, y = 2, fontface="bold",label = "d FFS fall", size=8,colour="black")+labs(x="")
+Fig_res_amb_ffs_new<-Fig_res_amb_ffs_new+xlab("Time since disturbance (Months)")
+Fig_res_amb_ffs_new
+
+#Final Figure6####
+Fig6_new<-Fig_res_tot_new+Fig_res_amb_wood_new+Fig_res_amb_leaf_new+Fig_res_amb_ffs_new+plot_layout(ncol=2,heights=c(1,1))+ plot_layout(guides = 'collect')& theme(legend.justification = "left")
+Fig6_new
 
 #Saving in High Res
-ggsave(filename = "Fig6v4_Resilience_mass.png",
-       plot = Fig6v2, width = 23, height = 14, units = 'cm',
+ggsave(filename = "Fig6_Resilience-mass.png",
+       plot = Fig6_new, width = 23, height = 14, units = 'cm',
        scale = 2, dpi = 1000)
 
 ##END###

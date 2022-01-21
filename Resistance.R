@@ -592,6 +592,7 @@ summary(full.model3wnc)
 z.trans<-function(x) {(x - mean(x, na.rm=T))/(2*sd(x, na.rm=T))}
 data_es0ia$soilP=z.trans(data_es0ia$Other_soil_P)
 data_es0ia$hurrwind=z.trans(data_es0ia$HURRECON_wind_ms)
+data_es0ia$tsls=z.trans(data_es0ia$YearsSinceLastStorm)
 
 ##Case studies with Hurrecon wind data
 hurr_sites<-data_es0ia %>% filter(hurrwind!="NA")
@@ -599,21 +600,13 @@ str(hurr_sites)#n = 45
 hurr_sites$hurrwind=z.trans(hurr_sites$HURRECON_wind_ms)
 
 ##Mass and Nutrient Responses comparisons####
-
-data_es0itpf$Case_study
-data_es0itpf$Study_ID
-
+#Filtering the data
 red_resp_mass<-data_es0ia %>% filter(Site=="Bisley"|Site=="Kokee"|Site=="Guanica"|Site=="Birthday Creek"|Site=="Chamela-Cuixmala"|Site=="Wooroonooran Basalt"|Site=="Wooroonooran Schist"|Site=="Lienhuachi")%>% 
   filter(Treatment=="Ambient")%>% filter(DisturbanceName=="Hugo"|DisturbanceName=="Georges"|DisturbanceName=="Charlie"|DisturbanceName=="Jova"|DisturbanceName=="Larry"|DisturbanceName=="Kalmaegi"|DisturbanceName=="Jangmi")
-str(red_resp_mass)
 red_tpf<-data_es0itpf %>% filter(Study_ID!="17")
 str(red_tpf)
 
-data_es0itnf$Case_study
-data_es0itnf$Study_ID
-
 #Calculating overall responses for both reduced datasets####
-
 full.model_red_tpf <- rma.mv(yi,vi,random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
                          data = red_tpf,method = "REML")
@@ -637,7 +630,6 @@ tnf_res
 tpf_res/tm_res#P flux 1.31 times the 3mass flux
 
 tnf_res/tm_res#N flux 1.1 times the mass flux
-
 
 ## Table 2 - Total Litterfall Response as a function of soil P####
 
@@ -706,10 +698,16 @@ model_tab2<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist
                 mods = ~soilP*hurrwind)
 summary(model_tab2)#Both positive predictors, no significant interaction
 
+#checking time since last storm
+model_tab2.1<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist = TRUE, 
+                   data = hurr_sites,method = "REML",
+                   mods = ~soilP+tsls)
+summary(model_tab2.1)
+
 model_tab4S<-rma.mv(yi,vi,random = ~ 1 | Region/DisturbanceName, tdist = TRUE, 
                 data = hurr_sites,method = "REML",
                 mods = ~soilP*hurrwind)
-summary(model_tab4S)#strange
+summary(model_tab4S)
 
 #changing random effects structure
 model_b2<-rma.mv(yi,vi,random = ~ 1 | Site, tdist = TRUE, 
