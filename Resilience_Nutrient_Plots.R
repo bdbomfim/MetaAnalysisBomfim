@@ -192,9 +192,9 @@ Fig_res_amb_Pflux_new<-Fig_res_amb_Pflux_new+geom_pointrange(data=tot_pant_Pflux
 Fig_res_amb_Pflux_new+scale_shape_discrete(solid=F)
 Fig_res_amb_Pflux_new<-Fig_res_amb_Pflux_new+theme_bw()+geom_segment(aes(x=1, y=0, xend=36, yend=0), lty=2, color = "magenta", cex=1.4)+
   scale_x_discrete(breaks = c(1, 3, 5, 8,12, 15, 18,21,24,27,30,33,36))+
-  ylim(-2,2)+ scale_fill_discrete(breaks=c("Total","Leaf","Wood","FFS"))+scale_shape_discrete(solid=F)+
+  ylim(-2,1.5)+ scale_fill_discrete(breaks=c("Total","Leaf","Wood","FFS"))+scale_shape_discrete(solid=F)+
   #ylab(expression(Resilience~(ln~litterfall[tx]/litterfall[t0])))+#ylab(expression(Resilience~(ln~Litterfall~t[x]~t[0]^-1)))+
-  labs(x="Time since disturbance (Months)",y="Resilience")+
+  labs(x="Time since cyclone (Months)",y="Resilience")+
   theme(axis.title.x =element_text(vjust = 0.5,size=28),
         axis.text.x =element_text(vjust = 1,size=22),
         axis.title.y =element_text(vjust = 1,size=28),strip.background = element_rect(color="white", fill="white",linetype="solid"),
@@ -202,7 +202,7 @@ Fig_res_amb_Pflux_new<-Fig_res_amb_Pflux_new+theme_bw()+geom_segment(aes(x=1, y=
         legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),
         legend.title = element_text(size=22),legend.box="vertical",legend.position="right")+ 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 3)),shape = guide_legend(override.aes = list(size = 5)))+
-  annotate("text", x =4, y = 2, fontface="bold",label = "a P flux", size=8,colour="black")+labs(x="")
+  annotate("text", x =4, y = 1.5, fontface="bold",label = "a P flux", size=8,colour="black")+labs(x="")
 Fig_res_amb_Pflux_new<-Fig_res_amb_Pflux_new+
   guides(colour = guide_legend(nrow = 5, byrow = T, override.aes=list(size=4))) +
   guides(shape = guide_legend(nrow = 4, byrow = T, override.aes=list(size=4)),size=FALSE) +
@@ -370,7 +370,7 @@ Fig_res_amb_Nflux_new<-Fig_res_amb_Nflux_new+geom_point(aes(group=Case_study,col
 Fig_res_amb_Nflux_new<-Fig_res_amb_Nflux_new+geom_pointrange(data=tot_pant_Nflux_new,mapping=aes(group=Months,x=Months,y=estimate,ymax=estimate+(1.96*se),ymin=estimate-(1.96*se), col="Pantropical"),size=1.4, stroke=1.3,shape=22)+theme_bw()
 Fig_res_amb_Nflux_new<-Fig_res_amb_Nflux_new+theme_bw()+scale_shape_discrete(solid=F)+geom_segment(aes(x=1, y=0, xend=36, yend=0), lty=2, color = "magenta", cex=1.4)+
   scale_x_discrete(breaks = c(1, 3, 5, 8,12, 15, 18,21,24,27,30,33,36))+
-  ylim(-2.5,2)+ scale_fill_discrete(breaks=c("Total","Leaf","Wood","FFS"))+ #ylab(expression(Resilience~(ln~litterfall[tx]/litterfall[t0])))+#ylab(expression(Resilience~(ln~Litterfall~t[x]~t[0]^-1)))+
+  ylim(-2.5,1.5)+ scale_fill_discrete(breaks=c("Total","Leaf","Wood","FFS"))+ #ylab(expression(Resilience~(ln~litterfall[tx]/litterfall[t0])))+#ylab(expression(Resilience~(ln~Litterfall~t[x]~t[0]^-1)))+
   ylab("Resilience")+
   theme(axis.title.x =element_text(vjust = 0.5,size=28),
         axis.text.x =element_text(vjust = 1,size=22),
@@ -379,12 +379,12 @@ Fig_res_amb_Nflux_new<-Fig_res_amb_Nflux_new+theme_bw()+scale_shape_discrete(sol
         legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),
         legend.title = element_text(size=22),legend.box="vertical",legend.position="right",legend.justification="left")+ 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 3)),shape = guide_legend(override.aes = list(size = 5)))+
-  annotate("text", x =4, y = 2, fontface="bold",label = "b N flux", size=8,colour="black")+labs(x="")
+  annotate("text", x =4, y = 1.5, fontface="bold",label = "b N flux", size=8,colour="black")+labs(x="")
 Fig_res_amb_Nflux_new<-Fig_res_amb_Nflux_new+
   guides(colour = guide_legend(nrow = 5, byrow = T, override.aes=list(size=4))) +
   guides(shape = guide_legend(nrow = 4, byrow = T, override.aes=list(size=4)),size=FALSE) +
   theme(legend.direction = "vertical", legend.box = "vertical")+labs(color="",shape="")
-Fig_res_amb_Nflux_new<-Fig_res_amb_Nflux_new+labs(x="Time since disturbance (Months)")
+Fig_res_amb_Nflux_new<-Fig_res_amb_Nflux_new+labs(x="Time since cyclone (Months)")
 Fig_res_amb_Nflux_new
 
 ##P concentration in Leaf (LF) and Wood litterfall(WF) ####
@@ -560,10 +560,6 @@ Fig_res_amb_Pc_new<-Fig_res_amb_Pc_new+
   theme(legend.direction = "vertical", legend.box = "vertical")+labs(color="",shape="")
 Fig_res_amb_Pc_new
 
-#patchwork to produce final figure
-FigNP<-Fig_res_amb_Pflux+Fig_res_amb_Pc+Fig_res_amb_Nflux+plot_layout(ncol=1,heights=c(1,1,1))+ plot_layout(guides = 'collect')& theme(legend.justification = "left")
-FigNP
-
 ggsave(filename = "Fig_Res_NPflux.png",
        plot = FigNPflux, width = 20, height = 16, units = 'cm',
        scale = 2, dpi = 600)
@@ -721,7 +717,7 @@ Fig_res_amb_Nc<-Fig_res_amb_Nc+
 Fig_res_amb_Nc<-Fig_res_amb_Nc+labs(x="Time since disturbance (Months)",y="Resilience")
 Fig_res_amb_Nc
 
-#New Figure7d
+#New Figure7d####
 Fig_res_amb_Nc_new <- ggplot(Obs_res_Nc_new, aes(y=Obs, x=Months,group=Case_study))
 Fig_res_amb_Nc_new<-Fig_res_amb_Nc_new+geom_point(aes(group=Case_study,col=Country,size=Se,shape=Fraction),stroke=1.5,alpha=0.5)+scale_color_manual(values=c("#ffa600","black","#665191","#af060f"))##1C39A8 "#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"        #"#ffa600","black","#665191","#af060f"
 Fig_res_amb_Nc_new<-Fig_res_amb_Nc_new+geom_pointrange(data=tot_pant_Nc_new,mapping=aes(group=Months,x=Months,y=estimate,ymax=estimate+(1.96*se),ymin=estimate-(1.96*se), col="Pantropical"),size=1.4, stroke=1.3,shape=24)+theme_bw()
@@ -741,24 +737,24 @@ Fig_res_amb_Nc_new<-Fig_res_amb_Nc_new+
   guides(colour = guide_legend(nrow = 5, byrow = T, override.aes=list(size=3))) +
   guides(shape = guide_legend(nrow = 4, byrow = T, override.aes=list(size=4)),size=FALSE) +
   theme(legend.direction = "vertical", legend.box = "vertical")+labs(color="",shape="")
-Fig_res_amb_Nc_new<-Fig_res_amb_Nc_new+labs(x="Time since disturbance (Months)",y="Resilience")
+Fig_res_amb_Nc_new<-Fig_res_amb_Nc_new+labs(x="Time since cyclone (Months)",y="Resilience")
 Fig_res_amb_Nc_new
 
 #Figure 7a-d Nutrient Resilience##
-FigNP_v2<-Fig_res_amb_Pflux+Fig_res_amb_Pc+Fig_res_amb_Nflux+Fig_res_amb_Nc+plot_layout(ncol=1,heights=c(1,1,1,1))+ plot_layout(guides = 'collect')& theme(legend.justification = "left")
-FigNP_v2
+Fig7ad<-Fig_res_amb_Pflux+Fig_res_amb_Pc+Fig_res_amb_Nflux+Fig_res_amb_Nc+plot_layout(ncol=1,heights=c(1,1,1,1))+ plot_layout(guides = 'collect')& theme(legend.justification = "left")
+Fig7ad
 
 #Saving in high res
 ggsave(filename = "Fig7_Resilience_NP.png",
-       plot = FigNP_v2, width = 20, height = 23, units = 'cm',
+       plot = Fig7ad, width = 20, height = 23, units = 'cm',
        scale = 2, dpi = 1200)
 
 #New Figure 7a-d Nutrient Resilience####
-FigNP_new<-Fig_res_amb_Pflux_new+Fig_res_amb_Pc_new+Fig_res_amb_Nflux_new+Fig_res_amb_Nc_new+plot_layout(ncol=2,heights=c(1,1))+ plot_layout(guides = 'collect')& theme(legend.justification = "left")
-FigNP_new
+Fig7ad_new<-Fig_res_amb_Pflux_new+Fig_res_amb_Pc_new+Fig_res_amb_Nflux_new+Fig_res_amb_Nc_new+plot_layout(ncol=2,heights=c(1,1))+ plot_layout(guides = 'collect')& theme(legend.justification = "left")
+Fig7ad_new
 
 ggsave(filename = "Fig7ad_Nutrient-resilience.png",
-       plot = FigNP_new, width = 24, height = 14, units = 'cm',
+       plot = Fig7ad_new, width = 24, height = 14, units = 'cm',
        scale = 2, dpi = 1000)
 
 ##END###
