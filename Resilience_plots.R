@@ -458,7 +458,7 @@ Fig_res_amb_leaf_new<-Fig_res_amb_leaf_new+theme_bw()+geom_segment(aes(x=1, y=0,
         legend.title = element_text(size=22),legend.box="horizontal",legend.position="none")+ 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 1.5)))+
   annotate("text", x =6.5, y = 1, fontface="bold",label = "b Leaf litterfall", size=8,colour="black")+labs(x="")
-Fig_res_amb_leaf_new<-Fig_res_amb_leaf_new+xlab("Time since disturbance (Months)")
+Fig_res_amb_leaf_new<-Fig_res_amb_leaf_new+xlab("Time since cyclone (Months)")
 Fig_res_amb_leaf_new
 
 ##Wood litterfall (WF)####
@@ -785,7 +785,7 @@ Fig_res_amb_ffs<-Fig_res_amb_ffs+theme_bw()+geom_segment(aes(x=1, y=0, xend=36, 
         legend.title = element_text(size=22),legend.box="horizontal",legend.position="none")+ 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 1.5)))+
   annotate("text", x =5, y = 2, fontface="bold",label = "d FFS fall", size=8,colour="black")+labs(x="")
-Fig_res_amb_ffs<-Fig_res_amb_ffs+xlab("Time since disturbance (Months)")
+Fig_res_amb_ffs<-Fig_res_amb_ffs+xlab("Time since cyclone (Months)")
 Fig_res_amb_ffs
 
 #New Figure6d FFS####
@@ -797,7 +797,7 @@ Fig_res_amb_ffs_new<-Fig_res_amb_ffs_new+labs(color="")+guides(size=FALSE)
 Fig_res_amb_ffs_new
 Fig_res_amb_ffs_new<-Fig_res_amb_ffs_new+theme_bw()+geom_segment(aes(x=1, y=0, xend=36, yend=0), lty=2, color = "magenta", cex=1.4)+
   scale_x_discrete(breaks = c(1, 3, 6, 9,12, 15, 18,21,24,27,30,33,36))+
-  ylim(-3,2)+
+  ylim(-2.5,1)+
   ylab("Resilience")+#ylab(expression(Resilience~(ln~litterfall[tx]/litterfall[t0])))+
   theme(axis.title.x =element_text(vjust = 0.5,size=24),
         axis.text.x =element_text(vjust = 1,size=22),
@@ -806,8 +806,8 @@ Fig_res_amb_ffs_new<-Fig_res_amb_ffs_new+theme_bw()+geom_segment(aes(x=1, y=0, x
         legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),
         legend.title = element_text(size=22),legend.box="horizontal",legend.position="none")+ 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_legend(override.aes = list(size = 1.5)))+
-  annotate("text", x =5, y = 2, fontface="bold",label = "d FFS fall", size=8,colour="black")+labs(x="")
-Fig_res_amb_ffs_new<-Fig_res_amb_ffs_new+xlab("Time since disturbance (Months)")
+  annotate("text", x =5, y = 1, fontface="bold",label = "d FFS fall", size=8,colour="black")+labs(x="")
+Fig_res_amb_ffs_new<-Fig_res_amb_ffs_new+xlab("Time since cyclone (Months)")
 Fig_res_amb_ffs_new
 
 #Final Figure6####
