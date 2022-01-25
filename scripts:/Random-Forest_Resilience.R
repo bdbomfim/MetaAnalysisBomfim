@@ -8,9 +8,11 @@ library(ranger)
 library(dmetar)
 library(MuMIn)
 library(leaps)
+library(tidyverse)
+library(ggpubr)
 
 ####Uploading and saving data in metadat dataframe####
-metadat<-read.csv(file.choose())#Litterfall_Mass.csv file
+metadat<-read.csv(file.choose())#Litterfall_Mass.csv in 'data' folder
 str(metadat)
 #transforming variables to numeric
 metadat$HURRECON_wind_ms=as.numeric(metadat$HURRECON_wind_ms)
@@ -22,7 +24,7 @@ rec <- metadat %>% filter(Cat_TSD_months == "Rec")
 #subset inculding 1 to 36 months post-cyclone and excluding duplicated studies and obs. in Bisley
 res_all<- rec %>% filter(Case_ID!="25.2")%>% filter(Case_ID!="18.1")%>% filter (TSD_months < 37)
 #subset including ambient conditions only
-res_amb<-res_all %>% filter(Treatment=="Ambient")
+res_amb<-res_all %>% filter(Treatment=="Ambient"|Treatment=="TrimDeb")
 str(res_amb)#945 obs with 417 from Puerto Rico (44%) #1125obs with TrimDeb and 597 from Puerto Rico(53%)
 summary(res_amb$Country)
 #Calculating Effect sizes (i.e. the log transformed ratio of means, or Hedge's g) 1 to 36####
@@ -46,7 +48,7 @@ summary(data_esall$vi)
 tot_lit_amb<-data_esall %>% filter(Fraction=="TotLitfall")
 #Data 1 to 21 months - Ambient only
 tot_lit_amb_1to21_final<-tot_lit_amb %>% filter(TSD_months<22)%>% filter(DisturbanceName!="Keith")%>% filter(Site!="San Felipe")%>% filter (Site!="Grande-Terre")%>% filter(DisturbanceName!="Ivor")
-str(tot_lit_amb_1to21_final)#192 obs of 66 variables
+summary(tot_lit_amb_1to21_final$Treatment)#192 obs of 66 variables
 
 ###Random Forest Total litterfall mass flux Resilience 1 to 21 months Ambient####
 #standardizing variables 2x sd per Gelman reccomendation 
@@ -64,13 +66,15 @@ tot_lit_amb_1to21_final$windur<-z.trans(tot_lit_amb_1to21_final$Gale_wind_durati
 
 names(tot_lit_amb_1to21_final)
 
-datametaforest_restot<-tot_lit_amb_1to21_final[,c(3,8,15,23,25,27,29,65:66,68:75)]%>% filter(hurrwind!="NA")
+#CONTINUE HERE ON TUESDAY, WITH NO TSD AND YES LONG
+datametaforest_restot<-tot_lit_amb_1to21_final[,c(3,15,23,25,27,29,65:66,68:76)]%>% filter(hurrwind!="NA")
 str(datametaforest_restot)#192 obs 17 variables
 # Rename column where name is "yi_new" and "vi_new" to allow the MetaForest function to run
 names(datametaforest_restot)[names(datametaforest_restot) == "yi_new"] <- "yi"
 names(datametaforest_restot)[names(datametaforest_restot) == "vi_new"] <- "vi"
 
-# Run model with many trees to check convergence
+#Run model with many trees to check convergence
+#For any random forest model, it is important to check whether the model converges.
 check_conv_restot <- MetaForest(yi~.,
                          data = datametaforest_restot,
                          study = "Effectsize_ID",
@@ -78,7 +82,7 @@ check_conv_restot <- MetaForest(yi~.,
                          num.trees = 20000)
 plot(check_conv_restot) #model converged at about 10000 trees, which will be used in the next step
 
-#Model with 10000 trees for replication
+#Model with 7500 trees for replication
 mf_rep_restot <- MetaForest(yi~.,
                      data = datametaforest_restot,
                      study = "Effectsize_ID",
@@ -87,34 +91,40 @@ mf_rep_restot <- MetaForest(yi~.,
 results_res<-summary(mf_rep_restot, digits=2)
 results_res
 
-#now apply recursive pre-selection using the preselect function. 
+#Now apply recursive pre-selection using the preselect function.
 
 # Run recursive preselection, store results in object 'preselect'
 #There are three possible algorithms for variable selection : replicate, recursive, and bootstrap (but latter does not work with this data)
-
+#applying the recursive algorithm
 preselected_restot <- preselect(mf_rep_restot,
                          replications = 100,
                          algorithm = "recursive")
 plot(preselected_restot)# of variables
 
+#Applying the replicate algorithm
+preselected_restot1 <- preselect(mf_rep_restot,
+                                replications = 100,
+                                algorithm = "replicate")
+plot(preselected_restot1)# of variables
+
+#Applying the bootstrap algorithm to circumvent data dependency
 preselected2_restot <- preselect(mf_rep_restot,
                           replications = 100,
-                          algorithm = "replicate")
+                          algorithm = "bootstrap")#super weird
 plot(preselected2_restot)
-
-#Both generated similar results
+#Both generated similar results, so sticking with the 'recursive' algorithm for variable selection
 
 #Using preselect_vars, we retain only those moderators for which a 50% percentile interval 
 #of the variable importance metrics does not include zero
-#Retain only moderators with positive variable importance
-#in more than 50% of replications
+#Retain only moderators with positive variable importance in more than 50% of replications
 retain_mods_restot <- preselect_vars(preselected_restot, cutoff = .5)
 
-# Set up 5-fold grouped (=clustered) CV
+#Tuning the model with package caret
+# Set up 5-fold grouped (=clustered) cross-validation (CV)
 grouped_cv_restot <- trainControl(method = "cv", 
-                           index = groupKFold(datametaforest_restot$Effectsize_ID, k = 5))
+                           index = groupKFold(datametaforest_restot$Effectsize_ID, k = 10))#3-fold clustered cross-validation
 grouped_boot_restot <- trainControl(method = "cboot", 
-                             index = groupKFold(datametaforest_restot$Effectsize_ID, k = 5))
+                             index = groupKFold(datametaforest_restot$Effectsize_ID, k = 10))
 
 # Set up a tuning grid for the three tuning parameters of MetaForest
 tuning_grid_restot <- expand.grid(whichweights = c("random", "fixed", "unif"),
@@ -131,11 +141,12 @@ mf_cv_restot <- train(y = datametaforest_restot$yi,
                method = ModelInfo_mf(), 
                trControl = grouped_cv_restot,
                tuneGrid = tuning_grid_restot,
-               num.trees = 10000)
-#Examine optimal tuning parameters
+               num.trees = 7500)
+
+# Examine optimal tuning parameters
 mf_cv_restot$results[which.min(mf_cv_restot$results$RMSE), ]
 #Based on the root mean squared error, the best combination of tuning parameters
-#were fixed weights
+#were (random) weights - this changes if group of moderators change
 #The object returned by train already contains the final model, 
 #estimated with the best combination of tuning parameters
 
@@ -151,6 +162,8 @@ r2_oob_restot #predictive performance of 31%
 # For convenience, extract final model
 final_restot <- mf_cv_restot$finalModel
 final_restot
+#Checking convergence
+plot(final_restot)
 
 #We can conclude that the model has converged, and has a positive estimate of explained variance in new data. 
 #Now, we proceed to interpreting the model findings. 
@@ -168,20 +181,16 @@ ordered_vars_restot
 
 ##Preparing Figs 8a and 8b
 
-#REsidual heterogeneity
+#Preparein dataframe with moderators
 Vimp_restot <- data.frame(final_restot$forest$variable.importance)
 str(Vimp_restot)
 final_restot$forest$variable.importance
 
 Vimp3_restot <- cbind(data.frame(varimp=final_restot$forest$variable.importance,predictors=retain_mods_restot))
 Vimp3_restot
-str(Vimp3_restot)
-head(Vimp3_restot)
-Vimp3_restot
+names(Vimp3_restot)
 (final_restot$forest$variable.importance)
 
-Fig4<-VarImpPlot(final)
-Fig4
 
 #### Figure 8a Resilience META FOREST
 
@@ -190,37 +199,47 @@ var_importance_restot <- data.frame(variable=setdiff(colnames(Vimp3_restot), "Pr
                              importance=as.vector(final_restot$forest$variable.importance))
 var_importance_restot
 names(datametaforest_restot)
-predictor_names_restot<-c("Holdridge zone","Geological group","Parent material P","Parent material","Soil order","Soil P","Wind speed","Wind duration","Time since cyclone","Longitude","Elevation","MAT/MAP","Storm frequency","Time since last storm","Cyclone rainfall")
+predictor_names_restot<-c("Holdridge zone","Geological group","Parent material P","Parent material","Soil order","Time since cyclone", "Longitude","Elevation","MAT/MAP","Soil P","Storm frequency","Time since last storm", "Cyclone rainfall", "Wind speed","Wind duration")
 predictor_names_restot
 Vimp3_restot <- cbind(data.frame(varimp=final_restot$forest$variable.importance,predictors=predictor_names_restot))
 str(Vimp3_restot)
 Vimp3_restot
 Vimp3_restot$predictors<- factor(Vimp3_restot$predictors, levels=Vimp3_restot$predictors)
 
-#Figure
+#Figure8a####
 Fig8a <- ggplot(Vimp3_restot, aes(x=reorder(predictors,varimp), weight=varimp, fill=varimp))
-Fig8a
 Fig8a <- Fig8a + geom_bar(col="black",fill="darkgray")+coord_flip()+theme_pubr()
-Fig8a
-Fig8a <- Fig8a + ylab("Relative importance of predictors") + xlab("")+ theme(
+Fig8a <- Fig8a + ylab("Moderator (permutation) importance") + xlab("")+ theme(
   axis.text.y=element_text(size=26),
   axis.text.x=element_text(size=26),
   axis.title.x=element_text(size=28),
   legend.title=element_blank(),
   legend.text=element_blank(),
-  legend.key = element_blank())+guides(fill=FALSE)+ annotate("text", y = 0.12, x = 1, label = "a", size=12,hjust=0,fontface="bold",colour="black")#+annotate INCLUDE ANNOTATION letter and Total litterfall mass
-Fig8a#+annotate INCLUDE ANNOTATION letter and Total litterfall mass
+  legend.key = element_blank())+guides(fill=FALSE)+ annotate("text", y = 0.025, x = 1, label = "a", size=12,hjust=0,fontface="bold",colour="black")#+annotate INCLUDE ANNOTATION letter and Total litterfall mass
+Fig8a
 
 #Saving high res
-ggsave(filename = "Fig8a_VarImp_TotLit_Resilience.png",
+ggsave(filename = "Fig8a_Random-forest_Resilience-TL.3.png",
        plot = Fig8a, width = 14, height = 12, units = 'cm',
        scale = 2, dpi = 600)
 
 ####META FOREST Leaf fall####
+leaf_all<-data_esall %>% filter(Fraction=="Leaf fall")
+str(leaf_all)#358 obs
 
-str(leaf_amb_1to21)
+#1 to 36 months - Ambient only
+leaf_amb<-leaf_all%>% filter(Treatment=="Ambient"|Treatment=="TrimDeb")
+str(leaf_amb)#231 obs
+leaf_amb$TSD_months=as.numeric(leaf_amb$TSD_months)
+leaf_amb$Case_study= paste(leaf_amb$Site, leaf_amb$DisturbanceName, sep="|")
+
+##Subseting the data 1 - 21 months by deleting cyclones Ivor, Jova, Patricia and Gilbert and Study #4
+leaf_amb_1to21<- leaf_amb  %>% filter (TSD_months<22) %>% filter(Study_ID!="4")%>% filter(DisturbanceName!="Keith")%>% filter(DisturbanceName!="Ivor")%>% filter(DisturbanceName!="Jova")%>% filter(DisturbanceName!="Patricia")%>% filter(DisturbanceName!="Gilbert")
+str(leaf_amb_1to21)#193 obs | 172 obs Ambient only
+#Filtering to include only data with HURRECON wind speed
 Data_leaf_amb_1to21<-leaf_amb_1to21 %>% filter(HURRECON_wind_ms!="NA")
-str(Data_leaf_amb_1to21)
+str(Data_leaf_amb_1to21)#193 obs | 172 obs Ambient only
+
 #standardizing variables 2x sd per Gelman reccomendation 
 z.trans<-function(x) {(x - mean(x, na.rm=T))/(2*sd(x, na.rm=T))}
 Data_leaf_amb_1to21$tsd<-z.trans(Data_leaf_amb_1to21$TSD_months)
@@ -235,9 +254,15 @@ Data_leaf_amb_1to21$hurrwind<-z.trans(Data_leaf_amb_1to21$HURRECON_wind_ms)
 Data_leaf_amb_1to21$windur<-z.trans(Data_leaf_amb_1to21$Gale_wind_duration_minutes)
 
 names(Data_leaf_amb_1to21)
+summary(Data_leaf_amb_1to21$yi_new)
+summary(Data_leaf_amb_1to21$yi)
 
-datametaforest_reslf<-Data_leaf_amb_1to21[,c(3,15,23,25,27,29,79:84,91:96)]%>% filter(hurrwind!="NA")
-str(datametaforest_reslf)#198 obs of 18 variables
+datametaforest_reslf<-Data_leaf_amb_1to21[,c(3,15,23,25,27,29,65:66,69:77)]%>% filter(hurrwind!="NA")
+names(datametaforest_reslf)#172 obs of 18 variables
+# Rename column where name is "yi_new" and "vi_new" to allow the MetaForest function to run
+names(datametaforest_reslf)[names(datametaforest_reslf) == "yi_new"] <- "yi"
+names(datametaforest_reslf)[names(datametaforest_reslf) == "vi_new"] <- "vi"
+names(datametaforest_reslf)
 
 # Run model with many trees to check convergence
 check_conv_reslf <- MetaForest(yi~.,
@@ -246,15 +271,14 @@ check_conv_reslf <- MetaForest(yi~.,
                             whichweights = "random",
                             num.trees = 20000)
 
-plot(check_conv_reslf) #m odel converged at about 8000 trees, which will be used in the next step
+plot(check_conv_reslf) #model converged at about 8000 trees, which will be used in the next step
 
 #Model with 10000 trees for replication
-
 mf_rep_reslf<- MetaForest(yi~.,
                        data = datametaforest_reslf,
                        study = "Effectsize_ID",
                        whichweights = "random",
-                       num.trees = 8000)
+                       num.trees = 10000)
 results_reslf<-summary(mf_rep_reslf, digits=2)
 results_reslf
 
@@ -264,9 +288,9 @@ preselected_reslf <- preselect(mf_rep_reslf,
 retain_mods_reslf <- preselect_vars(preselected_reslf, cutoff = .5)
 
 grouped_cv_reslf <- trainControl(method = "cv", 
-                              index = groupKFold(datametaforest_reslf$Effectsize_ID, k = 3))
+                              index = groupKFold(datametaforest_reslf$Effectsize_ID, k = 10))
 grouped_boot_reslf <- trainControl(method = "cboot", 
-                                index = groupKFold(datametaforest_reslf$Effectsize_ID, k = 3))
+                                index = groupKFold(datametaforest_reslf$Effectsize_ID, k = 10))
 
 # Set up a tuning grid for the three tuning parameters of MetaForest
 tuning_grid_reslf <- expand.grid(whichweights = c("random", "fixed", "unif"),
@@ -283,7 +307,7 @@ mf_cv_reslf <- train(y = datametaforest_reslf$yi,
                   method = ModelInfo_mf(), 
                   trControl = grouped_cv_reslf,
                   tuneGrid = tuning_grid_reslf,
-                  num.trees = 8000)
+                  num.trees = 10000)
 
 #Examine optimal tuning parameters
 mf_cv_reslf$results[which.min(mf_cv_reslf$results$RMSE), ]
@@ -310,35 +334,43 @@ str(Vimp_reslf)
 Vimp_reslf
 
 #### Figure 8c Resilience META FOREST Leaf fall####
+#Preparein dataframe with moderators
+Vimp_reslf <- data.frame(final_reslf$forest$variable.importance)
+str(Vimp_reslf)
+final_reslf$forest$variable.importance
 
+Vimp_reslf <- cbind(data.frame(varimp=final_reslf$forest$variable.importance,predictors=retain_mods_reslf))
+Vimp_reslf
+str(Vimp_reslf)
+head(Vimp_reslf)
+Vimp_reslf
+(final_reslf$forest$variable.importance)
+
+#### Figure 8a Resilience META FOREST
+
+#Data
 #Data frame
 var_importance_reslf <- data.frame(variable=setdiff(colnames(Vimp_reslf), "Predictors"),
                                importance=as.vector(final_reslf$forest$variable.importance))
 
 names(var_importance_reslf)
-var_importance_reslf
-predictor_names_reslf<-c("Holdridge zone","Geological group","Parent material P","Parent material","Soil order","Time since cyclone","Longitude","Elevation","MAT/MAP","Soil P","Storm frequency","Time since last storm","Cyclone rainfall","Wind speed","Wind duration")
+#Assigning new names
+predictor_names_reslf<-c("Holdridge zone","Geological group","Parent material P","Parent material","Soil order","Longitude","Elevation","MAT/MAP","Soil P","Storm frequency","Time since last storm","Cyclone rainfall","Wind speed","Wind duration")
 predictor_names_reslf
 Vimp3_reslf <- cbind(data.frame(varimp=final_reslf$forest$variable.importance,predictors=predictor_names_reslf))
-str(Vimp3_reslf)
-
 Vimp3_reslf$predictors<- factor(Vimp3_reslf$predictors, levels=Vimp3_reslf$predictors)
 
 #Figure
 Fig8c <- ggplot(Vimp3_reslf, aes(x=reorder(predictors,varimp), weight=varimp, fill=varimp))
 Fig8c <- Fig8c + geom_bar(col="black",fill="#197D32")+coord_flip()+theme_pubr()
-Fig8c
 Fig8c <- Fig8c + ylab("Relative importance of predictors") + xlab("")+ theme(
-  axis.text.y=element_text(size=26),
-  axis.text.x=element_text(size=26),
-  axis.title.x=element_text(size=28),
-  legend.title=element_blank(),
-  legend.text=element_blank(),
-  legend.key = element_blank())+guides(fill=FALSE)+ annotate("text", y = 0.25, x = 1, label = "b", size=12,hjust=0,fontface="bold",colour="black")#+annotate INCLUDE ANNOTATION letter and Total litterfall mass
+  axis.text.y=element_text(size=26), axis.text.x=element_text(size=26),
+  axis.title.x=element_text(size=28), legend.title=element_blank(), legend.text=element_blank(),
+  legend.key = element_blank())+guides(fill=FALSE)+ annotate("text", y = 0.0006, x = 1, label = "b", size=12,hjust=0,fontface="bold",colour="black")#+annotate INCLUDE ANNOTATION letter and Total litterfall mass
 Fig8c
 
 #Saving in high res
-ggsave(filename = "Fig8c_VarImp_Leaf_Resilience.png",
+ggsave(filename = "Fig8c_VarImp_Leaf_Resilience.2.png",
        plot = Fig8c, width = 14, height = 12, units = 'cm',
        scale = 2, dpi = 800)
 
