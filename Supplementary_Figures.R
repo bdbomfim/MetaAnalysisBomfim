@@ -3,6 +3,7 @@ library(metafor)
 library(ggplot2)
 library(patchwork)
 library(tidyverse)
+library(ggcorrplot)
 
 ##Upload data####
 metadat<-read.csv(file.choose())#20210520_Litterfall_Mass
@@ -545,9 +546,9 @@ ggsave(filename = "Fig_sup_distribution_response.png",
 ####Correlation plot of final variables in random forest total litterfall mass flux resilience
 
 #Data
-names(datametaforest_restot)
-CPFig8b_cor<-datametaforest_restot[,c(2:6,9:18)]
-names(CPFig8b_cor)## Final!
+str(datametaforest_restot)
+CPFig8b_cor<-datametaforest_restot[,c(2:6,9:17)]
+str(CPFig8b_cor)## Final!
 #Changing column names
 names(CPFig8b_cor)[names(CPFig8b_cor) == "Holdridge_ID"] <- "Holdridge zone"
 names(CPFig8b_cor)[names(CPFig8b_cor) == "long"] <- "Longitude"
@@ -560,10 +561,10 @@ names(CPFig8b_cor)[names(CPFig8b_cor) == "timesincestorm"] <- "Time since last s
 names(CPFig8b_cor)[names(CPFig8b_cor) == "distrain"] <- "Cyclone rainfall"
 names(CPFig8b_cor)[names(CPFig8b_cor) == "hurrwind"] <- "Wind speed"
 names(CPFig8b_cor)[names(CPFig8b_cor) == "windur"] <- "Wind duration"
-names(CPFig8b_cor)[names(CPFig8b_cor) == "Rocktype_ID"] <- "Geological group"
+names(CPFig8b_cor)[names(CPFig8b_cor) == "Rock_type_ID"] <- "Geological group"
 names(CPFig8b_cor)[names(CPFig8b_cor) == "RockP_ID"] <- "Parent material P"
 names(CPFig8b_cor)[names(CPFig8b_cor) == "Par_Mat_ID"] <- "Parent material"
-names(CPFig8b_cor)[names(CPFig8b_cor) == "tsd"] <- "Time since cyclone"
+#names(CPFig8b_cor)[names(CPFig8b_cor) == "tsd"] <- "Time since cyclone"
 
 #Calculating correlation coefficients and p values
 corrf8b <- round(cor(CPFig8b_cor,method="pearson"),2)
@@ -572,25 +573,25 @@ p.matf8b <- cor_pmat(CPFig8b_cor)
 #FigureS3a correlation
 FigS3a<-ggcorrplot(corrf8b, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
                     outline.col = "white", p.mat = p.matf8b,method="square",ggtheme=ggplot2::theme_classic(),show.legend=TRUE, 
-                    legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=28,insig="blank",
-                    colors = c("#ABA0A0", "white", "#ffa600",pch.cex=20,nbreaks = 8,legend.text.cex=26))+font("legend.text",size=18)+font("legend.title", size=22)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
+                    legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=20,insig="blank",
+                    colors = c("#ABA0A0", "white", "#ffa600",pch.cex=18,nbreaks = 8,legend.text.cex=24))+font("legend.text",size=18)+font("legend.title", size=22)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
 FigS3a
 
 #Saving figure in high res
-ggsave(filename = "FigS3a_Resilience_Correlations_TotLit.png",
+ggsave(filename = "FigS3a_Resilience_Correlations_TotLit-withCTE.png",
        plot = FigS3a, width = 16, height = 18, units = 'cm',
        scale = 2, dpi = 800)
 
 #Correlation among leaf fall resilience predictors####
 
 #Selecting columns
-names(datametaforest_reslf)
-CPFig8d_cor<-datametaforest_reslf[,c(2:6,9:18)]
-names(CPFig8d_cor)
+str(datametaforest_reslf)
+CPFig8d_cor<-datametaforest_reslf[,c(2:6,9:17)]
+str(CPFig8d_cor)
 #Changing column names
 names(CPFig8d_cor)[names(CPFig8d_cor) == "Holdridge_ID"] <- "Holdridge zone"
 names(CPFig8d_cor)[names(CPFig8d_cor) == "long"] <- "Longitude"
-names(CPFig8d_cor)[names(CPFig8d_cor) == "tsd"] <- "Time since cyclone"
+#names(CPFig8d_cor)[names(CPFig8d_cor) == "tsd"] <- "Time since cyclone"
 names(CPFig8d_cor)[names(CPFig8d_cor) == "elev"] <- "Elevation"
 names(CPFig8d_cor)[names(CPFig8d_cor) == "mat_map"] <- "MAT/MAP"
 names(CPFig8d_cor)[names(CPFig8d_cor) == "soilP"] <- "Soil P"
@@ -603,7 +604,7 @@ names(CPFig8d_cor)[names(CPFig8d_cor) == "windur"] <- "Wind duration"
 names(CPFig8d_cor)[names(CPFig8d_cor) == "Rocktype_ID"] <- "Geological group"
 names(CPFig8d_cor)[names(CPFig8d_cor) == "RockP_ID"] <- "Parent material P"
 names(CPFig8d_cor)[names(CPFig8d_cor) == "Par_Mat_ID"] <- "Parent material"
-
+names(CPFig8d_cor)[names(CPFig8d_cor) == "yi"] <- "Resilience"
 #Checking if names are correct
 names(CPFig8d_cor)
 
@@ -611,15 +612,15 @@ names(CPFig8d_cor)
 corrf8d <- round(cor(CPFig8d_cor,method="pearson"),2)
 p.matf8d <- cor_pmat(CPFig8d_cor)
 
-#FigureS3b
+#FigureS3b####
 FigS3b<-ggcorrplot(corrf8d, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
                    outline.col = "white", p.mat = p.matf8d,method="square",ggtheme=ggplot2::theme_classic(),show.legend=TRUE, 
-                   legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=28,insig="blank",
-                   colors = c("#46A332", "white", "#ffa600",pch.cex=20,nbreaks = 8,legend.text.cex=26))+font("legend.text",size=18)+font("legend.title", size=22)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
+                   legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=20,insig="blank",
+                   colors = c("#46A332", "white", "#ffa600",pch.cex=18,nbreaks = 8,legend.text.cex=24))+font("legend.text",size=18)+font("legend.title", size=22)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
 FigS3b
 
 #Saving in high res
-ggsave(filename = "FigS3b_Resilience_Corr_Leaf.png",
+ggsave(filename = "FigS3b_Resilience_Corr_Leaf-withCTE.png",
        plot = FigS3b, width = 16, height = 18, units = 'cm',
        scale = 2, dpi = 800)
 
@@ -730,7 +731,7 @@ ggsave(filename = "Fig_S5ad.png",
        plot = Final_FigS5, width = 16, height = 14, units = 'cm',
        scale = 2, dpi = 1000)
 
-#Data wrangliing
+#Data wrangling
 unique(levels(as.factor(data_es0ilpc$Case_study_b)))
 unique(levels(as.factor(data_es0ia$Case_study2)))
 
@@ -739,5 +740,5 @@ dat_mass_lpc<-data_es0ia %>% filter(Treatment=="Ambient")%>%
   filter(Case_study2=="El Verde| Hugo| Ambient")%>%filter(Case_study2=="Kokee| Iniki| Ambient")%>%
   filter(Case_study2=="Lienhuachi| Fungwong| Ambient")%>%filter(Case_study2=="Lienhuachi| Jangmi| Ambient")%>%
   filter(Case_study2=="Lienhuachi| Kalmaegi| Ambient")%>%filter(Case_study2=="Lienhuachi| Sinlaku| Ambient")%>%
-  filter(Case_study2=="Bisley| Hugo| Ambient")%>%filter(Case_study2=="East Peak| Hugo| Ambient")%>%
+  filter(Case_study2=="Bisley| Hugo| Ambient")%>%filter(Case_study2=="East Peak| Hugo| Ambient")
   
