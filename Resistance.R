@@ -313,6 +313,24 @@ summary(full.model3)
 ((exp(full.model3$b)-1)*100)
 (exp(full.model3$se)-1)*100
 
+#Testing if study 53 changes the mean pantropical resistance 
+data_no53<-data_es0ia %>% filter(Study_ID!=53)
+str(data_no53)
+full.model_no_53 <- rma.mv(yi, vi,random = list(~ 1 | Site,~1|DisturbanceName),
+                      tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
+                      data = data_no53,method = "REML")
+
+#Testing if four case studies in Hawaii make a difference in the pantropical resistance
+red_sites2 <- data_es0ia %>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")
+full.model_red2 <- rma.mv(yi, vi,random = list(~ 1 | Site,~1|DisturbanceName),
+                           tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
+                           data = red_sites2,method = "REML")
+
+summary(full.model_red2)
+((exp(full.model_red2$b)-1)*100)
+(exp(full.model_red2$se)-1)*100
+
+#testing alternative random effects
 full.model3_b<- rma.mv(yi, vi,random = ~1|Region/DisturbanceName,
                       tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
                       data = data_es0ia,method = "REML")
@@ -365,6 +383,7 @@ profile(full.model3, sigma2=2)
 
 #New data frame removing the five sites where total soil P was estimated from available P
 red_sites <- data_es0ia %>% filter(Site!="Grande-Terre")%>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")
+red_sites2 <- data_es0ia %>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")
 
 #Running same model with reduced data set
 full.model3_red<- rma.mv(yi, 
@@ -598,6 +617,7 @@ data_es0ia$tsls=z.trans(data_es0ia$YearsSinceLastStorm)
 hurr_sites<-data_es0ia %>% filter(hurrwind!="NA")
 str(hurr_sites)#n = 45
 hurr_sites$hurrwind=z.trans(hurr_sites$HURRECON_wind_ms)
+hurr_sites_no53<-hurr_sites %>% filter(Study_ID!=53)
 
 ##Mass and Nutrient Responses comparisons####
 #Filtering the data
@@ -642,6 +662,19 @@ summary(model.mods3full)
 tab_model(model.mods3full,p.val="kr")#Significant intercept and regression coefficient
 #The intercept represents the mean effect of mean soil P
 
+#Testing if removing study 53 changes the effect of soil P on the resistance
+model.mods_no53<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), 
+                        tdist = TRUE,data = data_no53,
+                        method = "REML",mods = ~soilP)#using z transformed soil P
+summary(model.mods_no53)
+
+#Testing if removing four case studies in Hawaii makes a difference
+model.mods_red2<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), 
+                        tdist = TRUE,data = red_sites2,
+                        method = "REML",mods = ~soilP)#using z transformed soil P
+summary(model.mods_red2)
+
+#Testing alternative random effects
 model.mods3full_b<-rma.mv(yi,vi,random = ~ 1 | Region/DisturbanceName, 
                         tdist = TRUE,data = data_es0ia,
                         method = "REML",mods = ~soilP)#using z transformed soil P
@@ -698,6 +731,11 @@ model_tab2<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist
                 mods = ~soilP*hurrwind)
 summary(model_tab2)#Both positive predictors, no significant interaction
 
+#Testing the influce of study 53
+model_tab2_no53<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist = TRUE, 
+                   data = hurr_sites_no53,method = "REML",
+                   mods = ~soilP*hurrwind)
+summary(model_tab2_no53)
 #checking time since last storm
 model_tab2.1<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist = TRUE, 
                    data = hurr_sites,method = "REML",
