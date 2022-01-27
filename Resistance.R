@@ -207,6 +207,10 @@ str(data0lnc)#10
 data0wnc<-nutmeta %>%filter(Fraction=="Wood fall")%>%filter(Variable=="N") %>%filter(Raw_Unit=="mg/g")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
 str(data0wnc)#3
 
+##testing alternative resistance
+names(data0a)
+data0a$yi_new <- 1-(2*(abs(data0a$Pre_Mean - data0a$Post_Mean))/(data0a$Pre_Mean + abs((data0a$Pre_Mean - data0a$Post_Mean)))
+
 ####STEP 2 Individual Effect size calculation####
 
 ##Mass Flux####
@@ -1383,15 +1387,6 @@ ggplot(model_dat_Amb_frac, aes(x=group,y=estimate,ymax=ci_up,ymin=ci_low)) +
         axis.title.y =element_text(vjust = 1),
         axis.title=element_text(size=30),
         axis.text=element_text(size=30),legend.text =  element_blank(),legend.title = element_blank())
-
-ESm=full.model3$b
-ESm
-SEm=sqrt(full.model3$se)
-SEm
-ESm+(1.96*SEm)
-ESm-(1.96*SEm)
-ci_up=(full.model3wpf$b+(1.96*full.model3wpf$se))
-ci_up
 
 ####RESPONSE GGPLOT FIGURE N AND P CONCENTRATIONS####
 

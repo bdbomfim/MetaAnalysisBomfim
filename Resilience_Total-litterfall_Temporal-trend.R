@@ -1,5 +1,5 @@
-
 ##Post-cyclone temporal dynamics of total litterfall resilience##
+#GAMMs##
 
 ##Packages
 library(performance)
@@ -26,7 +26,7 @@ library(lattice)
 library(RColorBrewer)
 
 ##Upload data####
-metadat<-read.csv(file.choose())#20210520_Litterfall_Mass
+metadat<-read.csv(file.choose())#Litterfall_Mass
 attach(metadat)
 str(metadat)#2370 obs of 77 variables
 names(metadat)
@@ -49,25 +49,30 @@ data_esall <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean
                      sd1i = Post_SD, sd2i = Pre_SD, data = res_all, measure = "ROM")
 str(data_esall)#1530 obs. including all litterfall mass fractions
 
-##Total Litterfall mass resilience####
+#Calculating new resilience metric and adding to "data_esall" dataframe
+data_esall$yi_new <- data_esall$yi / data_esall$TSD_months
+#checking new column yi_new
+summary(data_esall$yi_new)
+#Same for the variance vi_new
+data_esall$vi_new <- data_esall$vi / data_esall$TSD_months
+#checking new column vi_new
+summary(data_esall$vi_new)
+
+##Total Litterfall mass flux resilience####
 #subset of total litterfall 1 to 36 months
 tot_lit_all<-data_esall %>% filter(Fraction=="TotLitfall")
-str(tot_lit_all)#426 obs
-levels(tot_lit_all$Treatment)
+str(tot_lit_all)#425 obs
+summary(tot_lit_all$Treatment)
 
-#including ambient and CTE
-tot_lit_amb<-data_esall %>% filter(Fraction=="TotLitfall")%>% filter(Treatment=="Ambient"|Treatment=="TrimDeb")
-str(tot_lit_amb)#250 obs
-tot_lit_amb$TSD_months=as.integer(tot_lit_amb$TSD_months)
+#Filtering data to include Ambient and CTE
+tot_lit_amb_cte<-data_esall %>% filter(Fraction=="TotLitfall")%>% filter(Treatment=="Ambient"|Treatment=="TrimDeb")
+str(tot_lit_amb_cte)#285 obs
+tot_lit_amb<-data_esall %>% filter(Fraction=="TotLitfall")%>% filter(Treatment=="Ambient")#|Treatment=="TrimDeb")
+str(tot_lit_amb)#249 obs
 
-#including Trim
-tot_lit_amb_2<-data_esall %>% filter(Fraction=="TotLitfall")%>% filter(Treatment=="Ambient"|Treatment=="TrimDeb"|Treatment=="Trim")
-str(tot_lit_amb_2)#286 obs
-
-##Analyzing Ambient Conditions only, 1 to 21 months, wherein most data is concentrated
-
-#Data 1 to 21 months - Ambient only
-tot_lit_amb_1to21_final<-tot_lit_amb %>% filter(TSD_months<22)%>% filter(DisturbanceName!="Keith")%>% filter(Site!="San Felipe")%>% filter (Site!="Grande-Terre")%>% filter(DisturbanceName!="Ivor")
+##Analyzing resilience for 1 to 21 months, wherein most data is concentrated
+#Data 1 to 21 months - Ambient + CTE
+tot_lit_amb_1to21_final<-tot_lit_amb_cte %>% filter(TSD_months<22)%>% filter(DisturbanceName!="Keith")%>% filter(Site!="San Felipe")%>% filter (Site!="Grande-Terre")%>% filter(DisturbanceName!="Ivor")
 str(tot_lit_amb_1to21_final)#213
 #creating case study column
 tot_lit_amb_1to21_final$Case_study= paste(tot_lit_amb_1to21_final$Site, tot_lit_amb_1to21_final$DisturbanceName, sep="|")
@@ -80,20 +85,34 @@ tot_lit_amb_1to21_final$hurrwind<-z.trans(tot_lit_amb_1to21_final$HURRECON_wind_
 tot_lit_amb_1to21_final$windur<-z.trans(tot_lit_amb_1to21_final$Gale_wind_duration_minutes)
 tot_lit_amb_1to21_final$tsd<-z.trans(tot_lit_amb_1to21_final$TSD_months)
 
-##Calculating Weights####
+#Excluding CTE
+tot_lit_amb_1to21_amb<-tot_lit_amb_1to21_final %>% filter(Treatment!="TrimDeb")
+summary(tot_lit_amb_1to21_amb$Treatment)
 
-#Fitting Mltilevel meta-analysis models to obtain the weights included in the final GAMMs
+##Calculating Weights to later use in the GAMMs####
+
+#Fitting multilevel meta-analysis models to obtain the weights included in the final GAMMs
 #cross random effects for Site and Cyclone
-tot_meta<- rma.mv(yi,vi,random = list(~1|Site,~1|DisturbanceName),
+tot_meta_amb<- rma.mv(yi_new,vi_new,random = list(~1|Site,~1|DisturbanceName),
                           tdist = TRUE,
-                          data = tot_lit_amb_1to21_final,struct = "HAR",method = "REML")
-summary(tot_meta)
-#these are the sigma2 values
-tot_meta$sigma2
+                          data = tot_lit_amb_1to21_amb,struct = "HAR",method = "REML")
+summary(tot_meta_amb)
+#these are the sigma2 values used to calculate weight2
+tot_meta_amb$sigma2
 
-#Best method to calculate the weights, using
-tot_lit_amb_1to21_final$weight2<-(1/(tot_lit_amb_1to21_final$vi+0.02666+0.1402))
-tot_lit_amb_1to21_final$weight2
+#Other method to calculate weights
+tot_lit_amb_1to21_amb$weight2<-(1/(tot_lit_amb_1to21_amb$vi_new+0.0004245608+0.0009734804))
+tot_lit_amb_1to21_amb$weight2
+
+#Same for new resilience metric
+tot_meta_new<- rma.mv(yi_new,vi_new,random = list(~1|Site,~1|DisturbanceName),
+                  tdist = TRUE,
+                  data = tot_lit_amb_1to21_final,struct = "HAR",method = "REML")
+summary(tot_meta_new)
+#these are the sigma2 values used to calculate weight2
+tot_meta_new$sigma2
+tot_lit_amb_1to21_final$weight2.1<-(1/(tot_lit_amb_1to21_final$vi_new+0.0003756094+0.0015747689))
+tot_lit_amb_1to21_final$weight2.1
 
 #other possibility to calculate weights
 weight<-weights(tot_meta,type="matrix")
@@ -141,10 +160,14 @@ weight_e<-weights(tot_meta_e,type="matrix")
 tot_lit_amb_1to21_final$weight_e<-colSums(weight_e)/sum(weight_e)
 tot_lit_amb_1to21_final$weight_e
 
+
 #Fitting GAMMs using weights generated from rma.mv function####
 tot_lit_amb_1to21_final$weight
 w<- (1/tot_lit_amb_1to21_final$vi)
 w
+
+w_new<- (1/tot_lit_amb_1to21_final$vi_new)
+w_new
 
 #Site as random effect with site-based weights
 gamm_2y_mixed_1 <- gamm4(yi ~ s(soilP, tsd)                              ,weights=(1/tot_lit_amb_1to21_final$vi), random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F )
@@ -180,37 +203,153 @@ atab_1to21
 
 #Table 3####
 
-#Model 1a
-gamm_2y_mixed_1 <- gamm4(yi ~ s(soilP,by=tsd)                             ,weights=tot_lit_amb_1to21_final$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=TRUE)
-summary(gamm_2y_mixed_1$gam)
-gamm_2y_mixed_1.2 <- gamm4(yi ~ s(soilP, tsd,k=20)                              ,weights=tot_lit_amb_1to21_final$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=TRUE)
-summary(gamm_2y_mixed_1.2$gam)#R2 = 0.3
+#Model 1a - ambient + CTE####
+gamm_2y_mixed_0 <- gamm4(yi_new ~ s(soilP)                             ,weights=tot_lit_amb_1to21_final$weight2.1, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F)
+summary(gamm_2y_mixed_0$gam)#R2=0.06
+gamm_2y_mixed_0.1 <- gamm4(yi_new ~ soilP                              ,weights=tot_lit_amb_1to21_final$weight2.1, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F)
+summary(gamm_2y_mixed_0.1$gam)#R2=0.01
+gamm_2y_mixed_1 <- gamm4(yi_new ~ s(soilP,by=tsd)                       ,weights=tot_lit_amb_1to21_final$weight2.1, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F)
+summary(gamm_2y_mixed_1$gam)#R2=0.19
+gamm_2y_mixed_1.2 <- gamm4(yi_new ~ s(soilP)+s(tsd)                     ,weights=tot_lit_amb_1to21_final$weight2.1, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F)
+summary(gamm_2y_mixed_1.2$gam)#R2 = 0.34
 summary(gamm_2y_mixed_1.2$mer)
+gamm_2y_mixed_1.3 <- gamm4(yi_new ~ s(tsd)                              ,weights=tot_lit_amb_1to21_final$weight2.1, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F)
+summary(gamm_2y_mixed_1.3$gam)#R2 = 0.34
 
-#Model 2a
-gamm_2y_mixed_1e <- gamm4(yi ~ s(soilP, tsd,by=windur,k=20)                 ,weights=tot_lit_amb_1to21_final$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=TRUE)
-summary(gamm_2y_mixed_1e$gam)#R2 = 0.4
+
+#checking best Model 1a - ambient + CTE####
+mods_1a <- list(mixed_0 = gamm_2y_mixed_0$mer, mixed_0.1 = gamm_2y_mixed_0.1$mer, 
+                mixed_1 = gamm_2y_mixed_1$mer, mixed_1.2 = gamm_2y_mixed_1.2$mer,
+                mixed_1.3 = gamm_2y_mixed_1.3$mer)
+atab_1a <- aictab(mods_1a)
+atab_1a
+
+#Model 1a - ambient####
+gamm_2y_mixed_0_amb <- gamm4(yi_new ~ s(soilP)                             ,weights=tot_lit_amb_1to21_amb$weight2, random = ~(1|Site/DisturbanceName), data=tot_lit_amb_1to21_amb, REML=F)
+summary(gamm_2y_mixed_0_amb$gam)#R2=0.02
+
+gamm_2y_mixed_0.1_amb <- gamm4(yi_new ~ soilP                             ,weights=tot_lit_amb_1to21_amb$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_amb, REML=F)
+summary(gamm_2y_mixed_0.1_amb$gam)#R2=0.01
+
+gamm_2y_mixed_1_amb <- gamm4(yi_new ~ s(soilP,by=tsd)                             ,weights=tot_lit_amb_1to21_amb$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_amb, REML=F)
+summary(gamm_2y_mixed_1_amb$gam)#R2=0.16
+
+gamm_2y_mixed_1.2_amb <- gamm4(yi_new ~ s(soilP)+s(tsd)                              ,weights=tot_lit_amb_1to21_amb$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_amb, REML=F)
+summary(gamm_2y_mixed_1.2_amb$gam)#R2 = 0.29
+summary(gamm_2y_mixed_1.2_amb$mer)
+
+gamm_2y_mixed_1.3_amb <- gamm4(yi_new ~ s(soilP,tsd)                              ,weights=tot_lit_amb_1to21_amb$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_amb, REML=F)
+summary(gamm_2y_mixed_1.3_amb$gam)#R2 = 0.43
+
+gamm_2y_mixed_1.4_amb <- gamm4(yi_new ~ s(tsd)                              ,weights=tot_lit_amb_1to21_amb$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_amb, REML=F)
+summary(gamm_2y_mixed_1.4_amb$gam)#R2 = 0.29
+
+#checking best Model 2a - ambient + CTE####
+mods_1a_amb <- list(mixed_0_amb = gamm_2y_mixed_0_amb$mer, mixed_0.1_amb = gamm_2y_mixed_0.1_amb$mer, 
+                mixed_1_amb = gamm_2y_mixed_1$mer, mixed_1.2_amb = gamm_2y_mixed_1.2$mer,
+                mixed_1.3_amb = gamm_2y_mixed_1.3$mer, mixed_1.4_amb = gamm_2y_mixed_1.4_amb$mer)
+atab_1a_amb <- aictab(mods_1a_amb)
+atab_1a_amb
+
+#Model 2a - ambient + CTE####
+gamm_2y_mixed_1e <- gamm4(yi ~ s(soilP, tsd,by=windur,k=20)                 ,weights=tot_lit_amb_1to21_final$weight2.1, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F)
+summary(gamm_2y_mixed_1e$gam)#R2 = 0.53
 summary(gamm_2y_mixed_1e$mer)
 
+gamm_2y_mixed_1e_new <- gamm4(yi_new ~ s(soilP, tsd,by=windur,k=20)                 ,weights=tot_lit_amb_1to21_final$weight2.1, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F)
+summary(gamm_2y_mixed_1e_new$gam)#R2 = 0.59
+summary(gamm_2y_mixed_1e$mer)
+
+#Best model for amb+CTE
+gamm_2y_mixed_1e_new.1 <- gamm4(yi_new ~ s(soilP)+s(tsd)+s(windur)                 ,weights=tot_lit_amb_1to21_final$weight2.1, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F)
+summary(gamm_2y_mixed_1e_new.1$gam)#R2 = 0.59
+summary(gamm_2y_mixed_1e_new.1$mer)
+
+gamm_2y_mixed_1f_new <- gamm4(yi_new ~ s(tsd,by=windur, k=20)                 ,weights=tot_lit_amb_1to21_final$weight2.1, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F)
+summary(gamm_2y_mixed_1f_new$gam)#R2 = 0.33
+summary(gamm_2y_mixed_1f_new$mer)
+
+gamm_2y_mixed_1g_new <- gamm4(yi_new ~ s(windur)                             ,weights=tot_lit_amb_1to21_final$weight2.1, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F)
+summary(gamm_2y_mixed_1g_new$gam)#R2 = 0.15
+summary(gamm_2y_mixed_1g_new$mer)
+
+gamm_2y_mixed_1h_new <- gamm4(yi_new ~ s(soilP)+s(windur)                    ,weights=tot_lit_amb_1to21_final$weight2.1, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F)
+summary(gamm_2y_mixed_1h_new$gam)#R2 = 0.13
+summary(gamm_2y_mixed_1h_new$mer)
+
+gamm_2y_mixed_1i_new <- gamm4(yi_new ~ tsd                    ,weights=tot_lit_amb_1to21_final$weight2.1, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F)
+summary(gamm_2y_mixed_1i_new$gam)#R2 = 0.24
+summary(gamm_2y_mixed_1i_new$mer)
+
+gamm_2y_mixed_1j_new <- gamm4(yi_new ~ s(tsd)                   ,weights=tot_lit_amb_1to21_final$weight2.1, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F)
+summary(gamm_2y_mixed_1j_new$gam)#R2 = 0.34
+summary(gamm_2y_mixed_1j_new$mer)
+
+#checking best Model 2a - ambient + CTE####
+mods_2a <- list(mixed_1e.1 = gamm_2y_mixed_1e_new.1$mer, 
+                mixed_1f_new = gamm_2y_mixed_1f_new$mer, mixed_1g_new = gamm_2y_mixed_1g_new$mer,
+                mixed_1h_new = gamm_2y_mixed_1h_new$mer, mixed_1i_new = gamm_2y_mixed_1i_new$mer, 
+                mixed_1j_new = gamm_2y_mixed_1j_new$mer)
+atab_2a <- aictab(mods_2a)
+atab_2a
+
+#Model 2a - ambient####
+summary(tot_lit_amb_1to21_amb$windur)
+gamm_2y_mixed_1e_amb <- gamm4(yi_new ~ s(soilP, tsd,by=windur,k=20)                 ,weights=tot_lit_amb_1to21_amb$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_amb, REML=F)
+summary(gamm_2y_mixed_1e_amb$gam)#R2 = 0.4
+summary(gamm_2y_mixed_1e_amb$mer)
+
+#Best model for ambient 
+gamm_2y_mixed_1e_new_amb <- gamm4(yi_new ~ s(soilP, tsd,by=windur,k=20)                 ,weights=tot_lit_amb_1to21_amb$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_amb, REML=F)
+summary(gamm_2y_mixed_1e_new_amb$gam)#R2 = 0.39
+summary(gamm_2y_mixed_1e_new_amb$mer)
+
+gamm_2y_mixed_1e_new_amb2 <- gamm4(yi_new ~ s(soilP) +s(tsd)+s(windur)                 ,weights=tot_lit_amb_1to21_amb$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_amb, REML=F)
+summary(gamm_2y_mixed_1e_new_amb2$gam)#R2 = 0.39
+summary(gamm_2y_mixed_1e_new_amb2$mer)
+
+gamm_2y_mixed_1f_new_amb <- gamm4(yi_new ~ s(tsd,by=windur,k=20)                 ,weights=tot_lit_amb_1to21_amb$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_amb, REML=F)
+summary(gamm_2y_mixed_1f_new_amb$gam)#R2 = 0.32
+summary(gamm_2y_mixed_1f_new_amb$mer)
+
+gamm_2y_mixed_1g_new_amb <- gamm4(yi_new ~ s(windur)                             ,weights=tot_lit_amb_1to21_amb$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_amb, REML=F)
+summary(gamm_2y_mixed_1g_new_amb$gam)#R2 = 0.32
+summary(gamm_2y_mixed_1g_new_amb$mer)
+
+gamm_2y_mixed_1h_new_amb <- gamm4(yi_new ~ s(soilP)+s(windur)                    ,weights=tot_lit_amb_1to21_amb$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_amb, REML=F)
+summary(gamm_2y_mixed_1h_new_amb$gam)#R2 = 0.32
+summary(gamm_2y_mixed_1h_new_amb$mer)
+
+gamm_2y_mixed_1i_new_amb <- gamm4(yi_new ~ s(tsd)                    ,weights=tot_lit_amb_1to21_amb$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_amb, REML=F)
+summary(gamm_2y_mixed_1i_new_amb$gam)#R2 = 0.32
+summary(gamm_2y_mixed_1i_new_amb$mer)
+
+#checking best Model 2a - ambient####
+mods_2a <- list(mixed_1e_new_amb = gamm_2y_mixed_1e_new_amb$mer, mixed_1e_new_amb2 =gamm_2y_mixed_1e_new_amb2$mer,
+                mixed_1f_new_amb = gamm_2y_mixed_1f_new_amb$mer, mixed_1g_new_amb = gamm_2y_mixed_1g_new_amb$mer,
+                mixed_1h_new_amb = gamm_2y_mixed_1h_new$mer,mixed_1i_new_amb = gamm_2y_mixed_1i_new$mer)
+atab_2a <- aictab(mods_2a)
+atab_2a
+
 #Adding wind speed variable does not improve the model
-gamm_2y_mixed_4b <- gamm4(yi ~ s(Other_soil_P, TSD_months,k=20)+HURRECON_wind_ms           ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_final, REML=TRUE )
+gamm_2y_mixed_4b <- gamm4(yi ~ s(Other_soil_P, TSD_months,k=20)+HURRECON_wind_ms           ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_amb, REML=TRUE )
 summary(gamm_2y_mixed_4b$gam)
 summary(gamm_2y_mixed_4b$mer)
 
-gamm_2y_mixed_4b.1 <- gamm4(yi ~ s(Other_soil_P, TSD_months,HURRECON_wind_ms)           ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_final, REML=TRUE )
+gamm_2y_mixed_4b.1 <- gamm4(yi ~ s(Other_soil_P, TSD_months,HURRECON_wind_ms)           ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_amb, REML=TRUE )
 summary(gamm_2y_mixed_4b.1$gam)
 summary(gamm_2y_mixed_4b$mer)
 
 #Adding Wind duration variable does not improve the model
-gamm_2y_mixed_4c <- gamm4(yi ~ s(soilP, tsd,k=20)+windur           ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_final, REML=TRUE )
+gamm_2y_mixed_4c <- gamm4(yi ~ s(soilP, tsd,k=20)+windur           ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_amb, REML=TRUE )
 summary(gamm_2y_mixed_4c$gam)
 summary(gamm_2y_mixed_4c$mer)
 
-gamm_2y_mixed_4d <- gamm4(yi ~ s(soilP, tsd)+s(windur)           ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_final, REML=TRUE )
+gamm_2y_mixed_4d <- gamm4(yi ~ s(soilP, tsd)+s(windur)           ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_amb, REML=TRUE )
 summary(gamm_2y_mixed_4d$gam)
 summary(gamm_2y_mixed_4d$mer)
 
-gamm_2y_mixed_4e <- gamm4(yi ~ s(soilP, tsd,windur)           ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_final, REML=TRUE )
+gamm_2y_mixed_4e <- gamm4(yi ~ s(soilP, tsd,windur)           ,weights=tot_lit_amb_1to21_final$weight_d, random = ~(1|Region), data=tot_lit_amb_1to21_amb, REML=TRUE )
 summary(gamm_2y_mixed_4e$gam)#R2=0.24
 summary(gamm_2y_mixed_4e$mer)
 
