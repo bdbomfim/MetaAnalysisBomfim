@@ -95,12 +95,12 @@ summary(tot_lit_amb_1to21_amb$Treatment)
 #cross random effects for Site and Cyclone
 tot_meta_amb<- rma.mv(yi_new,vi_new,random = list(~1|Site,~1|DisturbanceName),
                           tdist = TRUE,
-                          data = tot_lit_amb_1to21_amb,struct = "HAR",method = "REML")
+                           data = tot_lit_amb_1to21_amb,struct = "HAR",method = "REML")
 summary(tot_meta_amb)
 #these are the sigma2 values used to calculate weight2
 tot_meta_amb$sigma2
 
-#Other method to calculate weights
+#Other method to calculate weights: adding the values obtained by running tot_meta_amb$sigma2
 tot_lit_amb_1to21_amb$weight2<-(1/(tot_lit_amb_1to21_amb$vi_new+0.0004245608+0.0009734804))
 tot_lit_amb_1to21_amb$weight2
 
@@ -160,6 +160,17 @@ weight_e<-weights(tot_meta_e,type="matrix")
 tot_lit_amb_1to21_final$weight_e<-colSums(weight_e)/sum(weight_e)
 tot_lit_amb_1to21_final$weight_e
 
+#Mixed-effects meta-analysis with new resilience metric####
+mixed_meta_tot_amb<- rma.mv(yi_new,vi_new,random = list(~1|Site,~1|DisturbanceName),
+                      tdist = TRUE,
+                      data = tot_lit_amb_1to21_amb,mods = ~windur+tsd, struct = "HAR",method = "REML")
+summary(mixed_meta_tot_amb)
+
+mixed_meta_tot<- rma.mv(yi_new,vi_new,random = list(~1|Site,~1|DisturbanceName),
+                      tdist = TRUE,
+                      data = tot_lit_amb_1to21_final,mods = ~soilP, struct = "HAR",method = "REML")
+summary(mixed_meta_tot)
+
 
 #Fitting GAMMs using weights generated from rma.mv function####
 tot_lit_amb_1to21_final$weight
@@ -202,7 +213,7 @@ atab_1to21 <- aictab(mods_1to21)
 atab_1to21
 
 #Table 3####
-
+summary(tot_lit_amb_1to21_final$Country)
 #Model 1a - ambient + CTE####
 gamm_2y_mixed_0 <- gamm4(yi_new ~ s(soilP)                             ,weights=tot_lit_amb_1to21_final$weight2.1, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F)
 summary(gamm_2y_mixed_0$gam)#R2=0.06
@@ -225,7 +236,8 @@ atab_1a <- aictab(mods_1a)
 atab_1a
 
 #Model 1a - ambient####
-gamm_2y_mixed_0_amb <- gamm4(yi_new ~ s(soilP)                             ,weights=tot_lit_amb_1to21_amb$weight2, random = ~(1|Site/DisturbanceName), data=tot_lit_amb_1to21_amb, REML=F)
+summary(tot_lit_amb_1to21_amb$Country)
+gamm_2y_mixed_0_amb <- gamm4(yi_new ~ s(soilP)                             ,weights=tot_lit_amb_1to21_amb$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_amb, REML=F)
 summary(gamm_2y_mixed_0_amb$gam)#R2=0.02
 
 gamm_2y_mixed_0.1_amb <- gamm4(yi_new ~ soilP                             ,weights=tot_lit_amb_1to21_amb$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_amb, REML=F)

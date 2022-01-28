@@ -11,7 +11,7 @@ metadat<-read.csv(file.choose())#Litterfall_Mass
 
 ##Filtering data to retain only points used to calculate the resilience metric
 rec <- metadat %>% filter(Cat_TSD_months == "Rec")
-rec
+unique(levels(as.factor(rec$Case_study)))
 #Including litterfall data from 1 to 36 months post-disturbance
 res_all<- rec %>% filter(Case_ID!="25.2")%>% filter(Case_ID!="18.1")%>% filter (TSD_months < 37)
 str(res_all)
@@ -29,7 +29,7 @@ res_amb2$Case_study= paste(res_amb2$Site, res_amb2$DisturbanceName, sep="|")
 ###Calculating Effect sizes (Hedge's g)####
 #1 to 36 months post-disturbance - Ambient conditions only
 data_esall_amb <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
-                     sd1i = Post_SD, sd2i = Pre_SD, data = res_amb, measure = "ROM")
+                     sd1i = Post_SD, sd2i = Pre_SD, data = res_amb2, measure = "ROM")
 str(data_esall_amb)#945 observations including all litterfall mass fractions
 
 ###Creating new columns yi_new as the result of yi divided by duration####
@@ -59,7 +59,8 @@ summary(data_esall_amb2$vi_new)
 ##Total litterfall mass resilience [ln(post/pre)]####
 #Months 1 to 36 post-disturbance
 tot_amb<-data_esall_amb %>% filter(Fraction=="TotLitfall")
-str(tot_amb)#249 observations - ambient conditions only
+str(tot_amb)#249 observations - ambient conditions only, 285 obst with CTE
+unique(levels(as.factor(tot_amb$Case_study)))
 
 #Checking number of case studies per geographic region and country
 summary(tot_amb$Region)
@@ -104,6 +105,8 @@ summary(data_es_tot_amb$Treatment)
 #1 month post-disturbance for ambient + TrimDeb CTE####
 data_es_tot_amb_1<-data_es_tot_amb %>% filter(TSD_months==1)
 names(data_es_tot_amb_1)
+#If negative, this is the formula: -(1-exp(random1$b))*100
+#If positive, this is the formula: ((exp(random0a$b))-1)*100
 
 #running mixed-effects meta-analysis model for one month post-disturbance
 tot_meta_1<- rma.mv(yi,vi,random = ~(1|Site),
@@ -117,7 +120,8 @@ tot_meta_1_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
                     tdist = TRUE,
                     data = data_es_tot_amb_1,struct = "HAR",method = "REML")
 summary(tot_meta_1_new)
-tot_meta_1_new$b
+-(1-exp(tot_meta_1_new$b))*100
+((exp(tot_meta_1_new$se))-1)*100
 
 #3 months TF####
 data_es_tot_amb_3<-data_es_tot_amb %>% filter(TSD_months==3)
@@ -150,6 +154,8 @@ tot_meta_5_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
                     data = data_es_tot_amb_5,struct = "HAR",method = "REML")
 #mods=~TSD_months)
 summary(tot_meta_5_new)
+-(1-exp(tot_meta_5_new$b))*100
+((exp(tot_meta_5_new$se))-1)*100
 
 #8 months TF####
 data_es_tot_amb_8<-data_es_tot_amb %>% filter(TSD_months==8)
@@ -177,6 +183,8 @@ tot_meta_12_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
                      tdist = TRUE,
                      data = data_es_tot_amb_12,struct = "HAR",method = "REML")
 summary(tot_meta_12_new)
+-(1-exp(tot_meta_12_new$b))*100
+((exp(tot_meta_12_new$se))-1)*100
 
 #15 months TF####
 data_es_tot_amb_15<-data_es_tot_amb %>% filter(TSD_months==15)
@@ -306,6 +314,8 @@ leaf_meta_1_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
                          tdist = TRUE,
                          data = data_es_leaf_amb_1,struct = "HAR",method = "REML")
 summary(leaf_meta_1_new)
+-(1-exp(leaf_meta_1_new$b))*100
+((exp(leaf_meta_1_new$se))-1)*100
 
 #3 months LF####
 data_es_leaf_amb_3<-data_es_leaf_amb %>% filter(TSD_months==3)
@@ -356,6 +366,8 @@ leaf_meta_12_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
                       tdist = TRUE,
                       data = data_es_leaf_amb_12,struct = "HAR",method = "REML")
 summary(leaf_meta_12_new)
+-(1-exp(leaf_meta_12_new$b))*100
+((exp(leaf_meta_12_new$se))-1)*100
 
 #15 months LF####
 data_es_leaf_amb_15<-data_es_leaf_amb %>% filter(TSD_months==15)
@@ -480,6 +492,8 @@ wood_meta_1_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
                      tdist = TRUE,
                      data = data_es_wood_amb_1,struct = "HAR",method = "REML")
 summary(wood_meta_1_new)
+-(1-exp(wood_meta_1_new$b))*100
+((exp(wood_meta_1_new$se))-1)*100
 
 #3 months WF####
 data_es_wood_amb_3<-data_es_wood_amb %>% filter(TSD_months==3)
@@ -529,6 +543,8 @@ wood_meta_12_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
                       tdist = TRUE,
                       data = data_es_wood_amb_12,struct = "HAR",method = "REML")
 summary(wood_meta_12_new)
+((exp(wood_meta_12_new$se))-1)*100
+-(1-exp(wood_meta_12_new$b))*100
 
 #15 months WF####
 data_es_wood_amb_15<-data_es_wood_amb %>% filter(TSD_months==15)
@@ -655,6 +671,8 @@ ffs_meta_1_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
                     tdist = TRUE,
                     data = data_es_ffs_amb_1,struct = "HAR",method = "REML")
 summary(ffs_meta_1_new)
+-(1-exp(ffs_meta_1_new$b))*100
+((exp(ffs_meta_1_new$se))-1)*100
 
 #3 months FFS####
 data_es_ffs_amb_3<-data_es_ffs_amb %>% filter(TSD_months==3)
@@ -703,6 +721,8 @@ ffs_meta_12_new<- rma.mv(yi_new,vi_new,random = ~(1|Site),
                      tdist = TRUE,
                      data = data_es_ffs_amb_12,struct = "HAR",method = "REML")
 summary(ffs_meta_12_new)
+-(1-exp(ffs_meta_12_new$b))*100
+((exp(ffs_meta_12_new$se))-1)*100
 
 #15 months FFS####
 data_es_ffs_amb_15<-data_es_ffs_amb %>% filter(TSD_months==15)

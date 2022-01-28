@@ -13,7 +13,6 @@ leaf_amb$Case_study= paste(leaf_amb$Site, leaf_amb$DisturbanceName, sep="|")
 ##Subseting the data 1 - 21 months by deleting cyclones Ivor, Jova, Patricia and Gilbert and Study #4
 leaf_amb_1to21<- leaf_amb  %>% filter (TSD_months<22) %>% filter(Study_ID!="4")%>% filter(DisturbanceName!="Keith")%>% filter(DisturbanceName!="Ivor")%>% filter(DisturbanceName!="Jova")%>% filter(DisturbanceName!="Patricia")%>% filter(DisturbanceName!="Gilbert")
 str(leaf_amb_1to21)#193
-unique(levels(as.factor(leaf_amb_1to21$Country)))
 
 ##Fitting random-effects meta-analysis model to obtain weights
 
