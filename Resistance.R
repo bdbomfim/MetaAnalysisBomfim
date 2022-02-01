@@ -34,13 +34,7 @@ library(ggridges)
 library(broom)
 library(lmerTest)
 library(metafor)
-library(forestmodel)
-library(metaforest)
-library(caret)
-library(ranger)
 library(dmetar)
-library(MuMIn)
-library(rJava)
 library(leaps)
 library(glmulti)
 library(metaviz)
@@ -64,7 +58,7 @@ metadat$Gale_wind_duration_minutes=as.numeric(metadat$Gale_wind_duration_minutes
 
 #Create Case study column
 metadat$Case_study= paste(metadat$Site, metadat$DisturbanceName,sep="| ")
-unique(levels(as.factor(metadat$Treatment)))#check number of unique factor levels
+unique(levels(as.factor(metadat$Case_study)))#check number of unique factor levels
 
 #Nutrient flux and concentration data
 nutmeta<-read.csv(file.choose())#Litterfall_Nutrients
@@ -83,7 +77,7 @@ unique(levels(as.factor(nutmeta$Case_study)))
 data0a<-metadat %>% filter(Fraction=="TotLitfall")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")#%>%filter(Treatment!="P+")#|Treatment!="N+"|Treatment!="NP+")
 str(data0a)#48 observations
 summary(data0a)
-unique(levels(as.factor(data0a$Other_soil_P)))
+unique(levels(as.factor(data0a$Case_study)))
 #Sub-annual
 data0aS<- data0a%>% filter(Pre_Mean_MonthSpecific!="NA")#to exclude a factor level
 str(data0aS)#23observations
@@ -209,8 +203,11 @@ str(data0wnc)#3
 
 ##testing alternative resistance
 names(data0a)
-data0a$yi_new <- 1-(2*(abs(data0a$Pre_Mean - data0a$Post_Mean))/(data0a$Pre_Mean + abs((data0a$Pre_Mean - data0a$Post_Mean)))
-
+data0a$change<-abs(data0a$Pre_Mean - data0a$Post_Mean)
+(data0a$change)
+data0a$yi_new <- 1-((2*data0a$change)/(data0a$Pre_Mean + data0a$change))
+data0a$yi_new
+plot(data0a$yi_new~data0a$Other_soil_P)
 ####STEP 2 Individual Effect size calculation####
 
 ##Mass Flux####
