@@ -1,10 +1,8 @@
 ###Meta-Analysis of cyclone resistance of forest litterfall across the tropics###
 
-library(packrat)
 library(styler)
 library(lintr)
 library(magrittr)
-library(ggcorrplot)
 library(LMERConvenienceFunctions)
 library(relaimpo)
 library(ggplot2)
@@ -28,10 +26,7 @@ library(sjlabelled)
 library(modelsummary)
 library(tidyr)
 library(plyr)
-library(fs)
-library(forcats)
 library(ggridges)
-library(broom)
 library(lmerTest)
 library(metafor)
 library(dmetar)
@@ -58,7 +53,6 @@ metadat$Gale_wind_duration_minutes=as.numeric(metadat$Gale_wind_duration_minutes
 
 #Create Case study column
 metadat$Case_study= paste(metadat$Site, metadat$DisturbanceName,sep="| ")
-unique(levels(as.factor(metadat$Case_study)))#check number of unique factor levels
 
 #Nutrient flux and concentration data
 nutmeta<-read.csv(file.choose())#Litterfall_Nutrients
@@ -208,6 +202,7 @@ data0a$change<-abs(data0a$Pre_Mean - data0a$Post_Mean)
 data0a$yi_new <- 1-((2*data0a$change)/(data0a$Pre_Mean + data0a$change))
 data0a$yi_new
 plot(data0a$yi_new~data0a$Other_soil_P)
+
 ####STEP 2 Individual Effect size calculation####
 
 ##Mass Flux####
@@ -218,6 +213,7 @@ str(data0a)#48 observations
 #Annual
 data_es0ia <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
                      sd1i = Post_SD, sd2i = Pre_SD, data = data0a, measure = "ROM") # ROM =  log transformed ratio of means (Hedges et al., 1999; Lajeunesse, 2011).
+str(data_es0ia)
 data0a_all<-metadat %>% filter(Fraction=="TotLitfall")%>%filter(Cat_TSD_months=="0-0.5")
 data_es0ia_all <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
                      sd1i = Post_SD, sd2i = Pre_SD, data = data0a_all, measure = "ROM") # ROM =  log transformed ratio of means (Hedges et al., 1999; Lajeunesse, 2011).
