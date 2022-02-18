@@ -70,6 +70,7 @@ tot_lit_amb_1to21_final$hurrwind<-z.trans(tot_lit_amb_1to21_final$HURRECON_wind_
 tot_lit_amb_1to21_final$windur<-z.trans(tot_lit_amb_1to21_final$Gale_wind_duration_minutes)
 tot_lit_amb_1to21_final$tsd<-z.trans(tot_lit_amb_1to21_final$TSD_months)
 
+
 #Excluding CTE for sensitivity analysis
 tot_lit_amb_1to21_amb<-tot_lit_amb_1to21_final %>% filter(Treatment!="TrimDeb")
 summary(tot_lit_amb_1to21_amb$Treatment)
@@ -333,10 +334,10 @@ levels(tot_lit_amb_1to21_final$Months)
 
 #Figure 9 Total Litterfall Mass Resilience by Time, soil P and wind duration####
 Fig_res1to21 <- ggplot(tot_lit_amb_1to21_final, aes(y=Pred_1e, x=Months,group=Case_study))
-Fig_res1to21<-Fig_res1to21+geom_point(aes(group=Case_study,col=log(Other_soil_P)),alpha=0.9,size=1.2)
-Fig_res1to21<-Fig_res1to21+geom_point(aes(y=yi,x=Months,group=Case_study,col=log(Other_soil_P),size=sqrt(tot_lit_amb_1to21_final$vi)),alpha=0.9,shape=21,stroke=1.3)#size=1.5)#color="darkgray")
+Fig_res1to21<-Fig_res1to21+geom_point(aes(group=Case_study,col=log(Other_soil_P)),alpha=0.7,size=1.2)
+Fig_res1to21<-Fig_res1to21+geom_point(aes(y=yi,x=Months,group=Case_study,col=log(Other_soil_P),size=sqrt(tot_lit_amb_1to21_final$vi)),alpha=0.7,shape=21,stroke=1.3)#size=1.5)#color="darkgray")
 Fig_res1to21<-Fig_res1to21+geom_ribbon(aes(ymin=Pred_1e-(1.96*Se_1e),ymax=Pred_1e+(1.96*Se_1e),col=log(Other_soil_P),fill=log(Other_soil_P)),alpha=0.02,linetype=3,size=0.4)+scale_color_gradient(low="#FCFF00",high="#D8001F",breaks=c(5,6,7))+scale_fill_gradient(low="#FCFF00",high="#D8001F",breaks=c(5,6,7))#+scale_color_manual(values=c("#4575b4","#abd9e9","#00876c","#3c986d","#84b76e","#a8c671","#f4e07f","#f4c76a","#f3ad5a","#e9774c","#a50026"))+scale_fill_manual(values=c("#4575b4","#abd9e9","#00876c","#3c986d","#84b76e","#a8c671","#f4e07f","#f4c76a","#f3ad5a","#e9774c","#a50026"))#+ scale_color_manual(values=c("#FFD700","#A07717","#F06E05","#268FE1","#265E89","#192DB5","#85EE85","#409E40","#0C620C","#D37EA5","#D14082","#EF0672"))+ scale_fill_manual(values=c("#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#EF0672"))
-Fig_res1to21<-Fig_res1to21+geom_line(aes(group=Case_study,col=log(Other_soil_P)),size=1.2)
+#Fig_res1to21<-Fig_res1to21+geom_line(aes(group=Case_study,col=log(Other_soil_P)),size=1.2)
 Fig_res1to21<-Fig_res1to21+theme_pubr()+geom_segment(aes(x=1, y=0, xend=21, yend=0), lty=2, color = "magenta", cex=1.4)+
   scale_x_discrete(breaks = c(1, 3, 6, 9,12, 15, 18,21))+scale_shape_discrete(solid=F)+
   #ylab(expression(Resilience~(ln~Litterfall~t[x]~t[0]^-1)))+xlab("")+
@@ -351,48 +352,47 @@ Fig_res1to21<-Fig_res1to21+theme_pubr()+geom_segment(aes(x=1, y=0, xend=21, yend
   annotate("text", x = 1, y = 2.2, label = "Total litterfall", size=8,hjust=0,colour="black",fontface="bold") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
 Fig_res1to21
 
-
-##Figure9####
+##Figure9 - saving in high res####
 ggsave(filename = "Fig9_Resilience_Pred_Tot.png",
        plot = Fig_res1to21, width = 12, height = 10, units = 'cm',
        scale = 2, dpi = 1000)
 
-##PREDICTIONS with Soil P and TSD only
+##NEW FIGURE 9 WITH ONLY 3 LINES AND RIBBONS##
+new_fig9<- cbind(data.frame(Case_study=tot_lit_amb_1to21_final$Case_study, Other_soil_P=tot_lit_amb_1to21_final$Other_soil_P),Pred_1e=tot_lit_amb_1to21_final$Pred_1e,Se_1e=tot_lit_amb_1to21_final$Se_1e,Months=tot_lit_amb_1to21_final$Months)
+summary(new_fig9$Case_study)
+summary(new_fig9$Case_study)
 
-#Predictions from gamm_2y_mixed_1e####
-mypreds_1to21_final_1.2<-predict(gamm_2y_mixed_1.2$gam,newdata=tot_lit_amb_1to21_final,se.fit=T)
-mypreds_1to21_final_1.2
-tot_lit_amb_1to21_final$Pred_1.2<-mypreds_1to21_final_1.2$fit
-tot_lit_amb_1to21_final$Se_1.2<-mypreds_1to21_final_1.2$se.fit
-
-#Figure 9 Total Litterfall Mass Resilience by Time, soil P and wind duration####
-Fig_res1to21a <- ggplot(tot_lit_amb_1to21_final, aes(y=Pred_1.2, x=Months,group=Case_study))
-Fig_res1to21a<-Fig_res1to21a+geom_point(aes(group=Case_study,col=log(Other_soil_P)),alpha=0.9,size=1.2)
-Fig_res1to21a<-Fig_res1to21a+geom_point(aes(y=yi,x=Months,group=Case_study,col=log(Other_soil_P),size=sqrt(tot_lit_amb_1to21_final$vi)),alpha=0.9,shape=21,stroke=1.3)#size=1.5)#color="darkgray")
-Fig_res1to21a<-Fig_res1to21a+geom_ribbon(aes(ymin=Pred_1.2-(1.96*Se_1.2),ymax=Pred_1.2+(1.96*Se_1.2),col=log(Other_soil_P),fill=log(Other_soil_P)),alpha=0.02,linetype=3,size=0.4)+scale_color_gradient(low="#FCFF00",high="#D8001F",breaks=c(5,6,7))+scale_fill_gradient(low="#FCFF00",high="#D8001F",breaks=c(5,6,7))#+scale_color_manual(values=c("#4575b4","#abd9e9","#00876c","#3c986d","#84b76e","#a8c671","#f4e07f","#f4c76a","#f3ad5a","#e9774c","#a50026"))+scale_fill_manual(values=c("#4575b4","#abd9e9","#00876c","#3c986d","#84b76e","#a8c671","#f4e07f","#f4c76a","#f3ad5a","#e9774c","#a50026"))#+ scale_color_manual(values=c("#FFD700","#A07717","#F06E05","#268FE1","#265E89","#192DB5","#85EE85","#409E40","#0C620C","#D37EA5","#D14082","#EF0672"))+ scale_fill_manual(values=c("#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#F7EAEA","#EF0672"))
-Fig_res1to21a
-Fig_res1to21a<-Fig_res1to21a+geom_line(aes(group=Case_study,col=log(Other_soil_P)),size=1.2)
-Fig_res1to21a<-Fig_res1to21a+theme_pubr()+geom_segment(aes(x=1, y=0, xend=21, yend=0), lty=2, color = "magenta", cex=1.4)+
-  scale_x_discrete(breaks = c(1, 3, 6, 9,12, 15, 18,21))+scale_shape_discrete(solid=F)+
-  ylab(expression(Resilience~(ln~litterfall[tx]/litterfall[t0])))+xlab("")+
-  theme(axis.title.x =element_text(vjust = 0.5,size=24),
+new_fig9_filtered<-new_fig9 %>% filter(Case_study == "Wooroonooran Basalt | Larry | Ambient"|Case_study=="Mt Spec | Charlie | Ambient"|Case_study=="Chamela-Cuixmala | Jova | Ambient")
+summary(new_fig9_filtered$Case_study)
+            
+#new figure 9####
+Fig_9 <- ggplot(tot_lit_amb_1to21_final, aes(y=Pred_1e, x=Months,group=Case_study))
+Fig_9<-Fig_9+geom_point(aes(group=Case_study,col=log(Other_soil_P)),alpha=0.7,size=1.2)
+Fig_9
+Fig_9<-Fig_9+geom_point(aes(y=yi,x=Months,group=Case_study,col=log(Other_soil_P),size=sqrt(tot_lit_amb_1to21_final$vi)),alpha=0.7,shape=21,stroke=1.2)#size=1.5)#color="darkgray")
+Fig_9
+Fig_9<-Fig_9+geom_ribbon(data=new_fig9_filtered,aes(ymin=Pred_1e-(1.96*Se_1e),ymax=Pred_1e+(1.96*Se_1e),x=Months,col=log(Other_soil_P),fill=log(Other_soil_P)),alpha=0.02,linetype=3,size=0.4)+scale_color_gradient(low="#FCFF00",high="#D8001F",breaks=c(5,6,7))+scale_fill_gradient(low="#FCFF00",high="#D8001F",breaks=c(5,6,7))
+Fig_9
+Fig_9<-Fig_9+geom_line(data=new_fig9_filtered,aes(group=Case_study,col=log(Other_soil_P)),size=1.2)
+Fig_9
+Fig_9<-Fig_9+theme_pubr()+geom_segment(aes(x=1, y=0, xend=21, yend=0), lty=2, color = "magenta", cex=1.4)+
+  scale_x_discrete(breaks = c(1, 3, 6, 9, 12, 15, 18, 21))+scale_shape_discrete(solid=F)+
+  #ylab(expression(Resilience~(ln~Litterfall~t[x]~t[0]^-1)))+xlab("")+
+  theme(axis.title.x =element_text(vjust = 0.5,size=28),
         axis.text.x =element_text(vjust = 1,size=22),
-        axis.title.y =element_text(vjust = 1,size=24),strip.background = element_rect(color="white", fill="white",linetype="solid"),
-        axis.text.y = element_text(size=22),legend.text =  element_text(size=20),
+        axis.title.y =element_text(vjust = 1,size=28),strip.background = element_rect(color="white", fill="white",linetype="solid"),
+        axis.text.y=element_text(size=22),legend.text =  element_text(size=22),
         legend.background = element_rect(fill=alpha('transparent', 0.4)),legend.key=element_rect(fill=alpha('transparent', 0.4)),
         legend.title = element_text(size=20),legend.box="horizontal",legend.position="top",legend.justification="center")+ 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+guides(color = guide_colourbar(barwidth = 15, barheight = 1.5,nbin=30,ticks.colour="black",ticks.linewidth = 2.5))+
-  labs(color="Soil P \n(ln mg/kg)",size="Effect size variance")+guides(fill=FALSE,size=FALSE)+ 
-  annotate("text", x = 1, y = 2.2, label = "a Total litterfall", size=8,hjust=0,colour="black",fontface="bold") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
-Fig_res1to21a
+  labs(color="Soil P \n(ln mg/kg)",size="Effect size variance",y="Resilience",x="Time since cyclone (Months)")+guides(fill=FALSE,size=FALSE)+ 
+  annotate("text", x = 1, y = 2.2, label = "Total litterfall", size=8,hjust=0,colour="black",fontface="bold") #=  bquote('Density Litterfall N and P'~(mg/m^2/day))
+Fig_9
 
-##Figure9####
-Fig9<-Fig_res1to21a+Fig_res1to21_l+plot_layout(ncol=1,heights=c(1,1))
-Fig9
 
-#Saving in high res
-ggsave(filename = "Fig9_Resilience_Pred_Tot_Leaf_v2.png",
-       plot = Fig9, width = 12, height = 14, units = 'cm',
-       scale = 2, dpi = 1200)
+##New Figure9####
+ggsave(filename = "Fig9_new.png",
+       plot = Fig_9, width = 10, height = 10, units = 'cm',
+       scale = 2, dpi = 1000)
 
-##END##
+#END###
