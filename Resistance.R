@@ -1,9 +1,5 @@
 ###Meta-Analysis of cyclone resistance of forest litterfall across the tropics###
 
-library(styler)
-library(lintr)
-library(magrittr)
-library(LMERConvenienceFunctions)
 library(relaimpo)
 library(ggplot2)
 library(ggstatsplot)
@@ -45,14 +41,13 @@ library(AICcmodavg)
 #Litterfall mass flux data
 metadat<-read.csv(file.choose())#Litterfall_Mass
 str(metadat)#2367 obs of 77 variables
-summary(metadat)
 
 #transforming variables to numeric
 metadat$HURRECON_wind_ms=as.numeric(metadat$HURRECON_wind_ms)
 metadat$Gale_wind_duration_minutes=as.numeric(metadat$Gale_wind_duration_minutes)
 
 #Create Case study column
-metadat$Case_study= paste(metadat$Site, metadat$DisturbanceName,sep="| ")
+metadat$Case_study= paste(metadat$Site, metadat$DisturbanceName,sep=" | ")
 
 #Nutrient flux and concentration data
 nutmeta<-read.csv(file.choose())#Litterfall_Nutrients

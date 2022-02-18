@@ -11,6 +11,7 @@ metadat<-read.csv(file.choose())#Litterfall_Mass
 
 ##Filtering data to retain only points used to calculate the resilience metric
 rec <- metadat %>% filter(Cat_TSD_months == "Rec")
+str(rec)
 unique(levels(as.factor(rec$Case_study)))
 #Including litterfall data from 1 to 36 months post-disturbance
 res_all<- rec %>% filter(Case_ID!="25.2")%>% filter(Case_ID!="18.1")%>% filter (TSD_months < 37)
@@ -32,29 +33,10 @@ data_esall_amb <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_
                      sd1i = Post_SD, sd2i = Pre_SD, data = res_amb2, measure = "ROM")
 str(data_esall_amb)#945 observations including all litterfall mass fractions
 
-###Creating new columns yi_new as the result of yi divided by duration####
-names(data_esall_amb)
-data_esall_amb$yi_new <- data_esall_amb$yi / data_esall_amb$TSD_months
-#checking new column yi_new
-summary(data_esall_amb$yi_new)
-#Same for the variance vi_new
-data_esall_amb$vi_new <- data_esall_amb$vi / data_esall_amb$TSD_months
-#checking new column vi_new
-summary(data_esall_amb$vi_new)
 #Including CTE TrimDeb
 data_esall_amb2 <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
                          sd1i = Post_SD, sd2i = Pre_SD, data = res_amb2, measure = "ROM")
 str(data_esall_amb2)#1125 observations
-
-#Creating new columns yi_new as the result of yi divided by duration####
-names(data_esall_amb2)
-data_esall_amb2$yi_new <- data_esall_amb2$yi / data_esall_amb2$TSD_months
-#checking new column yi_new
-summary(data_esall_amb2$yi_new)
-#Same for the variance vi_new
-data_esall_amb2$vi_new <- data_esall_amb2$vi / data_esall_amb2$TSD_months
-#checking new column vi_new
-summary(data_esall_amb2$vi_new)
 
 ##Total litterfall mass resilience [ln(post/pre)]####
 #Months 1 to 36 post-disturbance
