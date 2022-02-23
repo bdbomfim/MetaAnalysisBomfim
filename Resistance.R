@@ -1,6 +1,5 @@
 ###Meta-Analysis of cyclone resistance of forest litterfall across the tropics###
 
-library(relaimpo)
 library(ggplot2)
 library(ggstatsplot)
 library(nlme)
@@ -65,8 +64,7 @@ unique(levels(as.factor(nutmeta$Case_study)))
 #Annual-based, excluding CTE
 data0a<-metadat %>% filter(Fraction=="TotLitfall")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")#%>%filter(Treatment!="P+")#|Treatment!="N+"|Treatment!="NP+")
 str(data0a)#48 observations
-summary(data0a)
-unique(levels(as.factor(data0a$Case_study)))
+
 #Sub-annual
 data0aS<- data0a%>% filter(Pre_Mean_MonthSpecific!="NA")#to exclude a factor level
 str(data0aS)#23observations
@@ -330,6 +328,32 @@ full.model3_b<- rma.mv(yi, vi,random = ~1|Region/DisturbanceName,
 summary(full.model3_b)
 ((exp(full.model3_b$b)-1)*100)
 (exp(full.model3_b$se)-1)*100
+
+#testing with a random sample of the case studies
+resistance_PR<- data_es0ia %>% filter(Country == "Puerto Rico")
+summary(resistance_PR$Country)
+random_sample_PR<-sample_n(resistance_PR, 10)
+str(random_sample_PR)# 10 obs. of  68 variables
+names2<-names(random_sample_PR)
+names(random_sample_PR)<-c(names2)
+
+resistance_rest<-data_es0ia %>% filter(Country!= "Puerto Rico")
+str(resistance_rest)# 29 obs of 68 variables
+names1<-names(resistance_rest)
+names(resistance_rest)<-c(names1)
+
+#Final data frame combining 10 random case studies from PR and the remainder of the extra-PR case studies
+new_resistance_data<-rbind(data.frame(resistance_rest),data.frame(random_sample_PR))
+summary(new_resistance_data$Country)
+
+#new pantropical resistance with a random sample from PR including 10 case studies
+full.model_randomPR <- rma.mv(yi, vi,random = list(~ 1 | Site,~1|DisturbanceName),
+                      tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
+                      data = new_resistance_data,method = "REML")#N = 39
+
+summary(full.model_randomPR)
+((exp(full.model_randomPR$b)-1)*100)
+(exp(full.model_randomPR$se)-1)*100
 
 #Pre-mean, sd, se
 summary(data0a)
@@ -695,6 +719,20 @@ summary(model.mods3full.2)
 
 #AICc to check best model with Site and Cyclone as crossed random effects is the best
 BIC(model.mods3full,model.mods3full.1,model.mods3full.2)
+
+#Testing the effect of soil P with a random sample from PR with fewer case studies
+summary(new_resistance_data$HURRECON_wind_ms)
+new_resistance_data$hurrwind
+new_resistance_data<-new_resistance_data%>% filter(HURRECON_wind_ms!="NA")
+#z.trans<-function(x) {(x - mean(x, na.rm=T))/(2*sd(x, na.rm=T))}
+#new_resistance_data$soilP=z.trans(new_resistance_data$Other_soil_P)
+#new_resistance_data$hurrwind=z.trans(new_resistance_data$HURRECON_wind_ms)
+#new_resistance_data$tsls=z.trans(new_resistance_data$YearsSinceLastStorm)
+
+mixed_soilP_redPR<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), 
+                        tdist = TRUE,data = new_resistance_data,
+                        method = "REML",mods = ~soilP)#using z transformed soil P
+summary(mixed_soilP_redPR)
 
 #Sensitivity analysis - testing the effect of soil P when 5 sites are removed####
 #Table S8 - Model 1a
