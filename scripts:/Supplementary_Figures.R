@@ -1,12 +1,9 @@
-##Discussion Figures###
-
-##Packages####
+##Discussion Figures####
 library(metafor)
 library(ggplot2)
 library(patchwork)
 library(tidyverse)
 library(ggcorrplot)
-library(ggpubr)
 
 ##Upload data####
 metadat<-read.csv(file.choose())#20210520_Litterfall_Mass
@@ -544,14 +541,14 @@ sup_fig_dd_2
 ggsave(filename = "Fig_sup_distribution_response.png",
        plot = sup_fig_dd_2, width = 26, height = 26, units = 'cm',scale = 2, dpi = 1000)
 
-##Figure S3 Resilience Correlations####
+##Figure S5 Resilience Correlations####
 
 ####Correlation plot of final variables in random forest total litterfall mass flux resilience
 
 #Data
 names(datametaforest_restot)
-CPFig8b_cor<-datametaforest_restot[,c(2:6,9:18)]
-names(CPFig8b_cor)## Final!
+CPFig8b_cor<-datametaforest_restot[,c(2:7,10:19)]
+str(CPFig8b_cor)## Final!
 #Changing column names
 names(CPFig8b_cor)[names(CPFig8b_cor) == "Holdridge_ID"] <- "Holdridge zone"
 names(CPFig8b_cor)[names(CPFig8b_cor) == "long"] <- "Longitude"
@@ -564,33 +561,34 @@ names(CPFig8b_cor)[names(CPFig8b_cor) == "timesincestorm"] <- "Time since last s
 names(CPFig8b_cor)[names(CPFig8b_cor) == "distrain"] <- "Cyclone rainfall"
 names(CPFig8b_cor)[names(CPFig8b_cor) == "hurrwind"] <- "Wind speed"
 names(CPFig8b_cor)[names(CPFig8b_cor) == "windur"] <- "Wind duration"
-names(CPFig8b_cor)[names(CPFig8b_cor) == "Rocktype_ID"] <- "Geological group"
+names(CPFig8b_cor)[names(CPFig8b_cor) == "Rock_type_ID"] <- "Geological group"
 names(CPFig8b_cor)[names(CPFig8b_cor) == "RockP_ID"] <- "Parent material P"
 names(CPFig8b_cor)[names(CPFig8b_cor) == "Par_Mat_ID"] <- "Parent material"
 names(CPFig8b_cor)[names(CPFig8b_cor) == "tsd"] <- "Time since cyclone"
+names(CPFig8b_cor)[names(CPFig8b_cor) == "Region_ID"] <- "Region"
 
 #Calculating correlation coefficients and p values
 corrf8b <- round(cor(CPFig8b_cor,method="pearson"),2)
 p.matf8b <- cor_pmat(CPFig8b_cor)
 
-#FigureS3a correlation
-FigS3a<-ggcorrplot(corrf8b, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
+#FigureS5a correlation####
+FigS5a<-ggcorrplot(corrf8b, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
                     outline.col = "white", p.mat = p.matf8b,method="square",ggtheme=ggplot2::theme_classic(),show.legend=TRUE, 
-                    legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=28,insig="blank",
-                    colors = c("#ABA0A0", "white", "#ffa600",pch.cex=20,nbreaks = 8,legend.text.cex=26))+font("legend.text",size=18)+font("legend.title", size=22)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
-FigS3a
+                    legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=20,insig="blank",
+                    colors = c("#ABA0A0", "white", "#ffa600",pch.cex=18,nbreaks = 8,legend.text.cex=24))+font("legend.text",size=18)+font("legend.title", size=22)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
+FigS5a
 
 #Saving figure in high res
-ggsave(filename = "FigS3a_Resilience_Correlations_TotLit.png",
+ggsave(filename = "FigS5a_Resilience_Corr_TotLit-noCTE.png",
        plot = FigS3a, width = 16, height = 18, units = 'cm',
-       scale = 2, dpi = 800)
+       scale = 2, dpi = 1000)
 
 #Correlation among leaf fall resilience predictors####
 
-#Selecting columns
+#Selecting columns from the dataframe used to run the random forest model####
 names(datametaforest_reslf)
-CPFig8d_cor<-datametaforest_reslf[,c(2:6,9:18)]
-names(CPFig8d_cor)
+CPFig8d_cor<-datametaforest_reslf[,c(2:7,10:19)]
+str(CPFig8d_cor)
 #Changing column names
 names(CPFig8d_cor)[names(CPFig8d_cor) == "Holdridge_ID"] <- "Holdridge zone"
 names(CPFig8d_cor)[names(CPFig8d_cor) == "long"] <- "Longitude"
@@ -604,10 +602,11 @@ names(CPFig8d_cor)[names(CPFig8d_cor) == "timesincestorm"] <- "Time since last s
 names(CPFig8d_cor)[names(CPFig8d_cor) == "distrain"] <- "Cyclone rainfall"
 names(CPFig8d_cor)[names(CPFig8d_cor) == "hurrwind"] <- "Wind speed"
 names(CPFig8d_cor)[names(CPFig8d_cor) == "windur"] <- "Wind duration"
-names(CPFig8d_cor)[names(CPFig8d_cor) == "Rocktype_ID"] <- "Geological group"
+names(CPFig8d_cor)[names(CPFig8d_cor) == "Rock_type_ID"] <- "Geological group"
 names(CPFig8d_cor)[names(CPFig8d_cor) == "RockP_ID"] <- "Parent material P"
 names(CPFig8d_cor)[names(CPFig8d_cor) == "Par_Mat_ID"] <- "Parent material"
-
+names(CPFig8d_cor)[names(CPFig8d_cor) == "Region_ID"] <- "Region"
+#names(CPFig8d_cor)[names(CPFig8d_cor) == "yi"] <- "Resilience"
 #Checking if names are correct
 names(CPFig8d_cor)
 
@@ -615,16 +614,16 @@ names(CPFig8d_cor)
 corrf8d <- round(cor(CPFig8d_cor,method="pearson"),2)
 p.matf8d <- cor_pmat(CPFig8d_cor)
 
-#FigureS3b
-FigS3b<-ggcorrplot(corrf8d, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
+#FigureS5b####
+FigS5b<-ggcorrplot(corrf8d, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
                    outline.col = "white", p.mat = p.matf8d,method="square",ggtheme=ggplot2::theme_classic(),show.legend=TRUE, 
-                   legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=28,insig="blank",
-                   colors = c("#46A332", "white", "#ffa600",pch.cex=20,nbreaks = 8,legend.text.cex=26))+font("legend.text",size=18)+font("legend.title", size=22)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
-FigS3b
+                   legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=20,insig="blank",
+                   colors = c("#46A332", "white", "#ffa600",pch.cex=18,nbreaks = 8,legend.text.cex=24))+font("legend.text",size=18)+font("legend.title", size=22)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
+FigS5b
 
 #Saving in high res
-ggsave(filename = "FigS3b_Resilience_Corr_Leaf.png",
-       plot = FigS3b, width = 16, height = 18, units = 'cm',
+ggsave(filename = "FigS5b_Resilience_Corr_Leaf-noCTE.png",
+       plot = FigS5b, width = 16, height = 18, units = 'cm',
        scale = 2, dpi = 800)
 
 
@@ -734,7 +733,7 @@ ggsave(filename = "Fig_S5ad.png",
        plot = Final_FigS5, width = 16, height = 14, units = 'cm',
        scale = 2, dpi = 1000)
 
-#Data wrangliing
+#Data wrangling
 unique(levels(as.factor(data_es0ilpc$Case_study_b)))
 unique(levels(as.factor(data_es0ia$Case_study2)))
 
@@ -745,553 +744,3 @@ dat_mass_lpc<-data_es0ia %>% filter(Treatment=="Ambient")%>%
   filter(Case_study2=="Lienhuachi| Kalmaegi| Ambient")%>%filter(Case_study2=="Lienhuachi| Sinlaku| Ambient")%>%
   filter(Case_study2=="Bisley| Hugo| Ambient")%>%filter(Case_study2=="East Peak| Hugo| Ambient")
   
-####Figure Sx Random Forest Variable Importance Resistance with alternate Moderators####
-
-####Same approach but substituting longitude by Region####
-
-#Tota litterfall random forest####
-names(data_es0ia)
-datametaforest_2<-data_es0ia[,c(3,8,15,23,25,27,29,63:64,66:73)]%>% filter(hurrwind!="NA")#filtering NAs
-str(datametaforest_2)#45obs 17 variables
-
-# Run model with many trees to check convergence
-check_conv_2 <- MetaForest(yi~.,
-                           data = datametaforest_2,
-                           study = "Effectsize_ID",
-                           whichweights = "random",
-                           num.trees = 20000)
-plot(check_conv_2) #model converged at about 5000 trees, which will be used in the next step
-
-#Model with 5000 trees for replication
-mf_rep_2 <- MetaForest(yi~.,
-                       data = datametaforest_2,
-                       study = "Effectsize_ID",
-                       whichweights = "random",#using random effects, as in classic meta-analysis
-                       num.trees = 5000)
-
-#Preselecting variables for MetaForest analysis
-#Applying recursive pre-selection using the preselect function. 
-# Run recursive preselection, store results in object 'preselect'
-preselected_2 <- preselect(mf_rep_2,
-                           replications = 100,
-                           algorithm = "recursive")#There are three possible algorithms for variable selection : replicate, recursive, and bootstrap (but latter does not work with this data)
-plot(preselected_2)# of variables
-
-#Alternative 'replicate' algorithm
-preselected2_2 <- preselect(mf_rep_2,
-                            replications = 100,
-                            algorithm = "replicate")
-plot(preselected2_2)
-#Both generated similar results
-
-#Using preselect_vars to retain only those moderators for which a 50% percentile interval 
-#of the variable importance metrics does not include zero
-#Retain only moderators with positive variable importance in more than 50% of replications
-retain_mods_2 <- preselect_vars(preselected_2, cutoff = .5)
-
-# Set up 3-fold grouped (=clustered) CV
-grouped_cv_2 <- trainControl(method = "cv", 
-                             index = groupKFold(datametaforest_2$Effectsize_ID, k = 3))
-grouped_boot_2 <- trainControl(method = "cboot", 
-                               index = groupKFold(datametaforest_2$Effectsize_ID, k = 3))
-
-# Set up a tuning grid for the three tuning parameters of MetaForest
-tuning_grid_2 <- expand.grid(whichweights = c("random", "fixed", "unif"),
-                             mtry = 2:6,
-                             min.node.size = 2:6)
-
-# X should contain only retained moderators, clustering variable, and vi
-X_2 <- datametaforest_2[, c("Effectsize_ID", "vi", retain_mods_2)]
-
-# Train the random forest model
-mf_cv_2 <- train(y = datametaforest_2$yi,
-                 x = X_2,
-                 study = "Effectsize_ID", # Name of the clustering variable
-                 method = ModelInfo_mf(), 
-                 trControl = grouped_cv_2,
-                 tuneGrid = tuning_grid_2,
-                 num.trees = 5000)
-
-#Examine optimal tuning parameters
-mf_cv_2$results[which.min(mf_cv_2$results$RMSE), ]
-#Based on the root mean squared error, the best combination of tuning parameters
-#were unif weights
-
-#R2 cv
-r2_cv_2<-mf_cv_2$results$Rsquared[which.min(mf_cv_2$results$RMSE)]
-r2_cv_2#0.61
-
-#The object returned by train already contains the final model, 
-#estimated with the best combination of tuning parameters
-
-#Inspecting the results
-# Extracting the final model
-final_2 <- mf_cv_2$finalModel
-final_2
-
-# Extracting the estimate of predictive performance R^2_{oob} from the final model
-#This is an estimate of how much variance the model would explain in a new data set 
-r2_oob_2 <- final_2$forest$r.squared
-r2_oob_2 #predictive performance of 45.7%
-
-#Residual heterogeneity
-Vimp_2 <- data.frame(final_2$forest$variable.importance)
-Vimp_2
-
-# Variable importance plot
-VarImpPlot(final_2)
-
-#Organizing the data to plot
-Vimp_2 <- data.frame(final_2$forest$variable.importance)#from Random-Forest_Resistance script
-str(Vimp_2)
-final_2$forest$variable.importance
-
-Vimp3_2 <- cbind(data.frame(varimp_2=final_2$forest$variable.importance,predictors_2=retain_mods_2))
-Vimp3_2
-str(Vimp3_2)
-colnames(Vimp3_2)
-
-#Data frame
-var_importance_2 <- data.frame(variable_2=setdiff(colnames(Vimp3_2), "Predictors"),
-                             importance_2=as.vector(final_2$forest$variable.importance))
-var_importance_2
-names(datametaforest_2)
-predictor_names_2<-c("Region","Holdridge zone","Geological group","Parent material P","Parent material","Soil order","Elevation","MAT/MAP","Soil P","Storm frequency","Time since last storm","Cyclone rainfall","Wind speed","Wind duration")
-predictor_names_2
-Vimp3_2 <- cbind(data.frame(varimp_2=final_2$forest$variable.importance,predictors_2=predictor_names_2))
-str(Vimp3_2)
-
-Vimp3_2$predictors<- factor(Vimp3_2$predictors, levels=Vimp3_2$predictors)
-
-#Figure4a
-FigS_4a <- ggplot(Vimp3_2, aes(x=reorder(predictors_2,varimp_2), weight=varimp_2, fill=varimp_2))
-FigS_4a <- FigS_4a + geom_bar(col="black",fill="darkgray")+coord_flip()+theme_pubr()
-FigS_4a <- FigS_4a + ylab("Variable (Permutation) importance") + xlab("")+ theme(
-  axis.text.y=element_text(size=26),
-  axis.text.x=element_text(size=26),
-  axis.title.x=element_text(size=28),
-  legend.title=element_blank(),
-  legend.text=element_blank(),
-  legend.key = element_blank())+guides(fill=FALSE)#+ annotate("text", y = 1.1, x = 1, label = "a", size=12,hjust=0,fontface="bold",colour="black")#+annotate INCLUDE ANNOTATION letter and Total litterfall mass
-FigS_4a
-
-#Saving in high resolution
-ggsave(filename = "FigS4a_Var-Imp_Resistance_Supplement.png",
-       plot = FigS_4a, width = 14, height = 12, units = 'cm',
-       scale = 2, dpi = 1000)
-
-#Renaming data for correlation plot
-names(datametaforest_2)
-CPFigS_cor<-datametaforest_2[,c(2:7,10:17)]
-names(CPFigS_cor)## Final!
-names(CPFigS_cor)[names(CPFigS_cor) == "Holdridge_ID"] <- "Holdridge zone"
-names(CPFigS_cor)[names(CPFigS_cor) == "Region_ID"] <- "Region"
-names(CPFigS_cor)[names(CPFigS_cor) == "elev"] <- "Elevation"
-names(CPFigS_cor)[names(CPFigS_cor) == "mat_map"] <- "MAT/MAP"
-names(CPFigS_cor)[names(CPFigS_cor) == "soilP"] <- "Soil P"
-names(CPFigS_cor)[names(CPFigS_cor) == "stormfreq"] <- "Storm frequency"
-names(CPFigS_cor)[names(CPFigS_cor) == "timesincestorm"] <- "Time since last storm"
-names(CPFigS_cor)[names(CPFigS_cor) == "distrain"] <- "Cyclone rainfall"
-names(CPFigS_cor)[names(CPFigS_cor) == "hurrwind"] <- "Wind speed"
-names(CPFigS_cor)[names(CPFigS_cor) == "windur"] <- "Wind duration"
-names(CPFigS_cor)[names(CPFigS_cor) == "Rock_type_ID"] <- "Geological group"
-names(CPFigS_cor)[names(CPFigS_cor) == "RockP_ID"] <- "Parent material P"
-names(CPFigS_cor)[names(CPFigS_cor) == "Par_Mat_ID"] <- "Parent material"
-names(CPFigS_cor)[names(CPFigS_cor) == "Soil_ID"] <- "Soil order"
-
-#Calculating correlations and p values
-corrfS <- round(cor(CPFigS_cor,method="pearson"),2)
-p.matfS <- cor_pmat(CPFigS_cor)
-
-#Figure
-FigS<-ggcorrplot(corrfS, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
-                    outline.col = "white", p.mat = p.matfS,method="square",ggtheme=ggplot2::theme_classic(),show.legend=TRUE, 
-                    legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=28,insig="blank",
-                    colors = c("#ABA0A0", "white", "#ffa600",pch.cex=20,nbreaks = 8,legend.text.cex=26))+font("legend.text",size=18)+font("legend.title", size=22)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
-FigS
-
-#Saving figure in high res
-ggsave(filename = "FigS_Final.png",
-       plot = FigS, width = 16, height = 18, units = 'cm',
-       scale = 2, dpi = 1000)
-
-####Same approach but without latitude or region####
-
-#Tota litterfall random forest####
-names(data_es0ia)
-datametaforest_3<-data_es0ia[,c(3,15,23,25,27,29,63:64,66:73)]%>% filter(hurrwind!="NA")#filtering NAs
-str(datametaforest_3)#45obs 16 variables
-
-# Run model with many trees to check convergence
-check_conv_3 <- MetaForest(yi~.,data = datametaforest_3,study = "Effectsize_ID",
-                           whichweights = "random",num.trees = 20000)
-plot(check_conv_3) #model converged at about 5000 trees, which will be used in the next step
-
-#Model with 5000 trees for replication
-mf_rep_3 <- MetaForest(yi~.,data = datametaforest_3,study = "Effectsize_ID",
-                       whichweights = "random",#using random effects, as in classic meta-analysis
-                       num.trees = 5000)
-
-#Preselecting variables for MetaForest analysis
-#Applying recursive pre-selection using the preselect function. 
-# Run recursive preselection, store results in object 'preselect'
-preselected_3 <- preselect(mf_rep_3,replications = 100,
-                           algorithm = "recursive")#There are three possible algorithms for variable selection : replicate, recursive, and bootstrap (but latter does not work with this data)
-plot(preselected_3)# of variables
-
-#Alternative 'replicate' algorithm
-preselected2_3 <- preselect(mf_rep_3,replications = 100,
-                            algorithm = "replicate")
-plot(preselected2_3)
-#Both generated similar results
-
-#Using preselect_vars to retain only those moderators for which a 50% percentile interval 
-#of the variable importance metrics does not include zero
-#Retain only moderators with positive variable importance in more than 50% of replications
-retain_mods_3 <- preselect_vars(preselected_3, cutoff = .5)
-
-# Set up 3-fold grouped (=clustered) CV
-grouped_cv_3 <- trainControl(method = "cv", 
-                             index = groupKFold(datametaforest_3$Effectsize_ID, k = 3))
-grouped_boot_3 <- trainControl(method = "cboot", 
-                               index = groupKFold(datametaforest_3$Effectsize_ID, k = 3))
-
-# Set up a tuning grid for the three tuning parameters of MetaForest
-tuning_grid_3 <- expand.grid(whichweights = c("random", "fixed", "unif"),
-                             mtry = 2:6,
-                             min.node.size = 2:6)
-
-# X should contain only retained moderators, clustering variable, and vi
-X_3 <- datametaforest_3[, c("Effectsize_ID", "vi", retain_mods_3)]
-
-# Train the random forest model
-mf_cv_3 <- train(y = datametaforest_3$yi,x = X_3,
-                 study = "Effectsize_ID", # Name of the clustering variable
-                 method = ModelInfo_mf(), 
-                 trControl = grouped_cv_3,
-                 tuneGrid = tuning_grid_3,
-                 num.trees = 5000)
-
-#Examine optimal tuning parameters
-mf_cv_3$results[which.min(mf_cv_3$results$RMSE), ]
-#Based on the root mean squared error, the best combination of tuning parameters
-#were unif weights
-
-#R2 cv
-r2_cv_3<-mf_cv_3$results$Rsquared[which.min(mf_cv_3$results$RMSE)]
-r2_cv_3#0.61
-
-#The object returned by train already contains the final model, 
-#estimated with the best combination of tuning parameters
-
-#Inspecting the results
-# Extracting the final model
-final_3 <- mf_cv_3$finalModel
-final_3
-
-# Extracting the estimate of predictive performance R^2_{oob} from the final model
-#This is an estimate of how much variance the model would explain in a new data set 
-r2_oob_3 <- final_3$forest$r.squared
-r2_oob_3 #predictive performance of 45.7%
-
-#Residual heterogeneity
-Vimp_3 <- data.frame(final_3$forest$variable.importance)
-Vimp_3
-
-# Variable importance plot
-VarImpPlot(final_3)
-
-#Organizing the data to plot #CONTINUE HERE!!!
-Vimp_3 <- data.frame(final_3$forest$variable.importance)#from Random-Forest_Resistance script
-str(Vimp_3)
-final_3$forest$variable.importance
-
-Vimp3_3 <- cbind(data.frame(varimp_3=final_3$forest$variable.importance,predictors_3=retain_mods_3))
-Vimp3_3
-str(Vimp3_3)
-colnames(Vimp3_3)
-
-#Data frame
-var_importance_3 <- data.frame(variable_3=setdiff(colnames(Vimp3_3), "Predictors"),
-                               importance_3=as.vector(final_3$forest$variable.importance))
-var_importance_3
-names(datametaforest_2)
-predictor_names_3<-c("Holdridge zone","Geological group","Parent material P","Parent material","Soil order","Elevation","MAT/MAP","Soil P","Storm frequency","Time since last storm","Cyclone rainfall","Wind speed","Wind duration")
-predictor_names_3
-Vimp3_3 <- cbind(data.frame(varimp_3=final_3$forest$variable.importance,predictors_3=predictor_names_3))
-str(Vimp3_3)
-
-Vimp3_2$predictors<- factor(Vimp3_2$predictors, levels=Vimp3_2$predictors)
-
-#Figure4a_3
-FigS_4a_3 <- ggplot(Vimp3_3, aes(x=reorder(predictors_3,varimp_3), weight=varimp_3, fill=varimp_3))
-FigS_4a_3 <- FigS_4a_3 + geom_bar(col="black",fill="darkgray")+coord_flip()+theme_pubr()
-FigS_4a_3 <- FigS_4a_3 + ylab("Variable (Permutation) importance") + xlab("")+ theme(
-  axis.text.y=element_text(size=26),
-  axis.text.x=element_text(size=26),
-  axis.title.x=element_text(size=28),
-  legend.title=element_blank(),
-  legend.text=element_blank(),
-  legend.key = element_blank())+guides(fill=FALSE)#+ annotate("text", y = 1.1, x = 1, label = "a", size=12,hjust=0,fontface="bold",colour="black")#+annotate INCLUDE ANNOTATION letter and Total litterfall mass
-FigS_4a_3
-
-#Saving in high resolution
-ggsave(filename = "FigS4a_Var-Imp_Resistance_Supp_no_geography.png",
-       plot = FigS_4a_3, width = 14, height = 12, units = 'cm',
-       scale = 2, dpi = 1000)
-
-#Correlation plot for moderators in FigS_4a_3
-
-#Renaming data for correlation plot
-names(datametaforest_3)
-CPFigS_cor_3<-datametaforest_3[,c(2:6,9:16)]
-names(CPFigS_cor_3)
-names(CPFigS_cor_3)[names(CPFigS_cor_3) == "Holdridge_ID"] <- "Holdridge zone"
-names(CPFigS_cor_3)[names(CPFigS_cor_3) == "elev"] <- "Elevation"
-names(CPFigS_cor_3)[names(CPFigS_cor_3) == "mat_map"] <- "MAT/MAP"
-names(CPFigS_cor_3)[names(CPFigS_cor_3) == "soilP"] <- "Soil P"
-names(CPFigS_cor_3)[names(CPFigS_cor_3) == "stormfreq"] <- "Storm frequency"
-names(CPFigS_cor_3)[names(CPFigS_cor_3) == "timesincestorm"] <- "Time since last storm"
-names(CPFigS_cor_3)[names(CPFigS_cor_3) == "distrain"] <- "Cyclone rainfall"
-names(CPFigS_cor_3)[names(CPFigS_cor_3) == "hurrwind"] <- "Wind speed"
-names(CPFigS_cor_3)[names(CPFigS_cor_3) == "windur"] <- "Wind duration"
-names(CPFigS_cor_3)[names(CPFigS_cor_3) == "Rock_type_ID"] <- "Geological group"
-names(CPFigS_cor_3)[names(CPFigS_cor_3) == "RockP_ID"] <- "Parent material P"
-names(CPFigS_cor_3)[names(CPFigS_cor_3) == "Par_Mat_ID"] <- "Parent material"
-names(CPFigS_cor_3)[names(CPFigS_cor_3) == "Soil_ID"] <- "Soil order"
-
-#Calculating correlations and p values
-corrfS_3 <- round(cor(CPFigS_cor_3,method="pearson"),2)
-p.matfS_3 <- cor_pmat(CPFigS_cor_3)
-
-#Figure
-FigS_3<-ggcorrplot(corrfS_3, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
-                 outline.col = "white", p.mat = p.matfS_3,method="square",ggtheme=ggplot2::theme_classic(),show.legend=TRUE, 
-                 legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=28,insig="blank",
-                 colors = c("#ABA0A0", "white", "#ffa600",pch.cex=20,nbreaks = 8,legend.text.cex=26))+font("legend.text",size=18)+font("legend.title", size=22)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
-FigS_3
-
-#Saving figure in high res
-ggsave(filename = "FigS_3.png",
-       plot = FigS_3, width = 16, height = 18, units = 'cm',
-       scale = 2, dpi = 1000)
-
-####Same for leaf litterfall random forest for meta-analysis including region####
-
-#Organizing the data
-Vimplf_2 <- data.frame(final2lf_2$forest$variable.importance)#from Random-Forest_Resistance script
-str(Vimplf_2)
-final2lf_2$forest$variable.importance
-
-Vimp3lf_2 <- cbind(data.frame(varimplf_2=final2lf_2$forest$variable.importance,predictorslf_2=retain_mods2lf_2))
-Vimp3lf_2
-str(Vimp3lf_2)
-colnames(Vimp3lf_2)
-
-#Data frame
-var_importancelf_2 <- data.frame(variablelf_2=setdiff(colnames(Vimp3lf_2), "Predictors"),
-                               importancelf_2=as.vector(final2lf_2$forest$variable.importance))
-var_importancelf_2
-names(datametaforestlf_2)
-predictor_nameslf_2<-c("Region","Holdridge zone","Geological group","Parent material P","Parent material","Elevation","MAT/MAP","Soil P","Storm frequency","Time since last storm","Cyclone rainfall","Wind speed","Wind duration")
-predictor_nameslf_2
-Vimp3lf_2 <- cbind(data.frame(varimplf_2=final2lf_2$forest$variable.importance,predictorslf_2=predictor_nameslf_2))
-str(Vimp3lf_2)
-
-Vimp3lf_2$predictors<- factor(Vimp3lf_2$predictors, levels=Vimp3lf_2$predictors)
-
-#FigureS4b
-FigS_4b <- ggplot(Vimp3lf_2, aes(x=reorder(predictorslf_2,varimplf_2), weight=varimplf_2, fill=varimplf_2))
-FigS_4b <- FigS_4b + geom_bar(col="black",fill="#197D32")+coord_flip()+theme_pubr()
-FigS_4b <- FigS_4b + ylab("Variable (Permutation) importance") + xlab("")+ theme(
-  axis.text.y=element_text(size=26),
-  axis.text.x=element_text(size=26),
-  axis.title.x=element_text(size=28),
-  legend.title=element_blank(),
-  legend.text=element_blank(),
-  legend.key = element_blank())+guides(fill=FALSE)#+ annotate("text", y = 1.1, x = 1, label = "a", size=12,hjust=0,fontface="bold",colour="black")#+annotate INCLUDE ANNOTATION letter and Total litterfall mass
-FigS_4b
-
-#Saving in high resolution
-ggsave(filename = "FigS4b_Var-Imp_LF_Resistance_Supplement.png",
-       plot = FigS_4b, width = 14, height = 12, units = 'cm',
-       scale = 2, dpi = 1000)
-
-#Renaming data for leaf litterfall correlation plot
-names(datametaforestlf_2)
-CPFigS4d_cor<-datametaforestlf_2[,c(2:6,9:16)]
-names(CPFigS4d_cor)## Final!
-names(CPFigS4d_cor)[names(CPFigS4d_cor) == "Holdridge_ID"] <- "Holdridge zone"
-names(CPFigS4d_cor)[names(CPFigS4d_cor) == "Region_ID"] <- "Region"
-names(CPFigS4d_cor)[names(CPFigS4d_cor) == "elev"] <- "Elevation"
-names(CPFigS4d_cor)[names(CPFigS4d_cor) == "mat_map"] <- "MAT/MAP"
-names(CPFigS4d_cor)[names(CPFigS4d_cor) == "soilP"] <- "Soil P"
-names(CPFigS4d_cor)[names(CPFigS4d_cor) == "stormfreq"] <- "Storm frequency"
-names(CPFigS4d_cor)[names(CPFigS4d_cor) == "timesincestorm"] <- "Time since last storm"
-names(CPFigS4d_cor)[names(CPFigS4d_cor) == "distrain"] <- "Cyclone rainfall"
-names(CPFigS4d_cor)[names(CPFigS4d_cor) == "hurrwind"] <- "Wind speed"
-names(CPFigS4d_cor)[names(CPFigS4d_cor) == "windur"] <- "Wind duration"
-names(CPFigS4d_cor)[names(CPFigS4d_cor) == "Rock_type_ID"] <- "Geological group"
-names(CPFigS4d_cor)[names(CPFigS4d_cor) == "RockP_ID"] <- "Parent material P"
-names(CPFigS4d_cor)[names(CPFigS4d_cor) == "Par_Mat_ID"] <- "Parent material"
-#names(CPFigS_cor)[names(CPFigS_cor) == "Soil_ID"] <- "Soil order"
-
-#Calculating correlations and p values
-corrfS4d <- round(cor(CPFigS4d_cor,method="pearson"),2)
-p.matfS4d <- cor_pmat(CPFigS4d_cor)
-
-#Figure
-FigS4d<-ggcorrplot(corrfS4d, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
-                 outline.col = "white", p.mat = p.matfS4d,method="square",ggtheme=ggplot2::theme_classic(),show.legend=TRUE, 
-                 legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=28,insig="blank",
-                 colors = c("#46A332", "white", "#ffa600",pch.cex=20,nbreaks = 8,legend.text.cex=26))+font("legend.text",size=18)+font("legend.title", size=22)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
-FigS4d
-
-#Saving figure in high res
-ggsave(filename = "FigS4d_Final.png",
-       plot = FigS4d, width = 16, height = 18, units = 'cm',
-       scale = 2, dpi = 1000)
-
-##Leaf litterfall random forest without geographic location####
-
-names(Data_es0ilf)
-datametaforestlf_3<-Data_es0ilf[,c(3,15,23,25,27,63:64,66:73)]%>% filter(hurrwind!="NA")
-str(datametaforestlf_3)#30 obs and 16 variables
-
-# Run model with many trees to check convergence
-check_conv2lf_3 <- MetaForest(yi~.,
-                            data = datametaforestlf_3,
-                            study = "Effectsize_ID",
-                            whichweights = "random",
-                            num.trees = 20000)
-
-plot(check_conv2lf_3) #model converged at about 5000 trees, which will be used in the next step
-
-#Model with 5000 trees
-mf_rep2lf_3<- MetaForest(yi~.,
-                       data = datametaforestlf_3,
-                       study = "Effectsize_ID",
-                       whichweights = "random",
-                       num.trees = 5000)
-
-#Pre-selecting variables for MetaForest analysis
-
-#Applying 'recursive' pre-selection using the preselect function. 
-preselected2lf_3 <- preselect(mf_rep2lf_3,replications = 100,algorithm = "recursive")
-#plot(preselected2lf_3)
-
-# Retain only moderators with positive variable importance in more than
-# 50% of replications
-retain_mods2lf_3 <- preselect_vars(preselected2lf_3, cutoff = .5)
-retain_mods2lf_3
-
-#Control the computational nuances of the train function
-grouped_cv2lf_3 <- trainControl(method = "cv", #resampling method
-                              index = groupKFold(datametaforestlf_3$Effectsize_ID, k = 3))
-grouped_boot2lf_3 <- trainControl(method = "cboot", 
-                                index = groupKFold(datametaforestlf_3$Effectsize_ID, k = 3))
-
-# Set up a tuning grid for the three tuning parameters of MetaForest
-tuning_grid2lf_3 <- expand.grid(whichweights = c("random", "fixed", "unif"),
-                              mtry = 2:6,
-                              min.node.size = 2:6)
-
-# X should contain only retained moderators, clustering variable, and vi
-X2lf_3 <- datametaforestlf_3[, c("Effectsize_ID", "vi", retain_mods2lf_3)]
-
-# Train the model
-mf_cv2lf_3 <- train(y = datametaforestlf_3$yi,x = X2lf_3,
-                  study = "Effectsize_ID", # Name of the clustering variable
-                  method = ModelInfo_mf(), 
-                  trControl = grouped_cv2lf_3,
-                  tuneGrid = tuning_grid2lf_3,
-                  num.trees = 5000)
-
-#Examine optimal tuning parameters
-mf_cv2lf_3$results[which.min(mf_cv2lf_3$results$RMSE), ]
-
-r2_cvlf_3<-mf_cv2lf_3$results$Rsquared[which.min(mf_cv2lf_3$results$RMSE)]
-r2_cvlf_3
-
-# For convenience, extract final model
-final2lf_3 <- mf_cv2lf_3$finalModel
-final2lf_3
-
-r2_oob2lf_3 <- final2lf_3$forest$r.squared
-r2_oob2lf_3 #predictive performance
-
-#Plotting relative importance of predictors on package default
-VarImpPlot(final2lf_3)
-
-Vimplf_3 <- data.frame(final2lf_3$forest$variable.importance)#from Random-Forest_Resistance script
-str(Vimplf_3)
-final2lf_3$forest$variable.importance
-
-Vimp3lf_3 <- cbind(data.frame(varimplf_3=final2lf_3$forest$variable.importance,predictorslf_3=retain_mods2lf_3))
-Vimp3lf_3
-str(Vimp3lf_3)
-colnames(Vimp3lf_3)
-
-#Data frame
-var_importancelf_3 <- data.frame(variablelf_3=setdiff(colnames(Vimp3lf_3), "Predictors"),
-                                 importancelf_3=as.vector(final2lf_3$forest$variable.importance))
-var_importancelf_3
-names(datametaforestlf_3)
-predictor_nameslf_3<-c("Holdridge zone","Geological group","Parent material P","Parent material","Elevation","MAT/MAP","Soil P","Storm frequency","Time since last storm","Cyclone rainfall","Wind speed","Wind duration")
-predictor_nameslf_3
-Vimp3lf_3 <- cbind(data.frame(varimplf_3=final2lf_3$forest$variable.importance,predictorslf_3=predictor_nameslf_3))
-str(Vimp3lf_3)
-
-Vimp3lf_3$predictors<- factor(Vimp3lf_3$predictors, levels=Vimp3lf_3$predictors)
-
-#FigureS4b
-FigS_4b_3 <- ggplot(Vimp3lf_3, aes(x=reorder(predictorslf_3,varimplf_3), weight=varimplf_3, fill=varimplf_3))
-FigS_4b_3 <- FigS_4b_3 + geom_bar(col="black",fill="#197D32")+coord_flip()+theme_pubr()
-FigS_4b_3 <- FigS_4b_3 + ylab("Variable (Permutation) importance") + xlab("")+ theme(
-  axis.text.y=element_text(size=26),
-  axis.text.x=element_text(size=26),
-  axis.title.x=element_text(size=28),
-  legend.title=element_blank(),
-  legend.text=element_blank(),
-  legend.key = element_blank())+guides(fill=FALSE)#+ annotate("text", y = 1.1, x = 1, label = "a", size=12,hjust=0,fontface="bold",colour="black")#+annotate INCLUDE ANNOTATION letter and Total litterfall mass
-FigS_4b_3
-
-#Saving in high resolution
-ggsave(filename = "FigS4b_Var-Imp_LF_Resistance_Supp_no-geography.png",
-       plot = FigS_4b_3, width = 14.5, height = 12, units = 'cm',
-       scale = 2, dpi = 1000)
-
-#Renaming data for leaf litterfall correlation plot
-names(datametaforestlf_3)
-CPFigS4d_cor_3<-datametaforestlf_3[,c(2:5,8:15)]
-names(CPFigS4d_cor_3)## Final!
-names(CPFigS4d_cor_3)[names(CPFigS4d_cor_3) == "Holdridge_ID"] <- "Holdridge zone"
-names(CPFigS4d_cor_3)[names(CPFigS4d_cor_3) == "elev"] <- "Elevation"
-names(CPFigS4d_cor_3)[names(CPFigS4d_cor_3) == "mat_map"] <- "MAT/MAP"
-names(CPFigS4d_cor_3)[names(CPFigS4d_cor_3) == "soilP"] <- "Soil P"
-names(CPFigS4d_cor_3)[names(CPFigS4d_cor_3) == "stormfreq"] <- "Storm frequency"
-names(CPFigS4d_cor_3)[names(CPFigS4d_cor_3) == "timesincestorm"] <- "Time since last storm"
-names(CPFigS4d_cor_3)[names(CPFigS4d_cor_3) == "distrain"] <- "Cyclone rainfall"
-names(CPFigS4d_cor_3)[names(CPFigS4d_cor_3) == "hurrwind"] <- "Wind speed"
-names(CPFigS4d_cor_3)[names(CPFigS4d_cor_3) == "windur"] <- "Wind duration"
-names(CPFigS4d_cor_3)[names(CPFigS4d_cor_3) == "Rock_type_ID"] <- "Geological group"
-names(CPFigS4d_cor_3)[names(CPFigS4d_cor_3) == "RockP_ID"] <- "Parent material P"
-names(CPFigS4d_cor_3)[names(CPFigS4d_cor_3) == "Par_Mat_ID"] <- "Parent material"
-#names(CPFigS_cor)[names(CPFigS_cor) == "Soil_ID"] <- "Soil order"
-
-#Calculating correlations and p values
-corrfS4d_3 <- round(cor(CPFigS4d_cor_3,method="pearson"),2)
-p.matfS4d_3 <- cor_pmat(CPFigS4d_cor)
-
-#Figure
-FigS4d_3<-ggcorrplot(corrfS4d_3, hc.order = TRUE, type = "lower",hc.method = "ward.D2",sig.level = 0.05,
-                   outline.col = "white", p.mat = p.matfS4d_3,method="square",ggtheme=ggplot2::theme_classic(),show.legend=TRUE, 
-                   legend.title="Pearson's r", lab=TRUE, lab_size=6, tl.cex=28,insig="blank",
-                   colors = c("#46A332", "white", "#ffa600",pch.cex=20,nbreaks = 8,legend.text.cex=26))+font("legend.text",size=18)+font("legend.title", size=22)#+theme(axis.text.x = element_text(margin=margin(-2,0,0,0)),axis.text.y = element_text(margin=margin(0,-2,0,0)))
-FigS4d_3
-
-#Saving figure in high res
-ggsave(filename = "FigS4d_Corrr_LF_no-geography.png",
-       plot = FigS4d_3, width = 16, height = 18, units = 'cm',
-       scale = 2, dpi = 1000)
-##END####

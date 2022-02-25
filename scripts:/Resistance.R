@@ -1,12 +1,5 @@
 ###Meta-Analysis of cyclone resistance of forest litterfall across the tropics###
 
-library(packrat)
-library(styler)
-library(lintr)
-library(magrittr)
-library(ggcorrplot)
-library(LMERConvenienceFunctions)
-library(relaimpo)
 library(ggplot2)
 library(ggstatsplot)
 library(nlme)
@@ -28,19 +21,10 @@ library(sjlabelled)
 library(modelsummary)
 library(tidyr)
 library(plyr)
-library(fs)
-library(forcats)
 library(ggridges)
-library(broom)
 library(lmerTest)
 library(metafor)
-library(forestmodel)
-library(metaforest)
-library(caret)
-library(ranger)
 library(dmetar)
-library(MuMIn)
-library(rJava)
 library(leaps)
 library(glmulti)
 library(metaviz)
@@ -53,20 +37,21 @@ library(AICcmodavg)
 
 ####STEP 0 uploading data####
 
-#Litterfall mass flux data####
+#Litterfall mass flux data
 metadat<-read.csv(file.choose())#Litterfall_Mass
 str(metadat)#2367 obs of 77 variables
-summary(metadat)
+
 #transforming variables to numeric
 metadat$HURRECON_wind_ms=as.numeric(metadat$HURRECON_wind_ms)
 metadat$Gale_wind_duration_minutes=as.numeric(metadat$Gale_wind_duration_minutes)
-#Create Case study column
-metadat$Case_study= paste(metadat$Site, metadat$DisturbanceName,sep="| ")
-unique(levels(as.factor(metadat$Treatment)))#check number of unique factor levels
 
-#Nutrient flux and concentration data####
+#Create Case study column
+metadat$Case_study= paste(metadat$Site, metadat$DisturbanceName,sep=" | ")
+
+#Nutrient flux and concentration data
 nutmeta<-read.csv(file.choose())#Litterfall_Nutrients
 str(nutmeta) #2551 obs. of  80 variables
+
 #create Case study column
 nutmeta$Case_study= paste(nutmeta$Site, nutmeta$DisturbanceName, sep="| ")
 unique(levels(as.factor(nutmeta$Case_study)))
@@ -79,8 +64,7 @@ unique(levels(as.factor(nutmeta$Case_study)))
 #Annual-based, excluding CTE
 data0a<-metadat %>% filter(Fraction=="TotLitfall")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")#%>%filter(Treatment!="P+")#|Treatment!="N+"|Treatment!="NP+")
 str(data0a)#48 observations
-summary(data0a)
-unique(levels(as.factor(data0a$Other_soil_P)))
+
 #Sub-annual
 data0aS<- data0a%>% filter(Pre_Mean_MonthSpecific!="NA")#to exclude a factor level
 str(data0aS)#23observations
@@ -204,6 +188,14 @@ str(data0lnc)#10
 data0wnc<-nutmeta %>%filter(Fraction=="Wood fall")%>%filter(Variable=="N") %>%filter(Raw_Unit=="mg/g")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
 str(data0wnc)#3
 
+##testing alternative resistance
+names(data0a)
+data0a$change<-abs(data0a$Pre_Mean - data0a$Post_Mean)
+(data0a$change)
+data0a$yi_new <- 1-((2*data0a$change)/(data0a$Pre_Mean + data0a$change))
+data0a$yi_new
+plot(data0a$yi_new~data0a$Other_soil_P)
+
 ####STEP 2 Individual Effect size calculation####
 
 ##Mass Flux####
@@ -214,6 +206,7 @@ str(data0a)#48 observations
 #Annual
 data_es0ia <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
                      sd1i = Post_SD, sd2i = Pre_SD, data = data0a, measure = "ROM") # ROM =  log transformed ratio of means (Hedges et al., 1999; Lajeunesse, 2011).
+str(data_es0ia)
 data0a_all<-metadat %>% filter(Fraction=="TotLitfall")%>%filter(Cat_TSD_months=="0-0.5")
 data_es0ia_all <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
                      sd1i = Post_SD, sd2i = Pre_SD, data = data0a_all, measure = "ROM") # ROM =  log transformed ratio of means (Hedges et al., 1999; Lajeunesse, 2011).
@@ -310,6 +303,24 @@ summary(full.model3)
 ((exp(full.model3$b)-1)*100)
 (exp(full.model3$se)-1)*100
 
+#Testing if study 53 changes the mean pantropical resistance 
+data_no53<-data_es0ia %>% filter(Study_ID!=53)
+str(data_no53)
+full.model_no_53 <- rma.mv(yi, vi,random = list(~ 1 | Site,~1|DisturbanceName),
+                      tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
+                      data = data_no53,method = "REML")
+
+#Testing if four case studies in Hawaii make a difference in the pantropical resistance
+red_sites2 <- data_es0ia %>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")
+full.model_red2 <- rma.mv(yi, vi,random = list(~ 1 | Site,~1|DisturbanceName),
+                           tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
+                           data = red_sites2,method = "REML")
+
+summary(full.model_red2)
+((exp(full.model_red2$b)-1)*100)
+(exp(full.model_red2$se)-1)*100
+
+#testing alternative random effects
 full.model3_b<- rma.mv(yi, vi,random = ~1|Region/DisturbanceName,
                       tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
                       data = data_es0ia,method = "REML")
@@ -317,6 +328,32 @@ full.model3_b<- rma.mv(yi, vi,random = ~1|Region/DisturbanceName,
 summary(full.model3_b)
 ((exp(full.model3_b$b)-1)*100)
 (exp(full.model3_b$se)-1)*100
+
+#testing with a random sample of the case studies
+resistance_PR<- data_es0ia %>% filter(Country == "Puerto Rico")
+summary(resistance_PR$Country)
+random_sample_PR<-sample_n(resistance_PR, 10)
+str(random_sample_PR)# 10 obs. of  68 variables
+names2<-names(random_sample_PR)
+names(random_sample_PR)<-c(names2)
+
+resistance_rest<-data_es0ia %>% filter(Country!= "Puerto Rico")
+str(resistance_rest)# 29 obs of 68 variables
+names1<-names(resistance_rest)
+names(resistance_rest)<-c(names1)
+
+#Final data frame combining 10 random case studies from PR and the remainder of the extra-PR case studies
+new_resistance_data<-rbind(data.frame(resistance_rest),data.frame(random_sample_PR))
+summary(new_resistance_data$Country)
+
+#new pantropical resistance with a random sample from PR including 10 case studies
+full.model_randomPR <- rma.mv(yi, vi,random = list(~ 1 | Site,~1|DisturbanceName),
+                      tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
+                      data = new_resistance_data,method = "REML")#N = 39
+
+summary(full.model_randomPR)
+((exp(full.model_randomPR$b)-1)*100)
+(exp(full.model_randomPR$se)-1)*100
 
 #Pre-mean, sd, se
 summary(data0a)
@@ -362,6 +399,7 @@ profile(full.model3, sigma2=2)
 
 #New data frame removing the five sites where total soil P was estimated from available P
 red_sites <- data_es0ia %>% filter(Site!="Grande-Terre")%>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")
+red_sites2 <- data_es0ia %>% filter(Site!="Kumuwela")%>% filter(Site!="Halemanu")%>% filter(Site!="Milolii")%>% filter(Site!="Makaha 1")
 
 #Running same model with reduced data set
 full.model3_red<- rma.mv(yi, 
@@ -589,28 +627,22 @@ summary(full.model3wnc)
 z.trans<-function(x) {(x - mean(x, na.rm=T))/(2*sd(x, na.rm=T))}
 data_es0ia$soilP=z.trans(data_es0ia$Other_soil_P)
 data_es0ia$hurrwind=z.trans(data_es0ia$HURRECON_wind_ms)
+data_es0ia$tsls=z.trans(data_es0ia$YearsSinceLastStorm)
 
 ##Case studies with Hurrecon wind data
 hurr_sites<-data_es0ia %>% filter(hurrwind!="NA")
 str(hurr_sites)#n = 45
 hurr_sites$hurrwind=z.trans(hurr_sites$HURRECON_wind_ms)
+hurr_sites_no53<-hurr_sites %>% filter(Study_ID!=53)
 
 ##Mass and Nutrient Responses comparisons####
-
-data_es0itpf$Case_study
-data_es0itpf$Study_ID
-
+#Filtering the data
 red_resp_mass<-data_es0ia %>% filter(Site=="Bisley"|Site=="Kokee"|Site=="Guanica"|Site=="Birthday Creek"|Site=="Chamela-Cuixmala"|Site=="Wooroonooran Basalt"|Site=="Wooroonooran Schist"|Site=="Lienhuachi")%>% 
   filter(Treatment=="Ambient")%>% filter(DisturbanceName=="Hugo"|DisturbanceName=="Georges"|DisturbanceName=="Charlie"|DisturbanceName=="Jova"|DisturbanceName=="Larry"|DisturbanceName=="Kalmaegi"|DisturbanceName=="Jangmi")
-str(red_resp_mass)
 red_tpf<-data_es0itpf %>% filter(Study_ID!="17")
 str(red_tpf)
 
-data_es0itnf$Case_study
-data_es0itnf$Study_ID
-
 #Calculating overall responses for both reduced datasets####
-
 full.model_red_tpf <- rma.mv(yi,vi,random = ~ 1 | Site, #individual effect size nested within basin (Basin is level 3, effect size is level 2)
                          tdist = TRUE, #here we turn ON the Knapp-Hartung adjustment for CIs
                          data = red_tpf,method = "REML")
@@ -635,7 +667,6 @@ tpf_res/tm_res#P flux 1.31 times the 3mass flux
 
 tnf_res/tm_res#N flux 1.1 times the mass flux
 
-
 ## Table 2 - Total Litterfall Response as a function of soil P####
 
 #Table2 - Model1a####
@@ -647,6 +678,19 @@ summary(model.mods3full)
 tab_model(model.mods3full,p.val="kr")#Significant intercept and regression coefficient
 #The intercept represents the mean effect of mean soil P
 
+#Testing if removing study 53 changes the effect of soil P on the resistance
+model.mods_no53<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), 
+                        tdist = TRUE,data = data_no53,
+                        method = "REML",mods = ~soilP)#using z transformed soil P
+summary(model.mods_no53)
+
+#Testing if removing four case studies in Hawaii makes a difference
+model.mods_red2<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), 
+                        tdist = TRUE,data = red_sites2,
+                        method = "REML",mods = ~soilP)#using z transformed soil P
+summary(model.mods_red2)
+
+#Testing alternative random effects
 model.mods3full_b<-rma.mv(yi,vi,random = ~ 1 | Region/DisturbanceName, 
                         tdist = TRUE,data = data_es0ia,
                         method = "REML",mods = ~soilP)#using z transformed soil P
@@ -676,6 +720,20 @@ summary(model.mods3full.2)
 #AICc to check best model with Site and Cyclone as crossed random effects is the best
 BIC(model.mods3full,model.mods3full.1,model.mods3full.2)
 
+#Testing the effect of soil P with a random sample from PR with fewer case studies
+summary(new_resistance_data$HURRECON_wind_ms)
+new_resistance_data$hurrwind
+new_resistance_data<-new_resistance_data%>% filter(HURRECON_wind_ms!="NA")
+#z.trans<-function(x) {(x - mean(x, na.rm=T))/(2*sd(x, na.rm=T))}
+#new_resistance_data$soilP=z.trans(new_resistance_data$Other_soil_P)
+#new_resistance_data$hurrwind=z.trans(new_resistance_data$HURRECON_wind_ms)
+#new_resistance_data$tsls=z.trans(new_resistance_data$YearsSinceLastStorm)
+
+mixed_soilP_redPR<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), 
+                        tdist = TRUE,data = new_resistance_data,
+                        method = "REML",mods = ~soilP)#using z transformed soil P
+summary(mixed_soilP_redPR)
+
 #Sensitivity analysis - testing the effect of soil P when 5 sites are removed####
 #Table S8 - Model 1a
 model.mods3full_red<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), 
@@ -703,10 +761,21 @@ model_tab2<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist
                 mods = ~soilP*hurrwind)
 summary(model_tab2)#Both positive predictors, no significant interaction
 
+#Testing the influce of study 53
+model_tab2_no53<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist = TRUE, 
+                   data = hurr_sites_no53,method = "REML",
+                   mods = ~soilP*hurrwind)
+summary(model_tab2_no53)
+#checking time since last storm
+model_tab2.1<-rma.mv(-1*yi,vi,random = list(~ 1 | Site, ~1|DisturbanceName), tdist = TRUE, 
+                   data = hurr_sites,method = "REML",
+                   mods = ~soilP+tsls)
+summary(model_tab2.1)
+
 model_tab4S<-rma.mv(yi,vi,random = ~ 1 | Region/DisturbanceName, tdist = TRUE, 
                 data = hurr_sites,method = "REML",
                 mods = ~soilP*hurrwind)
-summary(model_tab4S)#strange
+summary(model_tab4S)
 
 #changing random effects structure
 model_b2<-rma.mv(yi,vi,random = ~ 1 | Site, tdist = TRUE, 
@@ -1344,15 +1413,6 @@ ggplot(model_dat_Amb_frac, aes(x=group,y=estimate,ymax=ci_up,ymin=ci_low)) +
         axis.title.y =element_text(vjust = 1),
         axis.title=element_text(size=30),
         axis.text=element_text(size=30),legend.text =  element_blank(),legend.title = element_blank())
-
-ESm=full.model3$b
-ESm
-SEm=sqrt(full.model3$se)
-SEm
-ESm+(1.96*SEm)
-ESm-(1.96*SEm)
-ci_up=(full.model3wpf$b+(1.96*full.model3wpf$se))
-ci_up
 
 ####RESPONSE GGPLOT FIGURE N AND P CONCENTRATIONS####
 

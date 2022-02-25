@@ -1,11 +1,15 @@
-##Response and Resilience P-curve (Bias) Analysis###
+##Resistance and Resilience P-curve (Bias) Analysis###
 
 library(metafor)
 library(dmetar)
 
-##RESPONSE####
+##Resistance####
+#Data wrangling to prepare dataframes
+data0a<-metadat %>% filter(Fraction=="TotLitfall")%>%filter(Cat_TSD_months=="0-0.5")%>%filter(Treatment!="TrimDeb")
+data_es0ia <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
+                     sd1i = Post_SD, sd2i = Pre_SD, data = data0a, measure = "ROM")
 
-#Mass flux - Supplementary Table S3####
+#Mass flux - Supplementary Table S3######
 
 #Total litterfall 
 str(data_es0ia)
@@ -37,7 +41,7 @@ pcurvedatamf<-cbind(data.frame(TE = data_es0imf$yi, seTE=data_es0imf$vi, studlab
 pcurvedatamf
 pcurve(pcurvedatamf)
 
-##P curve analysis for bias in Nutrient response####
+##P curve analysis for bias in Nutrient resistance####
 
 #P flux - Supplementary Table S4####
 
@@ -85,21 +89,50 @@ pcurvedata_lnc<-cbind(data.frame(TE = data_es0ilnc$yi, seTE=data_es0ilnc$vi, stu
 pcurvedata_lnc
 pcurve(pcurvedata_lnc)
 
-##RESILIENCE####
+##Resilience####
+#Data wrangling
+res_all_21<- metadat %>% filter(Cat_TSD_months == "Rec") %>% filter(Case_ID!="25.2")%>% filter(Case_ID!="18.1")%>% 
+  filter (TSD_months < 22)%>% filter(Treatment=="Ambient"|Treatment=="TrimDeb")%>% filter(Fraction!="Misc fall")
+str(res_all_21)#731 all fractions
+data_esall_21 <- escalc(n1i = S_size, n2i = S_size, m1i = Post_Mean, m2i = Pre_Mean, 
+                         sd1i = Post_SD, sd2i = Pre_SD, data = res_all_21, measure = "ROM")
+#New resilience metric
+data_esall_21$yi_new <- data_esall_21$yi / data_esall_21$TSD_months
+#checking new column yi_new
+summary(data_esall_21$yi_new)
+#Same for the variance vi_new
+data_esall_21$vi_new <- data_esall_21$vi / data_esall_21$TSD_months
+#checking new column vi_new
+summary(data_esall_21$vi_new)
 
 ##Mass Flux All Fractions - Supplementary Table S5####
 
 #Total litterfall###
-pcurve_tot_mass<-cbind(data.frame(TE = tot_lit_amb_1to21_final$yi, seTE=tot_lit_amb_1to21_final$vi, studlab=tot_lit_amb_1to21_final$Study_ID))
+tot_lit_amb_1to21_final<-data_esall_21 %>% filter(Fraction=="TotLitfall")%>% filter(DisturbanceName!="Keith")%>% filter(Site!="San Felipe")%>% filter (Site!="Grande-Terre")%>% filter(DisturbanceName!="Ivor")
+str(tot_lit_amb_1to21_final)#213 obs amb+CTE,
+pcurve_tot_mass<-cbind(data.frame(TE = tot_lit_amb_1to21_final$yi_new, seTE=tot_lit_amb_1to21_final$vi_new, studlab=tot_lit_amb_1to21_final$Study_ID))
 pcurve_tot_mass
 pcurve(pcurve_tot_mass)
+
+#Testing without CTE#
+tot_lit_amb_1to21_noCTE<-tot_lit_amb_1to21_final %>% filter(Treatment!="TrimDeb")
+str(tot_lit_amb_1to21_noCTE)#192 observations
+pcurve_tot_mass_noCTE<-cbind(data.frame(TE = tot_lit_amb_1to21_noCTE$yi_new, seTE=tot_lit_amb_1to21_noCTE$vi_new, studlab=tot_lit_amb_1to21_noCTE$Study_ID))
+pcurve_tot_mass_noCTE
+pcurve(pcurve_tot_mass_noCTE)
 
 ##Leaf litterfall###
 pcurve_leaf_mass<-cbind(data.frame(TE = leaf_amb_1to21$yi, seTE=leaf_amb_1to21$vi, studlab=leaf_amb_1to21$Study_ID))
 pcurve_leaf_mass
 pcurve(pcurve_leaf_mass)
 
-##BIAS - wood fall mass flux#####
+leaf_1to21_final<-data_esall_21 %>% filter(Fraction=="Leaf fall")
+summary(leaf_1to21_final$Treatment)
+pcurve_leaf_mass_new<-cbind(data.frame(TE = leaf_1to21_final$yi_new, seTE=leaf_1to21_final$vi_new, studlab=leaf_1to21_final$Study_ID))
+pcurve_leaf_mass_new
+pcurve(pcurve_leaf_mass_new)
+
+##Wood litterfall#####
 
 #1 to 21 months subset
 wood_amb_1to21<-data_esall %>% filter(Fraction=="Wood fall") %>% filter (TSD_months<22)%>% filter(Treatment=="Ambient"|Treatment=="TrimDeb")
@@ -108,7 +141,7 @@ pcurve_wood_mass<-cbind(data.frame(TE = wood_amb_1to21$yi, seTE=wood_amb_1to21$v
 pcurve_wood_mass
 pcurve(pcurve_wood_mass)
 
-##BIAS - ffs fall mass flux#####
+##FFS fall mass flux#####
 
 #1 to 21 months subset
 ffs_amb_1to21<-data_esall %>% filter(Fraction=="FFS fall") %>% filter (TSD_months<22)%>% filter(Treatment=="Ambient"|Treatment=="TrimDeb")
