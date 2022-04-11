@@ -26,7 +26,7 @@ library(lattice)
 library(RColorBrewer)
 
 ##Upload data####
-metadat<-read.csv(file.choose())#Litterfall_Mass data file
+metadat<-read.csv(file.choose())#Litterfall_Mass in data: folder
 str(metadat)#2370 obs of 62 variables
 
 ##Data wrangling####
@@ -70,7 +70,6 @@ tot_lit_amb_1to21_final$hurrwind<-z.trans(tot_lit_amb_1to21_final$HURRECON_wind_
 tot_lit_amb_1to21_final$windur<-z.trans(tot_lit_amb_1to21_final$Gale_wind_duration_minutes)
 tot_lit_amb_1to21_final$tsd<-z.trans(tot_lit_amb_1to21_final$TSD_months)
 
-
 #Excluding CTE for sensitivity analysis
 tot_lit_amb_1to21_amb<-tot_lit_amb_1to21_final %>% filter(Treatment!="TrimDeb")
 summary(tot_lit_amb_1to21_amb$Treatment)
@@ -84,7 +83,7 @@ tot_meta<- rma.mv(yi,vi,random = list(~1|Site,~1|DisturbanceName),
                            data = tot_lit_amb_1to21_final,struct = "HAR",method = "REML")
 summary(tot_meta)
 #these are the sigma2 values used to calculate weight2
-tot_meta$sigma2
+tot_meta$sigma2 # both values are included in the next step
 
 #Calculate weights for GAMMs: adding the values obtained by running tot_meta_amb$sigma2
 tot_lit_amb_1to21_final$weight2<-(1/(tot_lit_amb_1to21_final$vi+0.02803322+0.17168580))
@@ -100,7 +99,7 @@ tot_meta_b<- rma.mv(yi,vi,random = ~1|Region/DisturbanceName,
                   data = tot_lit_amb_1to21_final,struct = "HAR",method = "REML")
 summary(tot_meta_b)
 tot_meta_b$sigma2
-#weights
+#other calculation of weights
 weight_b<-weights(tot_meta_b,type="matrix")
 tot_lit_amb_1to21_final$weight_b<-colSums(weight_b)/sum(weight_b)
 tot_lit_amb_1to21_final$weight_b
@@ -111,7 +110,7 @@ tot_meta_c<- rma.mv(yi,vi,random = ~1|DisturbanceName,
                     tdist = TRUE,
                     data = tot_lit_amb_1to21_final,struct = "HAR",method = "REML")
 summary(tot_meta_c)
-#weights
+#other calculation of weights
 weight_c<-weights(tot_meta_c,type="matrix")
 tot_lit_amb_1to21_final$weight_c<-colSums(weight_c)/sum(weight_c)
 tot_lit_amb_1to21_final$weight_c
@@ -121,7 +120,7 @@ tot_meta_d<- rma.mv(yi,vi,random = ~(1|Region),
                     tdist = TRUE,
                     data = tot_lit_amb_1to21_final,struct = "HAR",method = "REML")
 summary(tot_meta_d)
-#weights
+#other calculation of weights
 weight_d<-weights(tot_meta_d,type="matrix")
 tot_lit_amb_1to21_final$weight_d<-colSums(weight_d)/sum(weight_d)
 tot_lit_amb_1to21_final$weight_d
@@ -131,7 +130,7 @@ tot_meta_e<- rma.mv(yi,vi,random = ~(1|Site),
                     tdist = TRUE,
                     data = tot_lit_amb_1to21_final,struct = "HAR",method = "REML")
 summary(tot_meta_e)
-#weights
+#other calculation of weights
 weight_e<-weights(tot_meta_e,type="matrix")
 tot_lit_amb_1to21_final$weight_e<-colSums(weight_e)/sum(weight_e)
 tot_lit_amb_1to21_final$weight_e
@@ -194,7 +193,6 @@ atab_1a <- aictab(mods_1a) #Mixed 1 is the best model
 atab_1a
 
 #Model 1a - ambient####
-summary(tot_lit_amb_1to21_amb$Country)
 gamm_2y_mixed_0_amb <- gamm4(yi ~ s(soilP)                             ,weights=tot_lit_amb_1to21_amb$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_amb, REML=F)
 summary(gamm_2y_mixed_0_amb$gam)#R2=0.02
 
@@ -215,6 +213,9 @@ gamm_2y_mixed_1.4_amb <- gamm4(yi_new ~ s(tsd)                              ,wei
 summary(gamm_2y_mixed_1.4_amb$gam)#R2 = 0.29
 
 #checking best Model 1a - ambient + CTE####
+gamm_2y_mixed_1 <- gamm4(yi ~ s(soilP,tsd, k=20)                       ,weights=tot_lit_amb_1to21_final$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F)
+summary(gamm_2y_mixed_1$gam)#R2=0.25
+
 mods_1a_amb <- list(mixed_0_amb = gamm_2y_mixed_0_amb$mer, mixed_0.1_amb = gamm_2y_mixed_0.1_amb$mer, 
                 mixed_1_amb = gamm_2y_mixed_1$mer, mixed_1.2_amb = gamm_2y_mixed_1.2$mer,
                 mixed_1.3_amb = gamm_2y_mixed_1.3$mer, mixed_1.4_amb = gamm_2y_mixed_1.4_amb$mer)
@@ -317,7 +318,32 @@ ggsave(filename = "Fig_corr_1to21.png",
        scale = 2, dpi = 600)
 
 ##Predictions####
-#The best model Table 3 Model 2a is gamm_2y_mixed_1e
+
+#Best model Table 3 Model 1a####
+gamm_2y_mixed_1 <- gamm4(yi ~ s(soilP,tsd, k=20)                       ,weights=tot_lit_amb_1to21_final$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=F)
+summary(gamm_2y_mixed_1$gam)#R2=0.25
+#1 - getting summary of soil P for the subset of the data used in Table 3 model 1a
+summary(tot_lit_amb_1to21_final$Other_soil_P)
+#mean 274.9 , 1st quartile 210, 3rd quartile 330, Max 1520 mg P/kg
+
+#When soil P is 210 mg P/kg, resilience is -0.40 on average, SD 0.21.
+#When soil P is 330 mg P/kg, resilience is -0.52 on average, SD 0.25.
+100-((210*100)/330) #when soil P increases by 36.4%,
+100-((-0.4*100)/-0.52)#resilience decreases by 23.1%.
+23.1/36.4
+0.63/100
+((exp(0.63)-1)*100)
+
+mypreds_model1a<-predict(gamm_2y_mixed_1$gam,newdata=tot_lit_amb_1to21_final,se.fit=T)
+mypreds_model1a
+tot_lit_amb_1to21_final$Pred_1a<-mypreds_model1a$fit
+tot_lit_amb_1to21_final$Se_1a<-mypreds_model1a$se.fit
+summary(tot_lit_amb_1to21_final$Pred_1a)
+
+write.csv(tot_lit_amb_1to21_final,"C:\\Users\\bbomfim\\Dropbox\\R\\SoilP_Preds.csv", row.names = FALSE)
+
+
+#Best model Table 3 Model 2a is gamm_2y_mixed_1e
 
 #Predictions from gamm_2y_mixed_1e####
 mypreds_1to21_final_1e<-predict(gamm_2y_mixed_1e$gam,newdata=tot_lit_amb_1to21_final,se.fit=T)
