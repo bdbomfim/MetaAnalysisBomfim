@@ -983,7 +983,7 @@ names(dataes0_new)
 chart.Correlation(data_es0ia[,c(81,50,48)])
 
 
-####RESPONSE PREDICTION Figures####
+####Resistance Prediction Figures####
 
 ##Predictions based on best Meta-Regression model for total litterfall####
 #The best model is model_tab4
@@ -1214,7 +1214,7 @@ preg2wf + geom_label_repel(aes(label=data_es0iwf$Region,
 
 ##Fig3a
 
-#### Fig3a Response Case Studies by Region ####
+#### Fig3a Resistance Case Studies by Region ####
 theme_set(theme_bw(base_size=10))
 
 #Data
@@ -1251,7 +1251,7 @@ b1 <- list(geom_hline(yintercept = -2.30, color = '#003f5c',alpha=0.4),
            annotate("rect", ymin = -1.39, ymax = -3.21,xmin = -Inf, xmax = Inf,alpha=0.1,linetype=2))
 b1
 
-## Fig3a #### Response of Total Litterfall Mass####
+## Fig3a #### Resistance of Total Litterfall Mass####
 plot1D<-ggplot(data=forrest_data_C,aes(x=reorder(Case2,ES),y=ES,ymax=ES+(1.96*SE),ymin=ES-(1.96*SE),color=Region))+geom_pointrange(alpha=0.9,size=1.2)+guides(title="Region")+scale_color_manual(values=c("#1dabe6","#b35a2d","#c3ced0","#ffa600","#665191","#af060f"))
 plot2D<-plot1D+coord_flip()+geom_hline(aes(yintercept=0), lty=2, color = "magenta", cex=1.2, alpha = 0.6)#+geom_hline(aes(yintercept=3.64), lty=2, colour = "#003f5c", cex=0.9, alpha = 0.4)
 plot3D<-plot2D+xlab("Case study")+theme_bw()+ylab("Resistance")#ylab(expression(Response~ln~(litterfall[ti]/litterfall[t0]))) #ylab(expression(Response~(ln~Total~litterfall~t[i]~t[0]^-1)))
