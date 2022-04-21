@@ -140,14 +140,6 @@ newdat2.3c$month<- c(15,15,15,15)
   #rename(soilP15 = soilP, tsd15 = tsd)
 newdat2.3c
 
-#Combining dataframes by row
-gam_pred_data<-rbind(data.frame(SoilP=newdat2.2a$soilP,Tsd=newdat2.2a$tsd, PredRes=newdat2.2a$fit,CIlow=newdat2.2a$lower,Ciup=newdat2.2a$upper,Month=newdat2.2a$month,MonthBin="12"),
-                    data.frame(SoilP=newdat2.3$soilP,Tsd=newdat2.3$tsd, PredRes=newdat2.3$fit,CIlow=newdat2.3$lower,Ciup=newdat2.3$upper,Month=newdat2.3$month,MonthBin="1"),
-                    data.frame(SoilP=newdat2.3a$soilP,Tsd=newdat2.3a$tsd, PredRes=newdat2.3a$fit,CIlow=newdat2.3a$lower,Ciup=newdat2.3a$upper,Month=newdat2.3a$month,MonthBin="5"),
-                    data.frame(SoilP=newdat2.3b$soilP,Tsd=newdat2.3b$tsd, PredRes=newdat2.3b$fit,CIlow=newdat2.3b$lower,Ciup=newdat2.3b$upper,Month=newdat2.3b$month,MonthBin="9"),
-                    data.frame(SoilP=newdat2.3c$soilP,Tsd=newdat2.3c$tsd, PredRes=newdat2.3c$fit,CIlow=newdat2.3c$lower,Ciup=newdat2.3c$upper,Month=newdat2.3c$month,MonthBin="15"))
-gam_pred_data
-
 # Calculating CIs
 newdat <- within(newdat, {
   lower = fit-1.96*se.fit
@@ -190,23 +182,30 @@ newdat2.3c <- within(newdat2.3c, {
   upper = fit+1.96*se.fit
 })
 
-#Combining dataframes by row to prepare single figure ## CONTINUE HERE!
+#Combining dataframes by row to prepare single figure
 
-# Plot the predicted resilience as a function of soil P
+#Combining dataframes by row
+gam_pred_data<-rbind(data.frame(SoilP=newdat2.2a$soilP,Tsd=newdat2.2a$tsd, PredRes=newdat2.2a$fit,CIlow=newdat2.2a$lower,Ciup=newdat2.2a$upper,Month=newdat2.2a$month,MonthBin="12"),
+                     data.frame(SoilP=newdat2.3$soilP,Tsd=newdat2.3$tsd, PredRes=newdat2.3$fit,CIlow=newdat2.3$lower,Ciup=newdat2.3$upper,Month=newdat2.3$month,MonthBin="1"),
+                     data.frame(SoilP=newdat2.3a$soilP,Tsd=newdat2.3a$tsd, PredRes=newdat2.3a$fit,CIlow=newdat2.3a$lower,Ciup=newdat2.3a$upper,Month=newdat2.3a$month,MonthBin="5"),
+                     data.frame(SoilP=newdat2.3b$soilP,Tsd=newdat2.3b$tsd, PredRes=newdat2.3b$fit,CIlow=newdat2.3b$lower,Ciup=newdat2.3b$upper,Month=newdat2.3b$month,MonthBin="9"),
+                     data.frame(SoilP=newdat2.3c$soilP,Tsd=newdat2.3c$tsd, PredRes=newdat2.3c$fit,CIlow=newdat2.3c$lower,Ciup=newdat2.3c$upper,Month=newdat2.3c$month,MonthBin="15"))
+gam_pred_data
 
+# Plotting the predicted resilience as a function of soil P
 summary(gam_pred_data)
 
-#Figure all months
+#Figure all month bins
 egplot_all <- ggplot(data = gam_pred_data, aes(x=SoilP, y=PredRes, group=MonthBin)) + 
-   geom_point(aes(group=MonthBin,col=MonthBin))+geom_line(aes(group=MonthBin,col=MonthBin)) + labs(y="Predicted resilience", x="Soil P (ln mg P/kg)")+
-    theme(axis.title.x=element_text(vjust = 0.5,size=20),
-        axis.text=element_text(vjust = 1,size=18),
-        axis.title.y=element_text(vjust = 1,size=20))
+   geom_point(aes(group=MonthBin,col=MonthBin))+geom_line(aes(group=MonthBin,col=MonthBin)) + labs(y="Predicted resilience", x="Standardized soil P")+
+    theme(axis.title.x=element_text(vjust = 0.5,size=18),
+        axis.text=element_text(vjust = 1,size=16),
+        axis.title.y=element_text(vjust = 1,size=18))
 egplot_all
 
-##New Figure9####
-ggsave(filename = "Fig9_new.png",
-       plot = Fig_9, width = 10, height = 10, units = 'cm',
+##New Figure S8####
+ggsave(filename = "FigS8.png",
+       plot = egplot_all, width = 8, height = 6, units = 'cm',
        scale = 2, dpi = 1000)
 
 #Figure at 12 months
