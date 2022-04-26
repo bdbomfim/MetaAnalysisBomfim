@@ -49,27 +49,13 @@ tot_lit_amb_1to21_final$weight2
 gamm_2y_mixed_1 <- gamm4(yi ~ s(soilP,tsd, k=20)                       ,weights=tot_lit_amb_1to21_final$weight2, random = ~(1|Site)+(1|DisturbanceName), data=tot_lit_amb_1to21_final, REML=T)
 summary(gamm_2y_mixed_1$gam)#R2=0.25
 
-#Summary of each variable
+#Summary of each predictor variable
 summary(tot_lit_amb_1to21_final$soilP)
-summary(tot_lit_amb_1to21_final$Other_soil_P)
 summary(tot_lit_amb_1to21_final$tsd)
-summary(tot_lit_amb_1to21_final$TSD_months)
-rec5 <- tot_lit_amb_1to21_final %>% filter(TSD_months == 5)
-head(rec5)
-
-# Generating some new data for which you'd like predictions:
-#synthetic data
-newdat <- data.frame(soilP = runif(100), tsd = runif(100))
 
 # Preparing new data frames based on existing soil P and tsd values
-#untransformed data
-newdat2 <- data.frame(soilP = c(130, 210, 275, 330), tsd = c(9,9,9,9))
-newdat2.1 <- data.frame(soilP = c(130, 210, 275, 330), tsd = c(1,5,9,15))
-newdat2.1a<- data.frame(soilP = c(130, 210, 275, 330), tsd = c(12,12,12,12))
-
 #transformed data
-newdat2.2 <- data.frame(soilP = c(-0.48852, -0.21887, 0.05414, 0.18560), tsd = c(-0.06559,-0.06559,-0.06559,-0.06559))
-#At 12 months
+#For time since disturbance at 12 months
 newdat2.2a <- data.frame(soilP = c(-0.48852, -0.21887, 0.05414, 0.18560), tsd = c(0.1853929,0.1853929,0.1853929,0.1853929))
 newdat2.2a
 #At 1 month (min)
@@ -87,54 +73,30 @@ newdat2.3c
 
 # Getting predicted outcomes for new data
 # These include the splines but ignore other REs
-predictions = predict(gamm_2y_mixed_1$gam, newdata=newdat, se.fit = TRUE)
-predictions
-predictions2 = predict(gamm_2y_mixed_1$gam, newdata=newdat2, se.fit = TRUE)
-predictions2
-predictions2.1 = predict(gamm_2y_mixed_1$gam, newdata=newdat2.1, se.fit = TRUE)
-predictions2.1
-predictions2.1a = predict(gamm_2y_mixed_1$gam, newdata=newdat2.1a, se.fit = TRUE)
-predictions2.1a
-predictions2.2 = predict(gamm_2y_mixed_1$gam, newdata=newdat2.2, se.fit = TRUE)
-predictions2.2
+preds <- predict(gamm_2y$gam, type="terms")[,"s(soilP)"]
+plot(gamm_2y$gam)
+
 predictions2.2a = predict(gamm_2y_mixed_1$gam, newdata=newdat2.2a, se.fit = TRUE)
-predictions2.2a
-newdat2.2a
 predictions2.3 = predict(gamm_2y_mixed_1$gam, newdata=newdat2.3, se.fit = TRUE)
-predictions2.3
 predictions2.3a = predict(gamm_2y_mixed_1$gam, newdata=newdat2.3a, se.fit = TRUE)
-predictions2.3a
 predictions2.3b = predict(gamm_2y_mixed_1$gam, newdata=newdat2.3b, se.fit = TRUE)
-predictions2.3b
 predictions2.3c = predict(gamm_2y_mixed_1$gam, newdata=newdat2.3c, se.fit = TRUE)
-predictions2.3c
 
 # Combining new data and predictions ####
 newdat2.2a = cbind(newdat2.2a, predictions2.2a) 
 newdat2.2a$month<- c(12,12,12,12)
-newdat2.2a
-#newdat2.2a = newdat2.2a %>% 
-  #rename(soilP12 = soilP, tsd12 = tsd, fit12 = fit, se.fit12 = se.fit)
+
 newdat2.3 = cbind(newdat2.3, predictions2.3)
-newdat2.3 #1 month
 newdat2.3$month<- c(1,1,1,1)
-#newdat2.3 = newdat2.3 %>% 
-  #rename(soilP1 = soilP, tsd1 = tsd)
+
 newdat2.3a = cbind(newdat2.3a, predictions2.3a) # 5 months
-newdat2.3a
 newdat2.3a$month<- c(5,5,5,5)
-#newdat2.3a = newdat2.3a %>% 
-  #rename(soilP5 = soilP, tsd5 = tsd)
+
 newdat2.3b = cbind(newdat2.3b, predictions2.3b) # 9 months
 newdat2.3b$month<- c(9,9,9,9)
-#newdat2.3b = newdat2.3b %>% 
-  #rename(soilP9 = soilP, tsd9 = tsd)
-newdat2.3b
+
 newdat2.3c = cbind(newdat2.3c, predictions2.3c) # 15 months
 newdat2.3c$month<- c(15,15,15,15)
-#newdat2.3c = newdat2.3c %>% 
-  #rename(soilP15 = soilP, tsd15 = tsd)
-newdat2.3c
 
 # Calculating CIs
 newdat2.2a <- within(newdat2.2a, {
@@ -169,7 +131,6 @@ gam_pred_data<-rbind(data.frame(SoilP=newdat2.2a$soilP,Tsd=newdat2.2a$tsd, PredR
 gam_pred_data
 
 # Plotting the predicted resilience as a function of soil P
-summary(gam_pred_data)
 
 #Figure all month bins
 egplot_all <- ggplot(data = gam_pred_data, aes(x=SoilP, y=PredRes, group=MonthBin)) + 
@@ -179,47 +140,10 @@ egplot_all <- ggplot(data = gam_pred_data, aes(x=SoilP, y=PredRes, group=MonthBi
         axis.title.y=element_text(vjust = 1,size=18))+ggtitle("Table 3 model 1a - wind duration not included")
 egplot_all
 
-##New Figure S8####
-ggsave(filename = "FigS8.png",
+##Figure S8a####
+ggsave(filename = "FigS8a.png",
        plot = egplot_all, width = 8, height = 6, units = 'cm',
        scale = 2, dpi = 1000)
-
-#Figure at 12 months
-newdat2.2a
-egplot2.2a <- ggplot(data = newdat2.2a, aes(x=soilP, y=fit)) + 
-  geom_smooth_ci() + geom_point() + labs(y="Predicted resilience", x="Soil P (ln mg P/kg)")+
-  theme(axis.title.x =element_text(vjust = 0.5,size=22),
-        axis.text =element_text(vjust = 1,size=20),
-        axis.title.y =element_text(vjust = 1,size=22))
-egplot2.2a
-#Figure at 1 month
-egplot2.3 <- ggplot(newdat2.3, aes(x=soilP, y=fit)) + 
-  geom_smooth_ci() + geom_point() + labs(y="Predicted resilience", x="Soil P (ln mg P/kg)")+
-  theme(axis.title.x =element_text(vjust = 0.5,size=22),
-        axis.text =element_text(vjust = 1,size=20),
-        axis.title.y =element_text(vjust = 1,size=22))
-egplot2.3
-#Figure at 5 month
-egplot2.3a <- ggplot(newdat2.3a, aes(x=soilP, y=fit)) + 
-  geom_smooth_ci() + geom_point() + labs(y="Predicted resilience", x="Soil P (ln mg P/kg)")+
-  theme(axis.title.x =element_text(vjust = 0.5,size=22),
-        axis.text =element_text(vjust = 1,size=20),
-        axis.title.y =element_text(vjust = 1,size=22))
-egplot2.3a
-#Figure at 9 month
-egplot2.3b <- ggplot(newdat2.3b, aes(x=soilP, y=fit)) + 
-  geom_smooth_ci() + geom_point() + labs(y="Predicted resilience", x="Soil P (ln mg P/kg)")+
-  theme(axis.title.x =element_text(vjust = 0.5,size=22),
-        axis.text =element_text(vjust = 1,size=20),
-        axis.title.y =element_text(vjust = 1,size=22))
-egplot2.3b
-#Figure at 15 month
-egplot2.3c <- ggplot(newdat2.3c, aes(x=soilP, y=fit)) + 
-  geom_smooth_ci() + geom_point() + labs(y="Predicted resilience", x="Soil P (ln mg P/kg)")+
-  theme(axis.title.x =element_text(vjust = 0.5,size=22),
-        axis.text =element_text(vjust = 1,size=20),
-        axis.title.y =element_text(vjust = 1,size=22))
-egplot2.3c
 
 ## Preparing figure by using predictive model including gale wind duration##
 
@@ -232,8 +156,6 @@ summary(gamm_2y_mixed_1e$mer)
 summary(tot_lit_amb_1to21_final$Gale_wind_duration_minutes)
 summary(tot_lit_amb_1to21_final$windur)
 summary(tot_lit_amb_1to21_final$tsd)
-rec5 <- tot_lit_amb_1to21_final %>% filter(TSD_months == 5)
-head(rec5)
 
 # Data frames including soil P, tsd and wind dur range of values ####
 
@@ -302,44 +224,34 @@ predictions2.3cw3
 #1st quartile wind duration
 newdat2.2aw1 = cbind(newdat2.2aw1, predictions2.2aw1) 
 newdat2.2aw1$month<- c(12,12,12,12)
-newdat2.2aw1
 
 newdat2.3w1 = cbind(newdat2.3w1, predictions2.3w1)
-newdat2.3w1 #1 month
 newdat2.3w1$month<- c(1,1,1,1)
 
 newdat2.3aw1 = cbind(newdat2.3aw1, predictions2.3aw1) # 5 months
-newdat2.3aw1
 newdat2.3aw1$month<- c(5,5,5,5)
 
 newdat2.3bw1= cbind(newdat2.3bw1, predictions2.3bw1) # 9 months
 newdat2.3bw1$month<- c(9,9,9,9)
-newdat2.3bw1
 
 newdat2.3cw1 = cbind(newdat2.3cw1, predictions2.3cw1) # 15 months
 newdat2.3cw1$month<- c(15,15,15,15)
-newdat2.3cw1
 
 #3rd quartile wind duration
 newdat2.2aw3 = cbind(newdat2.2aw3, predictions2.2aw3) 
 newdat2.2aw3$month<- c(12,12,12,12)
-newdat2.2aw3
 
 newdat2.3w3 = cbind(newdat2.3w3, predictions2.3w3)
-newdat2.3w3 #1 month
 newdat2.3w3$month<- c(1,1,1,1)
 
 newdat2.3aw3 = cbind(newdat2.3aw3, predictions2.3aw3) # 5 months
-newdat2.3aw3
 newdat2.3aw3$month<- c(5,5,5,5)
 
 newdat2.3bw3= cbind(newdat2.3bw3, predictions2.3bw3) # 9 months
 newdat2.3bw3$month<- c(9,9,9,9)
-newdat2.3bw3
 
 newdat2.3cw3 = cbind(newdat2.3cw3, predictions2.3cw3) # 15 months
 newdat2.3cw3$month<- c(15,15,15,15)
-newdat2.3cw3
 
 # Calculating CIs with wind duration ####
 
@@ -445,8 +357,7 @@ ggsave(filename = "FinalFigS8.png",
        plot = FinalFigS8, width = 16, height = 14, units = 'cm',
        scale = 2, dpi = 1000)
 
-## END ## 
-#Excluding random effects
+#Sample if trying to exclude random effects
 
 head(
   cbind(
@@ -456,8 +367,6 @@ head(
     )
   )
 )
-#To plot the smooths across a few values of a continuous predictor, 
-#we can use the values argument in predict_gam().
-#predict_gam(gamm_2y_mixed_1$gam, values = list(tsd = c(1, 5, 12))) %>%
-  #ggplot(data=newdat2, aes(x=soilP, y=fit)) #+geom_smooth_ci(tsd)
+
+## END ###
 
