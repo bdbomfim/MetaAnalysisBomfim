@@ -293,7 +293,7 @@ full.model3 <- rma.mv(yi, vi,random = list(~ 1 | Site,~1|DisturbanceName),
 summary(full.model3)
 ((exp(full.model3$b)-1)*100)
 (exp(full.model3$se)-1)*100
-((exp(0.0032)-1)*100)
+((exp(0.00382)-1)*100)
 
 #Testing if study 53 changes the mean pantropical resistance 
 data_no53<-data_es0ia %>% filter(Study_ID!=53)
